@@ -1,0 +1,91 @@
+package com.zerwhit;
+
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
+class ObfuscatingClassVisitor extends ClassVisitor {
+    private String className;
+    private String obfuscatedClassName;
+    private TsrgParser tsrgParser;
+    private CsvParser csvParser;
+
+    public ObfuscatingClassVisitor(ClassVisitor cv, String className, TsrgParser tsrgParser, CsvParser csvParser) {
+        super(Opcodes.ASM9, cv);
+        this.className = className;
+        this.tsrgParser = tsrgParser;
+        this.csvParser = csvParser;
+        this.obfuscatedClassName = tsrgParser.getMappedClass(className);
+
+        if (!className.equals(obfuscatedClassName)) {
+            System.out.println("Class Mapping: " + className + " -> " + obfuscatedClassName);
+        }
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature,
+                      String superName, String[] interfaces) {
+        String mappedSuperName = superName != null ? tsrgParser.getMappedClass(superName) : superName;
+        String[] mappedInterfaces = mapInterfaces(interfaces);
+
+        super.visit(version, access, obfuscatedClassName, signature, mappedSuperName, mappedInterfaces);
+    }
+
+    @Override
+    public FieldVisitor visitField(int access, String name, String descriptor,
+                                   String signature, Object value) {
+        String obfuscatedFieldName = tsrgParser.getMappedField(className, name);
+
+        if (!name.equals(obfuscatedFieldName)) {
+            System.out.println("Field Mapping: " + className + "." + name + " -> " + obfuscatedFieldName);
+        }
+
+        return super.visitField(access, obfuscatedFieldName, descriptor, signature, value);
+    }
+
+    @Override
+    public MethodVisitor visitMethod(int access, String name, String descriptor,
+                                     String signature, String[] exceptions) {
+        if (isExcludedMethod(name)) {
+            return super.visitMethod(access, name, descriptor, signature, exceptions);
+        }
+
+        String obfuscatedMethodName = tsrgParser.getMappedMethod(className, name, descriptor);
+
+        if (!name.equals(obfuscatedMethodName)) {
+            System.out.println("Method Mapping: " + className + "." + name + descriptor + " -> " + obfuscatedMethodName);
+        }
+
+        return new ObfuscatingMethodVisitor(
+                super.visitMethod(access, obfuscatedMethodName, descriptor, signature, exceptions),
+                className,
+                name,
+                obfuscatedMethodName,
+                tsrgParser,
+                csvParser
+        );
+    }
+
+    @Override
+    public void visitInnerClass(String name, String outerName, String innerName, int access) {
+        String mappedName = tsrgParser.getMappedClass(name);
+        String mappedOuterName = outerName != null ? tsrgParser.getMappedClass(outerName) : null;
+        super.visitInnerClass(mappedName, mappedOuterName, innerName, access);
+    }
+
+    private boolean isExcludedMethod(String methodName) {
+        return methodName.equals("<init>") || methodName.equals("<clinit>") ||
+               methodName.equals("main") || methodName.equals("premain") || methodName.equals("agentmain");
+    }
+
+    private String[] mapInterfaces(String[] interfaces) {
+        if (interfaces == null) return null;
+
+        String[] mappedInterfaces = new String[interfaces.length];
+        for (int i = 0; i < interfaces.length; i++) {
+            mappedInterfaces[i] = tsrgParser.getMappedClass(interfaces[i]);
+        }
+        return mappedInterfaces;
+    }
+}

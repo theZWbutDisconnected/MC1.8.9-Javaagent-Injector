@@ -1,0 +1,88 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'java'
+}
+
+group = 'com.zerwhit'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.ow2.asm:asm:9.6'
+    implementation 'org.ow2.asm:asm-tree:9.6'
+    implementation 'org.ow2.asm:asm-commons:9.6'
+    implementation 'net.java.dev.jna:jna:5.13.0'
+    implementation 'net.java.dev.jna:jna-platform:5.13.0'
+
+    implementation files("${System.getProperty('java.home')}/../lib/tools.jar")
+    compileOnly files("/minecraft.jar", "/jinput-2.0.5.jar", "/jutils-1.0.0.jar", "/lwjgl-2.9.4-nightly-20150209.jar", "/lwjgl_util-2.9.4-nightly-20150209.jar")
+}
+
+task obfuscateBytecode(type: JavaExec) {
+    dependsOn compileJava
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.zerwhit.BytecodeObfuscator'
+
+    args = [
+            "${buildDir}/classes/java/main",
+            'mappings/srg-mcp-1.12.2.tsrg',
+            'mappings/fields.csv',
+            'mappings/methods.csv'
+    ]
+}
+
+jar {
+    dependsOn obfuscateBytecode
+
+    manifest {
+        attributes(
+                'Main-Class': 'com.zerwhit.Main',
+                'Premain-Class': 'com.zerwhit.AgentMain',
+                'Agent-Class': 'com.zerwhit.AgentMain',
+                'Can-Redefine-Classes': 'true',
+                'Can-Retransform-Classes': 'true',
+                'Can-Set-Native-Method-Prefix': 'true'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+task verifyObfuscation {
+    dependsOn jar
+    doLast {
+        println "Verifying obfuscation in JAR file..."
+        def jarFile = file("${buildDir}/libs/${archivesBaseName}-${version}.jar")
+        if (jarFile.exists()) {
+            println "JAR file created: ${jarFile.name}"
+            println "JAR size: ${jarFile.length()} bytes"
+
+            def jar = new java.util.jar.JarFile(jarFile)
+            def entries = jar.entries()
+            int classCount = 0
+            while (entries.hasMoreElements()) {
+                def entry = entries.nextElement()
+                if (entry.name.endsWith('.class')) {
+                    classCount++
+                }
+            }
+            jar.close()
+            println "JAR contains ${classCount} class files"
+        } else {
+            println "ERROR: JAR file not found!"
+        }
+    }
+}
+
+assemble.dependsOn verifyObfuscation

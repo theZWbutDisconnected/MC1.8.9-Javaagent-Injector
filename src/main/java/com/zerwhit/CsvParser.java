@@ -1,0 +1,70 @@
+package com.zerwhit;
+
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+public class CsvParser {
+    public Map<String, String> fieldMappings = new HashMap<>();
+    public Map<String, String> methodMappings = new HashMap<>();
+
+    public CsvParser(String fieldsCSV, String methodsCSV) throws IOException {
+        loadMappings(fieldsCSV, fieldMappings, true);
+        loadMappings(methodsCSV, methodMappings, false);
+    }
+
+    private static void loadMappings(String csvFile, Map<String, String> mappings, boolean isField) throws IOException {
+        if (!Files.exists(Paths.get(csvFile))) {
+            System.err.println("CSV file not found: " + csvFile);
+            return;
+        }
+
+        List<String> lines = Files.readAllLines(Paths.get(csvFile));
+        boolean isHeader = true;
+
+        for (String line : lines) {
+            if (isHeader) {
+                isHeader = false;
+                continue;
+            }
+
+            String[] parts = parseCSVLine(line);
+            if (parts.length >= 2) {
+                String searge = parts[0].trim();
+                String name = parts[1].trim();
+
+                if (!searge.isEmpty() && !name.isEmpty()) {
+                    if (isField) {
+                        if (searge.startsWith("field_")) {
+                            mappings.put(name, searge);
+                        }
+                    } else {
+                        if (searge.startsWith("func_")) {
+                            mappings.put(name, searge);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static String[] parseCSVLine(String line) {
+        List<String> result = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder field = new StringBuilder();
+
+        for (char c : line.toCharArray()) {
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                result.add(field.toString());
+                field.setLength(0);
+            } else {
+                field.append(c);
+            }
+        }
+        result.add(field.toString());
+
+        return result.toArray(new String[0]);
+    }
+}
