@@ -81,6 +81,9 @@ public class ClassTransformer implements ClassFileTransformer {
                     return new GameLoopMethodVisitor(mv);
                 case "func_71407_l()V" :
                 case "runTick()V" : return new RunTickMethodVisitor(mv);
+                case "func_175601_h()V" :
+                case "updateDisplay()V" :
+                    return new UpdateDisplayMethodVisitor(mv);
                 default : return mv;
             }
         }
@@ -124,6 +127,17 @@ public class ClassTransformer implements ClassFileTransformer {
         @Override
         protected void insertBefore() {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, getClassPackage(Hooks.class), "onGameLoop", "()V");
+        }
+    }
+
+    private static class UpdateDisplayMethodVisitor extends HookMethodVisitor {
+        public UpdateDisplayMethodVisitor(MethodVisitor mv) {
+            super(mv);
+        }
+
+        @Override
+        protected void insertBefore() {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, getClassPackage(Hooks.class), "onUpdateDisplay", "()V");
         }
     }
 

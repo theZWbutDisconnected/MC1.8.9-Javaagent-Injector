@@ -33,18 +33,17 @@ public class Hooks {
         }
     }
 
-    public static void onGameLoop() {
-        Control.checkRShiftKey();
+    public static void onUpdateDisplay() {
         Minecraft mc = Minecraft.getMinecraft();
         if (!texturesLoaded) {
             loadTextures();
         }
-        
+
         int screenWidth = mc.displayWidth;
         int screenHeight = mc.displayHeight;
 
         try {
-        drawFullScreenRect(screenWidth, screenHeight, 0.3F, 0.0F, 0.5F, 0.3F);
+            drawFullScreenRect(screenWidth, screenHeight, 0.3F, 0.0F, 0.5F, 0.3F);
             System.out.println("Try to render logo.");
             GlStateManager.enableTexture2D();
             GlStateManager.enableBlend();
@@ -62,6 +61,10 @@ public class Hooks {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void onGameLoop() {
+        Control.checkRShiftKey();
     }
 
     public static void onPreTick() {
