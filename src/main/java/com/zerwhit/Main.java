@@ -12,17 +12,18 @@ import com.sun.tools.attach.VirtualMachine;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.net.URISyntaxException;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
+    public static WinDef.HWND hwnd;
     public static void main(String[] args)
             throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
 
         List<String> pids = findPidsByWindowName("Minecraft 1.8.9");
+        List<WinDef.HWND> hwnds = findHWNDByWindowName("Minecraft 1.8.9");
         System.out.println("Found " + pids.size() + " Minecraft processes:");
         for (String pid : pids) {
             System.out.println("PID: " + pid);
@@ -34,6 +35,7 @@ public class Main {
         }
 
         String pid = pids.get(0);
+        hwnd = hwnds.get(0);
         System.out.println("Attaching to PID: " + pid);
 
         String path = getCurrentJarPath();
@@ -114,6 +116,23 @@ public class Main {
                 WinDef.HMODULE kernel32 = Kernel32.INSTANCE.GetModuleHandle("kernel32");
                 System.out.println("Found window: '" + title + "' with PID: " + pid);
                 pids.add(String.valueOf(pid));
+            }
+            return true;
+        }, null);
+
+        return pids;
+    }
+
+    private static List<WinDef.HWND> findHWNDByWindowName(String partialWindowName) {
+        List<WinDef.HWND> pids = new ArrayList<>();
+
+        User32.INSTANCE.EnumWindows((hWnd, arg) -> {
+            char[] windowText = new char[1024];
+            User32.INSTANCE.GetWindowText(hWnd, windowText, 1024);
+            String title = Native.toString(windowText);
+
+            if (!title.isEmpty() && title.toLowerCase().contains(partialWindowName.toLowerCase())) {
+                pids.add(hWnd);
             }
             return true;
         }, null);

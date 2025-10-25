@@ -10,6 +10,10 @@ class ObfuscatingClassVisitor extends ClassVisitor {
     private String obfuscatedClassName;
     private TsrgParser tsrgParser;
     private CsvParser csvParser;
+    private String superClassName;
+    private boolean extendsMinecraftClass = false;
+    private String[] interfaces;
+    private boolean implementsMinecraftInterface = false;
 
     public ObfuscatingClassVisitor(ClassVisitor cv, String className, TsrgParser tsrgParser, CsvParser csvParser) {
         super(Opcodes.ASM9, cv);
@@ -26,6 +30,11 @@ class ObfuscatingClassVisitor extends ClassVisitor {
     @Override
     public void visit(int version, int access, String name, String signature,
                       String superName, String[] interfaces) {
+        this.superClassName = superName;
+        this.interfaces = interfaces;
+        this.extendsMinecraftClass = isMinecraftClass(superName);
+        this.implementsMinecraftInterface = hasMinecraftInterface(interfaces);
+        
         String mappedSuperName = superName != null ? tsrgParser.getMappedClass(superName) : superName;
         String[] mappedInterfaces = mapInterfaces(interfaces);
 
@@ -51,7 +60,7 @@ class ObfuscatingClassVisitor extends ClassVisitor {
             return super.visitMethod(access, name, descriptor, signature, exceptions);
         }
 
-        String obfuscatedMethodName = tsrgParser.getMappedMethod(className, name, descriptor);
+        String obfuscatedMethodName = getMappedMethodName(access, name, descriptor);
 
         if (!name.equals(obfuscatedMethodName)) {
             System.out.println("Method Mapping: " + className + "." + name + descriptor + " -> " + obfuscatedMethodName);
@@ -63,8 +72,56 @@ class ObfuscatingClassVisitor extends ClassVisitor {
                 name,
                 obfuscatedMethodName,
                 tsrgParser,
-                csvParser
+                csvParser,
+                extendsMinecraftClass,
+                superClassName,
+                implementsMinecraftInterface,
+                interfaces
         );
+    }
+
+    private String getMappedMethodName(int access, String name, String descriptor) {
+        // 首先尝试从当前类获取映射
+        String mappedName = tsrgParser.getMappedMethod(className, name, descriptor);
+        
+        // 如果当前类没有映射，但继承自Minecraft类，尝试从父类获取映射
+        if (mappedName.equals(name) && extendsMinecraftClass && superClassName != null) {
+            String parentMappedName = tsrgParser.getMappedMethod(superClassName, name, descriptor);
+            if (!parentMappedName.equals(name)) {
+                return parentMappedName;
+            }
+        }
+        
+        // 如果当前类没有映射，但实现了Minecraft接口，尝试从接口获取映射
+        if (mappedName.equals(name) && implementsMinecraftInterface && interfaces != null) {
+            for (String iface : interfaces) {
+                if (isMinecraftClass(iface)) {
+                    String interfaceMappedName = tsrgParser.getMappedMethod(iface, name, descriptor);
+                    if (!interfaceMappedName.equals(name)) {
+                        return interfaceMappedName;
+                    }
+                }
+            }
+        }
+        
+        return mappedName;
+    }
+
+    private boolean isMinecraftClass(String className) {
+        if (className == null) return false;
+        return className.startsWith("net/minecraft") || 
+               className.startsWith("com/mojang") || 
+               className.startsWith("badlion");
+    }
+
+    private boolean hasMinecraftInterface(String[] interfaces) {
+        if (interfaces == null) return false;
+        for (String iface : interfaces) {
+            if (isMinecraftClass(iface)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

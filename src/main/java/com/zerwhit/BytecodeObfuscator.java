@@ -1,9 +1,14 @@
 package com.zerwhit;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class BytecodeObfuscator {
@@ -14,6 +19,10 @@ public class BytecodeObfuscator {
 
     private static final List<String> TARGET_PACKAGES = Arrays.asList(
             "com/zerwhit/core/"
+    );
+    
+    private static final List<String> MINECRAFT_PACKAGES = Arrays.asList(
+            "net/minecraft", "com/mojang", "badlion"
     );
 
     public BytecodeObfuscator() {
@@ -120,6 +129,7 @@ public class BytecodeObfuscator {
             ClassReader classReader = new ClassReader(classBytes);
             ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
+            // 检查类是否继承自Minecraft类或实现Minecraft接口
             ClassVisitor classVisitor = new ObfuscatingClassVisitor(classWriter, className, tsrgParser, csvParser);
             classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 
@@ -129,6 +139,15 @@ public class BytecodeObfuscator {
             e.printStackTrace();
             return classBytes;
         }
+    }
+    
+    private boolean isMinecraftClass(String className) {
+        for (String mcPkg : MINECRAFT_PACKAGES) {
+            if (className.startsWith(mcPkg)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getClassNameFromPath(Path classFile, Path basePath) {

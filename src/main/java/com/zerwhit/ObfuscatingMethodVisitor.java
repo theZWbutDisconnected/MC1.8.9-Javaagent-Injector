@@ -10,24 +10,70 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
     private String obfuscatedMethodName;
     private TsrgParser tsrgParser;
     private CsvParser csvParser;
+    private boolean extendsMinecraftClass;
+    private String superClassName;
+    private boolean implementsMinecraftInterface;
+    private String[] interfaces;
 
     public ObfuscatingMethodVisitor(MethodVisitor mv, String ownerClassName,
                                     String originalMethodName, String obfuscatedMethodName,
-                                    TsrgParser tsrgParser, CsvParser csvParser) {
+                                    TsrgParser tsrgParser, CsvParser csvParser,
+                                    boolean extendsMinecraftClass, String superClassName,
+                                    boolean implementsMinecraftInterface, String[] interfaces) {
         super(Opcodes.ASM9, mv);
         this.ownerClassName = ownerClassName;
         this.originalMethodName = originalMethodName;
         this.obfuscatedMethodName = obfuscatedMethodName;
         this.tsrgParser = tsrgParser;
         this.csvParser = csvParser;
+        this.extendsMinecraftClass = extendsMinecraftClass;
+        this.superClassName = superClassName;
+        this.implementsMinecraftInterface = implementsMinecraftInterface;
+        this.interfaces = interfaces;
     }
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean ift) {
         String mappedOwner = tsrgParser.getMappedClass(owner);
+        String mappedName = getMappedMethodName(owner, name, descriptor, opcode);
+
+        if (!name.equals(mappedName)) {
+            System.out.println("Mapping Method: " + owner + "." + name + descriptor + " -> " + mappedOwner + "." + mappedName + descriptor);
+        }
+
+        super.visitMethodInsn(opcode, mappedOwner, mappedName, descriptor, ift);
+    }
+
+    private String getMappedMethodName(String owner, String name, String descriptor, int opcode) {
         String mappedName = tsrgParser.getMappedMethod(owner, name, descriptor);
 
         if (mappedName == null || mappedName.equals(name)) {
+            // 处理继承的方法调用
+            if (extendsMinecraftClass && superClassName != null && 
+                (opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKESPECIAL) &&
+                owner.equals(ownerClassName) && name.equals(originalMethodName)) {
+                // 如果是调用父类的重写方法，使用父类的映射
+                String parentMappedName = tsrgParser.getMappedMethod(superClassName, name, descriptor);
+                if (!parentMappedName.equals(name)) {
+                    return parentMappedName;
+                }
+            }
+            
+            // 处理接口方法的调用
+            if (implementsMinecraftInterface && interfaces != null && 
+                (opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKEVIRTUAL) &&
+                owner.equals(ownerClassName) && name.equals(originalMethodName)) {
+                // 如果是调用接口的实现方法，尝试从接口获取映射
+                for (String iface : interfaces) {
+                    if (isMinecraftClass(iface)) {
+                        String interfaceMappedName = tsrgParser.getMappedMethod(iface, name, descriptor);
+                        if (!interfaceMappedName.equals(name)) {
+                            return interfaceMappedName;
+                        }
+                    }
+                }
+            }
+            
             if (name.equals(originalMethodName) && owner.equals(ownerClassName)) {
                 mappedName = obfuscatedMethodName;
             } else {
@@ -35,11 +81,14 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
             }
         }
 
-        if (!name.equals(mappedName)) {
-            System.out.println("Mapping Method: " + owner + "." + name + descriptor + " -> " + mappedOwner + "." + mappedName + descriptor);
-        }
+        return ClassTransformer.isMCClass(owner) ? csvParser.methodMappings.getOrDefault(mappedName, mappedName) : mappedName;
+    }
 
-        super.visitMethodInsn(opcode, mappedOwner, ClassTransformer.isMCClass(mappedOwner) ? csvParser.methodMappings.getOrDefault(mappedName, mappedName) : mappedName, descriptor, ift);
+    private boolean isMinecraftClass(String className) {
+        if (className == null) return false;
+        return className.startsWith("net/minecraft") || 
+               className.startsWith("com/mojang") || 
+               className.startsWith("badlion");
     }
 
     @Override
