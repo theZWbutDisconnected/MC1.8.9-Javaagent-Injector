@@ -1,5 +1,8 @@
-package com.zerwhit;
+package com.zerwhit.obfuscator;
 
+import com.zerwhit.core.ClassTransformer;
+import com.zerwhit.obfuscator.parser.CsvParser;
+import com.zerwhit.obfuscator.parser.TsrgParser;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

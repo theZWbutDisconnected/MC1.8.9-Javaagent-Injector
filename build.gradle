@@ -19,8 +19,8 @@ dependencies {
     implementation 'org.ow2.asm:asm:9.6'
     implementation 'org.ow2.asm:asm-tree:9.6'
     implementation 'org.ow2.asm:asm-commons:9.6'
-    implementation 'net.java.dev.jna:jna:5.13.0'
-    implementation 'net.java.dev.jna:jna-platform:5.13.0'
+    implementation 'net.java.dev.jna:jna:5.5.0'
+    implementation 'net.java.dev.jna:jna-platform:5.5.0'
 
     implementation files("${System.getProperty('java.home')}/../lib/tools.jar")
     compileOnly files("/minecraft.jar", "/jinput-2.0.5.jar", "/jutils-1.0.0.jar", "/lwjgl-2.9.4-nightly-20150209.jar", "/lwjgl_util-2.9.4-nightly-20150209.jar")
@@ -30,7 +30,7 @@ task obfuscateBytecode(type: JavaExec) {
     dependsOn compileJava
 
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'com.zerwhit.BytecodeObfuscator'
+    mainClass = 'com.zerwhit.obfuscator.BytecodeObfuscator'
 
     args = [
             "${buildDir}/classes/java/main",

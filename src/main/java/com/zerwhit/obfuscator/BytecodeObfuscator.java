@@ -1,5 +1,7 @@
-package com.zerwhit;
+package com.zerwhit.obfuscator;
 
+import com.zerwhit.obfuscator.parser.CsvParser;
+import com.zerwhit.obfuscator.parser.TsrgParser;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;

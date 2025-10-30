@@ -81,7 +81,7 @@ public class Main {
         }
 
         File currentDir = new File("");
-        File jarFile = new File(currentDir, "build/libs/BadlionMain-1.0-SNAPSHOT-all.jar");
+        File jarFile = new File(currentDir, "build/libs/BadlionMain-1.0-SNAPSHOT.jar");
         if (jarFile.exists()) {
             return jarFile.getAbsolutePath();
         }

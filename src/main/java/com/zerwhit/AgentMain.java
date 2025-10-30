@@ -1,13 +1,8 @@
 package com.zerwhit;
 
-import com.zerwhit.core.Control;
-import com.zerwhit.core.Hooks;
-import com.zerwhit.core.Meta;
-import com.zerwhit.core.jni.GraphicLib;
+import com.zerwhit.core.ClassTransformer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -48,7 +43,8 @@ public class AgentMain {
                 addURLMethod.setAccessible(true);
                 addURLMethod.invoke(mcLoader, new File(agentJarPath).toURI().toURL());
             }
-            registerClassesToLoader(mcLoader, GraphicLib.class, Hooks.class, Control.class, Meta.class);
+//            instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(agentJarPath));
+//            instrumentation.appendToSystemClassLoaderSearch(new JarFile(agentJarPath));
         } catch (Exception e) {
             System.err.println("Failed to inject Hooks class: " + e.getMessage());
         }
@@ -81,44 +77,6 @@ public class AgentMain {
             // Ignore exception, return null
         }
         return null;
-    }
-
-    private static void registerClassesToLoader(ClassLoader targetLoader, Class<?>... classes) {
-        for (Class<?> klass : classes) {
-            registerClassToLoader(targetLoader, klass);
-        }
-    }
-
-    private static void registerClassToLoader(ClassLoader targetLoader, Class<?> klass) {
-        try {
-            byte[] classBytes = getClassBytes(klass);
-            Method defineClassMethod = ClassLoader.class.getDeclaredMethod(
-                    "defineClass", String.class, byte[].class, int.class, int.class);
-            defineClassMethod.setAccessible(true);
-            defineClassMethod.invoke(targetLoader, klass.getName(), classBytes, 0, classBytes.length);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to define class in target loader", e);
-        }
-    }
-
-    private static byte[] getClassBytes(Class<?> klass) {
-        try (InputStream is = AgentMain.class
-                .getResourceAsStream('/' + ClassTransformer.getClassPackage(klass) + ".class");
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
-            if (is == null) {
-                throw new RuntimeException("Could not find " + klass.getSimpleName() + ".class in JAR");
-            }
-
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, len);
-            }
-            return baos.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read class bytes", e);
-        }
     }
 
     private static void retransformLoadedClasses() {

@@ -6,7 +6,7 @@ import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.win32.StdCallLibrary;
 
 public interface GraphicLib extends StdCallLibrary {
-    GraphicLib INSTANCE = Native.load("GraphicLib", GraphicLib.class);
+    GraphicLib INSTANCE = null;
 
     void DrawPNG(HWND hwnd, WString filePath, int x, int y, int width, int height);
 }

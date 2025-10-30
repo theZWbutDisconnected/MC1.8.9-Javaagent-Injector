@@ -1,6 +1,5 @@
-package com.zerwhit;
+package com.zerwhit.core;
 
-import com.zerwhit.core.Hooks;
 import org.objectweb.asm.*;
 
 import java.lang.instrument.ClassFileTransformer;

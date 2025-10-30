@@ -1,4 +1,4 @@
-package com.zerwhit;
+package com.zerwhit.obfuscator.parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
