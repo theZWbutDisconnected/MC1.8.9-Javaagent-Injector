@@ -1,6 +1,5 @@
 package com.zerwhit.core;
 
-import com.zerwhit.AgentMain;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -10,58 +9,19 @@ import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-import java.io.File;
-
 public class Hooks {
-    private static ResourceLocation VAPELOGO_TEXTURE = new ResourceLocation("zerwhit", "textures/vapelogo.png");
-    private static boolean resourcesInitialized = false;
-    private static boolean textureLoaded = false;
-    
     static {
         System.out.println("Hooks class initialized by classloader: " + Hooks.class.getClassLoader());
     }
-
+    
     public static void onUpdateDisplay() {
         Minecraft mc = Minecraft.getMinecraft();
 
         try {
-            if (!resourcesInitialized) {
-                addAgentResourcesToResourceManager();
-                resourcesInitialized = true;
-            }
-
-            if (!textureLoaded) {
-                try {
-                    mc.getTextureManager().bindTexture(VAPELOGO_TEXTURE);
-                    textureLoaded = true;
-                    System.out.println("Successfully loaded agent texture: " + VAPELOGO_TEXTURE);
-                } catch (Exception e) {
-                    System.err.println("Failed to load agent texture: " + e.getMessage());
-                    return;
-                }
-            }
-
             drawFullScreenRect(mc.displayWidth, mc.displayHeight, 0.3F, 0.0F, 0.5F, 0.3F);
-            drawVapelogo(mc.displayWidth, mc.displayHeight);
         } catch (Exception e) {
             System.err.println("Failed to render display: " + e.getMessage());
-        }
-    }
-
-    private static void addAgentResourcesToResourceManager() {
-        try {
-            Minecraft mc = Minecraft.getMinecraft();
-            if (mc.getResourceManager() instanceof SimpleReloadableResourceManager) {
-                SimpleReloadableResourceManager rsm = (SimpleReloadableResourceManager) mc.getResourceManager();
-                File agentJarFile = new File(AgentMain.class.getProtectionDomain()
-                        .getCodeSource().getLocation().getPath());
-                AgentJarResourcePack agentPack = new AgentJarResourcePack(agentJarFile);
-
-                rsm.reloadResourcePack(agentPack);
-                System.out.println("Successfully added agent resources to ResourceManager");
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to add agent resources to ResourceManager: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -97,7 +57,7 @@ public class Hooks {
 
     private static void drawVapelogo(int screenWidth, int screenHeight) {
         Minecraft mc = Minecraft.getMinecraft();
-        mc.getTextureManager().bindTexture(VAPELOGO_TEXTURE);
+        // mc.getTextureManager().bindTexture(VAPELOGO_TEXTURE);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

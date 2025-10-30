@@ -81,18 +81,14 @@ class ObfuscatingClassVisitor extends ClassVisitor {
     }
 
     private String getMappedMethodName(int access, String name, String descriptor) {
-        // 首先尝试从当前类获取映射
         String mappedName = tsrgParser.getMappedMethod(className, name, descriptor);
         
-        // 如果当前类没有映射，但继承自Minecraft类，尝试从父类获取映射
         if (mappedName.equals(name) && extendsMinecraftClass && superClassName != null) {
             String parentMappedName = tsrgParser.getMappedMethod(superClassName, name, descriptor);
             if (!parentMappedName.equals(name)) {
                 return parentMappedName;
             }
         }
-        
-        // 如果当前类没有映射，但实现了Minecraft接口，尝试从接口获取映射
         if (mappedName.equals(name) && implementsMinecraftInterface && interfaces != null) {
             for (String iface : interfaces) {
                 if (isMinecraftClass(iface)) {
