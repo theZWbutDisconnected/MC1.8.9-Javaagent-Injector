@@ -1,31 +1,30 @@
 package com.zerwhit.core;
 
-import com.zerwhit.AgentMain;
 import com.zerwhit.core.manager.TextureLoader;
+import com.zerwhit.core.manager.TextureRegistry;
 import com.zerwhit.core.manager.TextureRenderer;
+import com.zerwhit.core.resource.TextureResource;
 import net.minecraft.client.Minecraft;
 
 public class Hooks {
-    public static int VAPELOGO_TEXTURE_ID = -1;
-    public static int V4_TEXTURE_ID = -1;
+    private static boolean texturesInitialized = false;
 
-    private static final String VAPELOGO_PATH = "assets/zerwhit/textures/vapelogo.png";
-    private static final String V4LOGO_PATH = "assets/zerwhit/textures/v4.png";
-    private static final int VAPELOGO_WIDTH = 178;
-    private static final int VAPELOGO_HEIGHT = 53;
-    private static final int V4LOGO_WIDTH = 76;
-    private static final int V4LOGO_HEIGHT = 53;
     private static final int MARGIN = 10;
 
     public static void onUpdateDisplay() {
         Minecraft mc = Minecraft.getMinecraft();
 
         try {
-            if (VAPELOGO_TEXTURE_ID == -1 || V4_TEXTURE_ID == -1) {
-                loadTextures();
+            if (!texturesInitialized) {
+                initializeTextures();
             }
 
-            renderTextures(mc.displayWidth, mc.displayHeight);
+            if (TextureRegistry.isTextureLoaded(TextureRegistry.VAPELOGO) &&
+                    TextureRegistry.isTextureLoaded(TextureRegistry.V4LOGO)) {
+                renderTextures(mc.displayWidth, mc.displayHeight);
+            } else {
+                TextureLoader.loadAllTextureResources();
+            }
         } catch (Exception e) {
             System.err.println("Failed to render display: " + e.getMessage());
             e.printStackTrace();
@@ -41,30 +40,53 @@ public class Hooks {
     public static void onPlayerPreUpdate() {}
     public static void onPlayerPostUpdate() {}
 
-    private static void loadTextures() {
-        if (VAPELOGO_TEXTURE_ID == -1) {
-            VAPELOGO_TEXTURE_ID = TextureLoader.loadTextureFromResource(VAPELOGO_PATH, "vapelogo");
-        }
-        if (V4_TEXTURE_ID == -1) {
-            V4_TEXTURE_ID = TextureLoader.loadTextureFromResource(V4LOGO_PATH, "v4logo");
-        }
+    private static void initializeTextures() {
+        TextureRegistry.initialize();
+        TextureLoader.loadAllTextureResources();
+
+        texturesInitialized = true;
+        System.out.println("Texture system initialized");
     }
 
     private static void renderTextures(int screenWidth, int screenHeight) {
-        int vapelogoX = MARGIN;
-        int vapelogoY = MARGIN;
-        TextureRenderer.drawTexture(VAPELOGO_TEXTURE_ID, vapelogoX, vapelogoY, VAPELOGO_WIDTH, VAPELOGO_HEIGHT);
+        TextureResource vapelogoResource = TextureRegistry.getTextureResource(TextureRegistry.VAPELOGO);
+        TextureResource v4logoResource = TextureRegistry.getTextureResource(TextureRegistry.V4LOGO);
 
-        int v4logoX = vapelogoX + VAPELOGO_WIDTH + MARGIN;
-        int v4logoY = MARGIN;
-        TextureRenderer.drawTexture(V4_TEXTURE_ID, v4logoX, v4logoY, V4LOGO_WIDTH, V4LOGO_HEIGHT);
+        if (vapelogoResource != null && vapelogoResource.isLoaded()) {
+            int vapelogoX = MARGIN;
+            int vapelogoY = MARGIN;
+            TextureRenderer.drawTexture(
+                    vapelogoResource.getTextureId(),
+                    vapelogoX, vapelogoY,
+                    vapelogoResource.getWidth(),
+                    vapelogoResource.getHeight()
+            );
+        }
+
+        if (v4logoResource != null && v4logoResource.isLoaded()) {
+            int v4logoX = MARGIN + (vapelogoResource != null ? vapelogoResource.getWidth() + MARGIN : MARGIN);
+            int v4logoY = MARGIN;
+            TextureRenderer.drawTexture(
+                    v4logoResource.getTextureId(),
+                    v4logoX, v4logoY,
+                    v4logoResource.getWidth(),
+                    v4logoResource.getHeight()
+            );
+        }
+    }
+
+    public static TextureResource getTextureResource(String key) {
+        return TextureRegistry.getTextureResource(key);
+    }
+
+    public static boolean isTextureLoaded(String key) {
+        return TextureRegistry.isTextureLoaded(key);
     }
 
     public static void cleanup() {
-        TextureLoader.releaseTexture(VAPELOGO_TEXTURE_ID);
-        TextureLoader.releaseTexture(V4_TEXTURE_ID);
-        VAPELOGO_TEXTURE_ID = -1;
-        V4_TEXTURE_ID = -1;
+        TextureRegistry.cleanup();
+        texturesInitialized = false;
+        System.out.println("Hooks texture system cleaned up");
     }
 
     static {

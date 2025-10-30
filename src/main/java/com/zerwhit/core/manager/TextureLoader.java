@@ -1,6 +1,6 @@
 package com.zerwhit.core.manager;
 
-import com.zerwhit.AgentMain;
+import com.zerwhit.core.resource.TextureResource;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 public class TextureLoader {
     public static int loadTextureFromResource(String resourcePath, String textureName) {
         try {
-            InputStream inputStream = AgentMain.class.getClassLoader().getResourceAsStream(resourcePath);
+            InputStream inputStream = TextureLoader.class.getClassLoader().getResourceAsStream(resourcePath);
             if (inputStream == null) {
                 System.err.println("Failed to find texture: " + resourcePath);
                 return -1;
@@ -26,38 +26,7 @@ public class TextureLoader {
                 return -1;
             }
 
-            int width = image.getWidth();
-            int height = image.getHeight();
-
-            int[] pixels = new int[width * height];
-            image.getRGB(0, 0, width, height, pixels, 0, width);
-
-            ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
-
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    int pixel = pixels[y * width + x];
-                    buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
-                    buffer.put((byte) ((pixel >> 8) & 0xFF));  // Green
-                    buffer.put((byte) (pixel & 0xFF));         // Blue
-                    buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
-                }
-            }
-            buffer.flip();
-
-            int textureId = GL11.glGenTextures();
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
-
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-
-            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0,
-                    GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
-
-            System.out.println("Successfully loaded texture: " + textureName + " with ID: " + textureId);
-            return textureId;
+            return uploadTextureToGPU(image, textureName);
 
         } catch (Exception e) {
             System.err.println("Failed to load texture " + textureName + ": " + e.getMessage());
@@ -66,9 +35,92 @@ public class TextureLoader {
         }
     }
 
+    public static boolean loadTextureResource(TextureResource textureResource) {
+        if (textureResource == null) {
+            System.err.println("TextureResource is null");
+            return false;
+        }
+
+        if (textureResource.isLoaded()) {
+            System.out.println("Texture already loaded: " + textureResource.getTextureName());
+            return true;
+        }
+
+        int textureId = loadTextureFromResource(
+                textureResource.getResourcePath(),
+                textureResource.getTextureName()
+        );
+
+        if (textureId != -1) {
+            textureResource.setTextureId(textureId);
+            System.out.println("Successfully loaded texture resource: " + textureResource.getTextureName());
+            return true;
+        } else {
+            System.err.println("Failed to load texture resource: " + textureResource.getTextureName());
+            return false;
+        }
+    }
+
+    public static void loadAllTextureResources() {
+        String[] textureKeys = TextureRegistry.getRegisteredTextureKeys();
+        int successCount = 0;
+
+        for (String key : textureKeys) {
+            TextureResource resource = TextureRegistry.getTextureResource(key);
+            if (resource != null && loadTextureResource(resource)) {
+                successCount++;
+            }
+        }
+
+        System.out.println("Loaded " + successCount + "/" + textureKeys.length + " texture resources");
+    }
+
+    private static int uploadTextureToGPU(BufferedImage image, String textureName) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int[] pixels = new int[width * height];
+        image.getRGB(0, 0, width, height, pixels, 0, width);
+
+        ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = pixels[y * width + x];
+                buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
+                buffer.put((byte) ((pixel >> 8) & 0xFF));  // Green
+                buffer.put((byte) (pixel & 0xFF));         // Blue
+                buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
+            }
+        }
+        buffer.flip();
+
+        int textureId = GL11.glGenTextures();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
+
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0,
+                GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+
+        System.out.println("Successfully uploaded texture to GPU: " + textureName + " (ID: " + textureId + ")");
+        return textureId;
+    }
+
     public static void releaseTexture(int textureId) {
         if (textureId != -1) {
             GL11.glDeleteTextures(textureId);
+            System.out.println("Released texture ID: " + textureId);
+        }
+    }
+
+    public static void releaseTextureResource(TextureResource textureResource) {
+        if (textureResource != null && textureResource.isLoaded()) {
+            releaseTexture(textureResource.getTextureId());
+            textureResource.unload();
         }
     }
 }
