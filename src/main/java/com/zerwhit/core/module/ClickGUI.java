@@ -6,6 +6,7 @@ import com.zerwhit.core.Renderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.input.Mouse;
 
 import java.util.ArrayList;
@@ -40,6 +41,12 @@ public class ClickGUI extends GuiScreen {
     private int moduleListTotalHeight = 0;
     private boolean isScrollingModuleList = false;
 
+    private long animationStartTime = 0;
+    private boolean isAnimating = false;
+    private float currentScale = 0.0f;
+    private float currentAlpha = 0.0f;
+    private static final long ANIMATION_DURATION = 300;
+
     public static ClickGUI INSTANCE = new ClickGUI().init();
 
     static {
@@ -59,12 +66,52 @@ public class ClickGUI extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (!Meta.clickGUIOpened) return;
 
+        updateAnimation();
+
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
         int screenWidth = scaledResolution.getScaledWidth();
         int screenHeight = scaledResolution.getScaledHeight();
 
         windowX = Math.max(0, Math.min(windowX, screenWidth - WINDOW_WIDTH));
         windowY = Math.max(0, Math.min(windowY, screenHeight - WINDOW_HEIGHT));
+
+        if (isAnimating) {
+            GlStateManager.pushMatrix();
+            float centerX = windowX + (float) WINDOW_WIDTH / 2;
+            float centerY = windowY + (float) WINDOW_HEIGHT / 2;
+            GlStateManager.translate(centerX, centerY, 0);
+            GlStateManager.scale(currentScale, currentScale, 1.0f);
+            GlStateManager.translate(-centerX, -centerY, 0);
+        }
+        drawGUIWithAlpha();
+        if (isAnimating) {
+            GlStateManager.popMatrix();
+        }
+        handleDragging();
+        handleScroll();
+    }
+
+    private void drawGUIWithAlpha() {
+        int originalPrimary = colorScheme.primary;
+        int originalSecondary = colorScheme.secondary;
+        int originalAccent = colorScheme.accent;
+        int originalBackground = colorScheme.background;
+        int originalText = colorScheme.text;
+        int originalTextDisabled = colorScheme.textDisabled;
+        int originalModuleBackground = colorScheme.moduleBackground;
+        int originalModuleHover = colorScheme.moduleHover;
+
+        if (isAnimating) {
+            int alpha = (int)(currentAlpha * 255);
+            colorScheme.primary = colorScheme.mulAlpha(originalPrimary, alpha);
+            colorScheme.secondary = colorScheme.mulAlpha(originalSecondary, alpha);
+            colorScheme.accent = colorScheme.mulAlpha(originalAccent, alpha);
+            colorScheme.background = colorScheme.mulAlpha(originalBackground, alpha);
+            colorScheme.text = colorScheme.mulAlpha(originalText, alpha);
+            colorScheme.textDisabled = colorScheme.mulAlpha(originalTextDisabled, alpha);
+            colorScheme.moduleBackground = colorScheme.mulAlpha(originalModuleBackground, alpha);
+            colorScheme.moduleHover = colorScheme.mulAlpha(originalModuleHover, alpha);
+        }
 
         Renderer.drawRoundedRect(windowX, windowY, WINDOW_WIDTH, WINDOW_HEIGHT, BORDER_SIZE, colorScheme.background);
 
@@ -125,8 +172,38 @@ public class ClickGUI extends GuiScreen {
             moduleY += moduleHeight;
         }
 
-        handleDragging();
-        handleScroll();
+        if (isAnimating) {
+            colorScheme.primary = originalPrimary;
+            colorScheme.secondary = originalSecondary;
+            colorScheme.accent = originalAccent;
+            colorScheme.background = originalBackground;
+            colorScheme.text = originalText;
+            colorScheme.textDisabled = originalTextDisabled;
+            colorScheme.moduleBackground = originalModuleBackground;
+            colorScheme.moduleHover = originalModuleHover;
+        }
+    }
+
+    private void updateAnimation() {
+        if (isAnimating) {
+            long currentTime = System.currentTimeMillis();
+            long elapsed = currentTime - animationStartTime;
+
+            if (elapsed >= ANIMATION_DURATION) {
+                currentScale = 1.0f;
+                currentAlpha = 1.0f;
+                isAnimating = false;
+            } else {
+                float progress = (float) elapsed / ANIMATION_DURATION;
+                float easedProgress = easeOutCubic(progress);
+                currentScale = 0.7f + 0.3f * easedProgress;
+                currentAlpha = easedProgress;
+            }
+        }
+    }
+
+    private float easeOutCubic(float x) {
+        return (float) (1 - Math.pow(1 - x, 3));
     }
 
     private void renderModule(Module module, int x, int y) {
@@ -211,6 +288,7 @@ public class ClickGUI extends GuiScreen {
         mc.currentScreen = null;
         mc.mouseHelper.grabMouseCursor();
         Meta.clickGUIOpened = false;
+        resetAnimation();
     }
 
     public void handleMouseClick(int mouseX, int mouseY) {
@@ -341,5 +419,18 @@ public class ClickGUI extends GuiScreen {
         windowX = (scaledResolution.getScaledWidth() - WINDOW_WIDTH) / 2;
         windowY = (scaledResolution.getScaledHeight() - WINDOW_HEIGHT) / 2;
         return this;
+    }
+
+    public void playOpenAnimation() {
+        animationStartTime = System.currentTimeMillis();
+        isAnimating = true;
+        currentScale = 0.7f;
+        currentAlpha = 0.0f;
+    }
+
+    private void resetAnimation() {
+        isAnimating = false;
+        currentScale = 1.0f;
+        currentAlpha = 1.0f;
     }
 }

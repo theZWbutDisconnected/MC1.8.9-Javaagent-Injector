@@ -38,6 +38,7 @@ public class Control {
             mc.mouseHelper.ungrabMouseCursor();
             mc.displayGuiScreen(ClickGUI.INSTANCE);
             ((GuiScreen)ClickGUI.INSTANCE).initGui();
+            ClickGUI.INSTANCE.playOpenAnimation();
         } else {
             ((GuiScreen)ClickGUI.INSTANCE).onGuiClosed();
             mc.mouseHelper.grabMouseCursor();

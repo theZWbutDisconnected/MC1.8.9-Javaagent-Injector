@@ -13,4 +13,17 @@ public class ColorScheme {
     public int withAlpha(int rgb, int alpha) {
         return (alpha << 24) | (rgb & 0x00FFFFFF);
     }
+
+    public int mulAlpha(int rgba, float factor) {
+        int originalAlpha = (rgba >>> 24) & 0xFF;
+        int newAlpha = Math.min(255, Math.max(0, (int)(originalAlpha * factor)));
+        return (newAlpha << 24) | (rgba & 0x00FFFFFF);
+    }
+
+    public int mulAlpha(int rgba, int factor) {
+        int originalAlpha = (rgba >>> 24) & 0xFF;
+        int newAlpha = (originalAlpha * factor) / 255;
+        newAlpha = Math.min(255, Math.max(0, newAlpha));
+        return (newAlpha << 24) | (rgba & 0x00FFFFFF);
+    }
 }
