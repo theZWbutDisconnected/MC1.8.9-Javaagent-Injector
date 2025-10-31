@@ -22,8 +22,9 @@ public class ClickGUI extends GuiScreen {
 
     private static final int WINDOW_WIDTH = 400;
     private static final int WINDOW_HEIGHT = 300;
-    private static final int SIDEBAR_WIDTH = 100;
-    private static final int MODULE_LIST_WIDTH = WINDOW_WIDTH - SIDEBAR_WIDTH;
+    private static final int BORDER_SIZE = 6;
+    private static final int SIDEBAR_WIDTH = 100 - BORDER_SIZE;
+    private static final int MODULE_LIST_WIDTH = WINDOW_WIDTH - BORDER_SIZE * 2 - SIDEBAR_WIDTH;
 
     private int windowX, windowY = 50;
     private boolean dragging = false;
@@ -65,30 +66,30 @@ public class ClickGUI extends GuiScreen {
         windowX = Math.max(0, Math.min(windowX, screenWidth - WINDOW_WIDTH));
         windowY = Math.max(0, Math.min(windowY, screenHeight - WINDOW_HEIGHT));
 
-        Renderer.drawRoundedRect(windowX, windowY, WINDOW_WIDTH, WINDOW_HEIGHT, 8, colorScheme.background);
+        Renderer.drawRoundedRect(windowX, windowY, WINDOW_WIDTH, WINDOW_HEIGHT, BORDER_SIZE, colorScheme.background);
 
         Renderer.drawGradientRect(windowX, windowY, WINDOW_WIDTH, 25, colorScheme.primary, colorScheme.secondary);
-        Renderer.drawRoundedRect(windowX, windowY, WINDOW_WIDTH, 25, 8, colorScheme.primary);
+        Renderer.drawRoundedRect(windowX, windowY, WINDOW_WIDTH, 25, BORDER_SIZE, colorScheme.primary);
         Renderer.drawStringWithShadow("ZeroClient v1.0", windowX + 10, windowY + 8, colorScheme.text);
 
         boolean closeHovered = isMouseOverCloseButton();
         Renderer.drawRect(windowX + WINDOW_WIDTH - 20, windowY + 5, 15, 15, closeHovered ? colorScheme.accent : colorScheme.text);
         Renderer.drawStringWithShadow("X", windowX + WINDOW_WIDTH - 15, windowY + 7, colorScheme.background);
 
-        Renderer.drawRect(windowX, windowY + 25, SIDEBAR_WIDTH, WINDOW_HEIGHT - 25, colorScheme.moduleBackground);
+        Renderer.drawRect(windowX + BORDER_SIZE, windowY + 25, SIDEBAR_WIDTH, WINDOW_HEIGHT - 25- BORDER_SIZE, colorScheme.moduleBackground);
+        Renderer.drawRect(windowX + SIDEBAR_WIDTH + BORDER_SIZE, windowY + 25, MODULE_LIST_WIDTH, WINDOW_HEIGHT - 25 - BORDER_SIZE, colorScheme.background);
 
-        Renderer.drawRect(windowX + SIDEBAR_WIDTH, windowY + 25, MODULE_LIST_WIDTH, WINDOW_HEIGHT - 25, colorScheme.background);
         List<String> categoryList = new ArrayList<>(categories.keySet());
         int categoryHeight = 20;
         int categorySpacing = 2;
         sidebarTotalHeight = categoryList.size() * (categoryHeight + categorySpacing);
 
-        int sidebarVisibleHeight = WINDOW_HEIGHT - 25;
+        int sidebarVisibleHeight = WINDOW_HEIGHT - 25 - BORDER_SIZE;
         if (sidebarTotalHeight > sidebarVisibleHeight) {
-            Renderer.drawRect(windowX + SIDEBAR_WIDTH - 5, windowY + 25, 5, sidebarVisibleHeight, colorScheme.moduleHover);
+            Renderer.drawRect(windowX + BORDER_SIZE + SIDEBAR_WIDTH - 5, windowY + 25, 5, sidebarVisibleHeight, colorScheme.moduleHover);
             int scrollbarHeight = (int) ((float) sidebarVisibleHeight / sidebarTotalHeight * sidebarVisibleHeight);
             int scrollbarY = windowY + 25 + (int) ((float) sidebarScrollOffset / sidebarTotalHeight * sidebarVisibleHeight);
-            Renderer.drawRect(windowX + SIDEBAR_WIDTH - 5, scrollbarY, 5, scrollbarHeight, colorScheme.accent);
+            Renderer.drawRect(windowX + BORDER_SIZE + SIDEBAR_WIDTH - 5, scrollbarY, 5, scrollbarHeight, colorScheme.accent);
         }
 
         int categoryY = windowY + 25 - sidebarScrollOffset;
@@ -97,8 +98,8 @@ public class ClickGUI extends GuiScreen {
                 boolean isCurrent = category.equals(currentCategory);
                 boolean hovered = isMouseOverCategory(category, windowX, categoryY);
                 int color = isCurrent ? colorScheme.accent : (hovered ? colorScheme.moduleHover : colorScheme.moduleBackground);
-                Renderer.drawRect(windowX, categoryY, SIDEBAR_WIDTH, categoryHeight, color);
-                Renderer.drawStringWithShadow(category, windowX + 5, categoryY + 6, colorScheme.text);
+                Renderer.drawRect(windowX + BORDER_SIZE, categoryY, SIDEBAR_WIDTH, categoryHeight, color);
+                Renderer.drawStringWithShadow(category, windowX + 5 + BORDER_SIZE, categoryY + 6, colorScheme.text);
             }
             categoryY += categoryHeight + categorySpacing;
         }
@@ -108,18 +109,18 @@ public class ClickGUI extends GuiScreen {
         int moduleHeight = 25;
         moduleListTotalHeight = currentModules.size() * moduleHeight;
 
-        int moduleListVisibleHeight = WINDOW_HEIGHT - 25;
+        int moduleListVisibleHeight = WINDOW_HEIGHT - 25 - BORDER_SIZE;
         if (moduleListTotalHeight > moduleListVisibleHeight) {
-            Renderer.drawRect(windowX + WINDOW_WIDTH - 5, windowY + 25, 5, moduleListVisibleHeight, colorScheme.moduleHover);
+            Renderer.drawRect(windowX + BORDER_SIZE + WINDOW_WIDTH - 5, windowY + 25, 5, moduleListVisibleHeight, colorScheme.moduleHover);
             int scrollbarHeight = (int) ((float) moduleListVisibleHeight / moduleListTotalHeight * moduleListVisibleHeight);
             int scrollbarY = windowY + 25 + (int) ((float) moduleListScrollOffset / moduleListTotalHeight * moduleListVisibleHeight);
-            Renderer.drawRect(windowX + WINDOW_WIDTH - 5, scrollbarY, 5, scrollbarHeight, colorScheme.accent);
+            Renderer.drawRect(windowX + BORDER_SIZE + WINDOW_WIDTH - 5, scrollbarY, 5, scrollbarHeight, colorScheme.accent);
         }
 
         int moduleY = windowY + 25 - moduleListScrollOffset;
         for (Module module : currentModules) {
-            if (moduleY + moduleHeight >= windowY + 25 && moduleY <= windowY + WINDOW_HEIGHT) {
-                renderModule(module, windowX + SIDEBAR_WIDTH + 10, moduleY);
+            if (moduleY + moduleHeight >= windowY + 25 && moduleY <= windowY + WINDOW_HEIGHT - BORDER_SIZE) {
+                renderModule(module, windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE, moduleY);
             }
             moduleY += moduleHeight;
         }
@@ -248,8 +249,8 @@ public class ClickGUI extends GuiScreen {
             int moduleY = windowY + 25 - moduleListScrollOffset;
             for (Module module : currentModules) {
                 if (moduleY + moduleHeight >= windowY + 25 && moduleY <= windowY + WINDOW_HEIGHT) {
-                    if (isMouseOverModule(windowX + SIDEBAR_WIDTH + 10, moduleY)) {
-                        int toggleX = windowX + SIDEBAR_WIDTH + 10 + MODULE_LIST_WIDTH - 60;
+                    if (isMouseOverModule(windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE, moduleY)) {
+                        int toggleX = windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE + MODULE_LIST_WIDTH - 60;
                         if (mouseX >= toggleX && mouseX <= toggleX + 30 &&
                                 mouseY >= moduleY + 5 && mouseY <= moduleY + 15) {
                             module.enabled = !module.enabled;
