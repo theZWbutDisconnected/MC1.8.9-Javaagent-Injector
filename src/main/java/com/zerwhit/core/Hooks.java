@@ -2,7 +2,6 @@ package com.zerwhit.core;
 
 import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
-import com.zerwhit.core.module.ClickGUI;
 import com.zerwhit.core.resource.TextureResource;
 import net.minecraft.client.Minecraft;
 

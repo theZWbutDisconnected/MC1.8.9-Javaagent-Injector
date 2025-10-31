@@ -1,6 +1,6 @@
 package com.zerwhit.core;
 
-import com.zerwhit.core.module.ClickGUI;
+import com.zerwhit.core.screen.ClickGUI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
@@ -9,11 +9,13 @@ import org.lwjgl.input.Mouse;
 
 public class Control {
     private static boolean wasRShiftPressed = false;
-    private static boolean wasMousePressed = false;
+    private static boolean wasLeftMousePressed = false;
+    private static boolean wasRightMousePressed = false;
 
     public static void checkRShiftKey() {
         boolean isRShiftPressed = Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-        boolean isMousePressed = Mouse.isButtonDown(0);
+        boolean isLeftMousePressed = Mouse.isButtonDown(0);
+        boolean isRightMousePressed = Mouse.isButtonDown(1);
 
         if (isRShiftPressed && !wasRShiftPressed) {
             onRShiftPressed();
@@ -21,14 +23,23 @@ public class Control {
             onRShiftReleased();
         }
 
-        if (isMousePressed && !wasMousePressed && Meta.clickGUIOpened) {
-            int mouseX = getMouseX();
-            int mouseY = getMouseY();
-            ClickGUI.INSTANCE.handleMouseClick(mouseX, mouseY);
+        if (Meta.clickGUIOpened) {
+            if (isLeftMousePressed && !wasLeftMousePressed) {
+                int mouseX = getMouseX();
+                int mouseY = getMouseY();
+                ClickGUI.INSTANCE.handleMouseClick(mouseX, mouseY, 0);
+            }
+            
+            if (isRightMousePressed && !wasRightMousePressed) {
+                int mouseX = getMouseX();
+                int mouseY = getMouseY();
+                ClickGUI.INSTANCE.handleMouseClick(mouseX, mouseY, 1);
+            }
         }
 
         wasRShiftPressed = isRShiftPressed;
-        wasMousePressed = isMousePressed;
+        wasLeftMousePressed = isLeftMousePressed;
+        wasRightMousePressed = isRightMousePressed;
     }
 
     private static void onRShiftPressed() {

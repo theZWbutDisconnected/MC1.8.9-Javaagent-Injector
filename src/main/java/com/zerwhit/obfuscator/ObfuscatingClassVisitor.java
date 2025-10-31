@@ -130,8 +130,7 @@ class ObfuscatingClassVisitor extends ClassVisitor {
     }
 
     private boolean isExcludedMethod(String methodName) {
-        return methodName.equals("<init>") || methodName.equals("<clinit>") ||
-               methodName.equals("main") || methodName.equals("premain") || methodName.equals("agentmain");
+        return methodName.equals("main") || methodName.equals("premain") || methodName.equals("agentmain");
     }
 
     private String[] mapInterfaces(String[] interfaces) {

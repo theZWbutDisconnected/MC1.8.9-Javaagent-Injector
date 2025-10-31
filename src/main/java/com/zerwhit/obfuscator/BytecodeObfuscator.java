@@ -131,7 +131,6 @@ public class BytecodeObfuscator {
             ClassReader classReader = new ClassReader(classBytes);
             ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
-            // 检查类是否继承自Minecraft类或实现Minecraft接口
             ClassVisitor classVisitor = new ObfuscatingClassVisitor(classWriter, className, tsrgParser, csvParser);
             classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES);
 
