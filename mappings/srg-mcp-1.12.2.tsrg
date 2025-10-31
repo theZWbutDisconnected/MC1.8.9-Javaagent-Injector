@@ -9897,7 +9897,7 @@ net/minecraft/client/renderer/BlockRendererDispatcher net/minecraft/client/rende
 	renderBlockDamage (Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/world/IBlockAccess;)V func_175020_a
 net/minecraft/client/renderer/BlockRendererDispatcher$1 net/minecraft/client/renderer/BlockRendererDispatcher$1
 	field_187488_a field_187488_a
-net/minecraft/client/renderer/BufferBuilder net/minecraft/client/renderer/BufferBuilder
+net/minecraft/client/renderer/WorldRenderer net/minecraft/client/renderer/WorldRenderer
 	LOGGER field_187316_a
 	byteBuffer field_179001_a
 	drawMode field_179006_k
@@ -9915,8 +9915,8 @@ net/minecraft/client/renderer/BufferBuilder net/minecraft/client/renderer/Buffer
 	zOffset field_179002_n
 	addVertexData ([I)V func_178981_a
 	begin (ILnet/minecraft/client/renderer/vertex/VertexFormat;)V func_181668_a
-	color (FFFF)Lnet/minecraft/client/renderer/BufferBuilder; func_181666_a
-	color (IIII)Lnet/minecraft/client/renderer/BufferBuilder; func_181669_b
+	color (FFFF)Lnet/minecraft/client/renderer/WorldRenderer; func_181666_a
+	color (IIII)Lnet/minecraft/client/renderer/WorldRenderer; func_181669_b
 	endVertex ()V func_181675_d
 	finishDrawing ()V func_178977_d
 	getBufferSize ()I func_181664_j
@@ -9931,8 +9931,8 @@ net/minecraft/client/renderer/BufferBuilder net/minecraft/client/renderer/Buffer
 	lightmap (II)Lnet/minecraft/client/renderer/BufferBuilder; func_187314_a
 	nextVertexFormatIndex ()V func_181667_k
 	noColor ()V func_78914_f
-	normal (FFF)Lnet/minecraft/client/renderer/BufferBuilder; func_181663_c
-	pos (DDD)Lnet/minecraft/client/renderer/BufferBuilder; func_181662_b
+	normal (FFF)Lnet/minecraft/client/renderer/WorldRenderer; func_181663_c
+	pos (DDD)Lnet/minecraft/client/renderer/WorldRenderer; func_181662_b
 	putBrightness4 (IIII)V func_178962_a
 	putColor (II)V func_192836_a
 	putColor4 (I)V func_178968_d
@@ -9946,7 +9946,7 @@ net/minecraft/client/renderer/BufferBuilder net/minecraft/client/renderer/Buffer
 	setTranslation (DDD)V func_178969_c
 	setVertexState (Lnet/minecraft/client/renderer/BufferBuilder$State;)V func_178993_a
 	sortVertexData (FFF)V func_181674_a
-	tex (DD)Lnet/minecraft/client/renderer/BufferBuilder; func_187315_a
+	tex (DD)Lnet/minecraft/client/renderer/WorldRenderer; func_181673_a
 net/minecraft/client/renderer/BufferBuilder$1 net/minecraft/client/renderer/BufferBuilder$1
 	field_181659_a field_181659_a
 	field_181660_b field_181660_b

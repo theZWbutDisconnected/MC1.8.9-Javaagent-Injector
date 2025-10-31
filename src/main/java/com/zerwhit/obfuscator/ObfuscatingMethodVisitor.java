@@ -51,22 +51,18 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
         String mappedName = tsrgParser.getMappedMethod(owner, name, descriptor);
 
         if (mappedName == null || mappedName.equals(name)) {
-            // 处理继承的方法调用
             if (extendsMinecraftClass && superClassName != null && 
                 (opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKESPECIAL) &&
                 owner.equals(ownerClassName) && name.equals(originalMethodName)) {
-                // 如果是调用父类的重写方法，使用父类的映射
                 String parentMappedName = tsrgParser.getMappedMethod(superClassName, name, descriptor);
                 if (!parentMappedName.equals(name)) {
                     return parentMappedName;
                 }
             }
-            
-            // 处理接口方法的调用
+
             if (implementsMinecraftInterface && interfaces != null && 
                 (opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKEVIRTUAL) &&
                 owner.equals(ownerClassName) && name.equals(originalMethodName)) {
-                // 如果是调用接口的实现方法，尝试从接口获取映射
                 for (String iface : interfaces) {
                     if (isMinecraftClass(iface)) {
                         String interfaceMappedName = tsrgParser.getMappedMethod(iface, name, descriptor);

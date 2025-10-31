@@ -2,13 +2,12 @@ package com.zerwhit.core;
 
 import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
-import com.zerwhit.core.manager.TextureRenderer;
+import com.zerwhit.core.module.ClickGUI;
 import com.zerwhit.core.resource.TextureResource;
 import net.minecraft.client.Minecraft;
 
 public class Hooks {
     private static boolean texturesInitialized = false;
-
     private static final int MARGIN = 10;
 
     public static void onUpdateDisplay() {
@@ -21,7 +20,7 @@ public class Hooks {
 
             if (TextureRegistry.isTextureLoaded(TextureRegistry.VAPELOGO) &&
                     TextureRegistry.isTextureLoaded(TextureRegistry.V4LOGO)) {
-                renderTextures(mc.displayWidth, mc.displayHeight);
+                render(mc.displayWidth, mc.displayHeight);
             } else {
                 TextureLoader.loadAllTextureResources();
             }
@@ -48,31 +47,24 @@ public class Hooks {
         System.out.println("Texture system initialized");
     }
 
-    private static void renderTextures(int screenWidth, int screenHeight) {
+    private static void render(int screenWidth, int screenHeight) {
+        drawVapeIcons(screenWidth);
+        ClickGUI.render();
+    }
+
+    private static void drawVapeIcons(int screenWidth) {
         TextureResource vapelogoResource = TextureRegistry.getTextureResource(TextureRegistry.VAPELOGO);
         TextureResource v4logoResource = TextureRegistry.getTextureResource(TextureRegistry.V4LOGO);
-
-        if (vapelogoResource != null && vapelogoResource.isLoaded()) {
-            int vapelogoX = MARGIN;
-            int vapelogoY = MARGIN;
-            TextureRenderer.drawTexture(
-                    vapelogoResource.getTextureId(),
-                    vapelogoX, vapelogoY,
-                    vapelogoResource.getWidth(),
-                    vapelogoResource.getHeight()
-            );
-        }
-
-        if (v4logoResource != null && v4logoResource.isLoaded()) {
-            int v4logoX = MARGIN + (vapelogoResource != null ? vapelogoResource.getWidth() + MARGIN : MARGIN);
-            int v4logoY = MARGIN;
-            TextureRenderer.drawTexture(
-                    v4logoResource.getTextureId(),
-                    v4logoX, v4logoY,
-                    v4logoResource.getWidth(),
-                    v4logoResource.getHeight()
-            );
-        }
+        int x = screenWidth - v4logoResource.getWidth() - MARGIN;
+        Renderer.drawTexture(
+                TextureRegistry.V4LOGO,
+                x,
+                MARGIN
+        );
+        Renderer.drawTexture(
+                TextureRegistry.VAPELOGO,
+                x - vapelogoResource.getWidth(), MARGIN
+        );
     }
 
     public static TextureResource getTextureResource(String key) {
