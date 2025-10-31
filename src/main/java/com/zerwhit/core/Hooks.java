@@ -49,7 +49,6 @@ public class Hooks {
 
     private static void render(int screenWidth, int screenHeight) {
         drawVapeIcons(screenWidth);
-        ClickGUI.render();
     }
 
     private static void drawVapeIcons(int screenWidth) {

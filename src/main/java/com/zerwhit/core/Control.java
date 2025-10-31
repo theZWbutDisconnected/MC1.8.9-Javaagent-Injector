@@ -2,6 +2,7 @@ package com.zerwhit.core;
 
 import com.zerwhit.core.module.ClickGUI;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -23,7 +24,7 @@ public class Control {
         if (isMousePressed && !wasMousePressed && Meta.clickGUIOpened) {
             int mouseX = getMouseX();
             int mouseY = getMouseY();
-            ClickGUI.handleMouseClick(mouseX, mouseY);
+            ClickGUI.INSTANCE.handleMouseClick(mouseX, mouseY);
         }
 
         wasRShiftPressed = isRShiftPressed;
@@ -32,8 +33,14 @@ public class Control {
 
     private static void onRShiftPressed() {
         Meta.clickGUIOpened = !Meta.clickGUIOpened;
+        Minecraft mc = Minecraft.getMinecraft();
         if (Meta.clickGUIOpened) {
-            ClickGUI.onOpen();
+            mc.mouseHelper.ungrabMouseCursor();
+            mc.displayGuiScreen(ClickGUI.INSTANCE);
+            ((GuiScreen)ClickGUI.INSTANCE).initGui();
+        } else {
+            ((GuiScreen)ClickGUI.INSTANCE).onGuiClosed();
+            mc.mouseHelper.grabMouseCursor();
         }
     }
 

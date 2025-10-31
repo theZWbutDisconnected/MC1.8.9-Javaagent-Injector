@@ -77,10 +77,38 @@ public class Renderer {
         drawRect(x + radius, y, width - radius * 2, height, color);
         drawRect(x, y + radius, width, height - radius * 2, color);
 
-        drawCircle(x + radius, y + radius, radius, color);
-        drawCircle(x + width - radius, y + radius, radius, color);
-        drawCircle(x + radius, y + height - radius, radius, color);
-        drawCircle(x + width - radius, y + height - radius, radius, color);
+        drawPartialCircle(x + radius, y + radius, radius, 90, 180, color);
+        drawPartialCircle(x + width - radius, y + radius, radius, 0, 90, color);
+        drawPartialCircle(x + radius, y + height - radius, radius, -180, -90, color);
+        drawPartialCircle(x + width - radius, y + height - radius, radius, -90, 0, color);
+    }
+
+    public static void drawPartialCircle(int centerX, int centerY, int radius, int startAngle, int endAngle, int color) {
+        float alpha = (float)(color >> 24 & 255) / 255.0F;
+        float red = (float)(color >> 16 & 255) / 255.0F;
+        float green = (float)(color >> 8 & 255) / 255.0F;
+        float blue = (float)(color & 255) / 255.0F;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+
+        GlStateManager.enableBlend();
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color(red, green, blue, alpha);
+
+        int segments = Math.max(8, (endAngle - startAngle) / 10);
+        worldrenderer.begin(6, DefaultVertexFormats.POSITION);
+        worldrenderer.pos(centerX, centerY, 0.0D).endVertex();
+
+        for (int i = 0; i <= segments; i++) {
+            double angle = Math.PI * (startAngle + (endAngle - startAngle) * i / (double) segments) / 180.0;
+            worldrenderer.pos(centerX + Math.cos(angle) * radius, centerY - Math.sin(angle) * radius, 0.0D).endVertex();
+        }
+
+        tessellator.draw();
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
     }
 
     public static void drawCircle(int x, int y, int radius, int color) {
@@ -110,13 +138,11 @@ public class Renderer {
         GlStateManager.disableBlend();
     }
 
-    // 绘制带阴影的文字
     public static void drawStringWithShadow(String text, int x, int y, int color) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
         fontRenderer.drawStringWithShadow(text, x, y, color);
     }
 
-    // 绘制渐变矩形
     public static void drawGradientRect(int x, int y, int width, int height, int startColor, int endColor) {
         float startAlpha = (float)(startColor >> 24 & 255) / 255.0F;
         float startRed = (float)(startColor >> 16 & 255) / 255.0F;

@@ -1,8 +1,10 @@
 package com.zerwhit.core.module;
 
+import com.zerwhit.core.ColorScheme;
 import com.zerwhit.core.Meta;
 import com.zerwhit.core.Renderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Mouse;
 
@@ -12,16 +14,18 @@ import java.util.List;
 import static com.zerwhit.core.Control.getMouseX;
 import static com.zerwhit.core.Control.getMouseY;
 
-public class ClickGUI {
+public class ClickGUI extends GuiScreen {
+    private static final List<Module> modules = new ArrayList<>();
+    private static final ColorScheme colorScheme = new ColorScheme();
+
     private static final int WINDOW_WIDTH = 200;
     private static final int WINDOW_HEIGHT = 300;
-    private static int windowX = 50;
-    private static int windowY = 50;
-    private static boolean dragging = false;
-    private static int dragX, dragY;
 
-    private static List<Module> modules = new ArrayList<>();
-    private static ColorScheme colorScheme = new ColorScheme();
+    private int windowX, windowY = 50;
+    private boolean dragging = false;
+    private int dragX, dragY;
+
+    public static ClickGUI INSTANCE = new ClickGUI().init();
 
     static {
         modules.add(new Module("KillAura", true));
@@ -33,7 +37,7 @@ public class ClickGUI {
         modules.add(new Module("Reach", true));
     }
 
-    public static void render() {
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (!Meta.clickGUIOpened) return;
 
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
@@ -70,7 +74,7 @@ public class ClickGUI {
         handleDragging();
     }
 
-    private static void renderModule(Module module, int x, int y) {
+    private void renderModule(Module module, int x, int y) {
         boolean hovered = isMouseOverModule(x, y);
 
         int bgColor = hovered ? colorScheme.moduleHover : colorScheme.moduleBackground;
@@ -79,7 +83,7 @@ public class ClickGUI {
         Renderer.drawStringWithShadow(module.name, x + 5, y + 6,
                 module.enabled ? colorScheme.accent : colorScheme.text);
 
-        int toggleX = x + WINDOW_WIDTH - 40;
+        int toggleX = x + WINDOW_WIDTH - 60;
         int toggleColor = module.enabled ? colorScheme.accent : colorScheme.textDisabled;
         Renderer.drawRoundedRect(toggleX, y + 5, 30, 10, 5, toggleColor);
 
@@ -87,7 +91,7 @@ public class ClickGUI {
         Renderer.drawCircle(sliderX + 5, y + 10, 4, colorScheme.background);
     }
 
-    private static boolean isMouseOverCloseButton() {
+    private boolean isMouseOverCloseButton() {
         int mouseX = getMouseX();
         int mouseY = getMouseY();
 
@@ -97,7 +101,7 @@ public class ClickGUI {
                 mouseY <= windowY + 20;
     }
 
-    private static boolean isMouseOverModule(int x, int y) {
+    private boolean isMouseOverModule(int x, int y) {
         int mouseX = getMouseX();
         int mouseY = getMouseY();
 
@@ -107,7 +111,7 @@ public class ClickGUI {
                 mouseY <= y + 20;
     }
 
-    private static boolean isMouseOverTitleBar() {
+    private boolean isMouseOverTitleBar() {
         int mouseX = getMouseX();
         int mouseY = getMouseY();
 
@@ -117,11 +121,19 @@ public class ClickGUI {
                 mouseY <= windowY + 25;
     }
 
-    public static void handleMouseClick(int mouseX, int mouseY) {
+    @Override
+    public void onGuiClosed() {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.currentScreen = null;
+        mc.mouseHelper.grabMouseCursor();
+        Meta.clickGUIOpened = false;
+    }
+
+    public void handleMouseClick(int mouseX, int mouseY) {
         if (!Meta.clickGUIOpened) return;
 
         if (isMouseOverCloseButton()) {
-            Meta.clickGUIOpened = false;
+            ((GuiScreen)INSTANCE).onGuiClosed();
             return;
         }
 
@@ -135,7 +147,7 @@ public class ClickGUI {
         int moduleY = windowY + 35;
         for (Module module : modules) {
             if (isMouseOverModule(windowX + 10, moduleY)) {
-                int toggleX = windowX + 10 + WINDOW_WIDTH - 40;
+                int toggleX = windowX + 10 + WINDOW_WIDTH - 60;
                 if (mouseX >= toggleX && mouseX <= toggleX + 30 &&
                         mouseY >= moduleY + 5 && mouseY <= moduleY + 15) {
                     module.enabled = !module.enabled;
@@ -146,7 +158,7 @@ public class ClickGUI {
         }
     }
 
-    private static void handleDragging() {
+    private void handleDragging() {
         if (dragging && Mouse.isButtonDown(0)) {
             int mouseX = getMouseX();
             int mouseY = getMouseY();
@@ -157,34 +169,10 @@ public class ClickGUI {
         }
     }
 
-    public static void onOpen() {
+    public ClickGUI init() {
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
         windowX = (scaledResolution.getScaledWidth() - WINDOW_WIDTH) / 2;
         windowY = (scaledResolution.getScaledHeight() - WINDOW_HEIGHT) / 2;
-    }
-
-    static class Module {
-        String name;
-        boolean enabled;
-
-        Module(String name, boolean enabled) {
-            this.name = name;
-            this.enabled = enabled;
-        }
-    }
-
-    static class ColorScheme {
-        int primary = 0xDD2980C8;
-        int secondary = 0xDD3498DB;
-        int accent = 0xDD2ECC71;
-        int background = 0xBB1A1A23;
-        int text = 0xFFFFFFFF;
-        int textDisabled = 0x64ECF0F1;
-        int moduleBackground = 0xBB2D2D37;
-        int moduleHover = 0xBB373741;
-
-        private int withAlpha(int rgb, int alpha) {
-            return (alpha << 24) | (rgb & 0x00FFFFFF);
-        }
+        return this;
     }
 }
