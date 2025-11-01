@@ -9,6 +9,7 @@ public class TextureRegistry {
     private static boolean initialized = false;
 
     public static final String VAPELOGO = "vapelogo";
+    public static final String CLIENTLOGO = "clientlogo";
     public static final String V4LOGO = "v4logo";
 
     public static void initialize() {
@@ -16,6 +17,8 @@ public class TextureRegistry {
 
         registerTexture(VAPELOGO,
                 new TextureResource("zerwhit", "textures/vapelogo.png", "vapelogo", 178, 53));
+        registerTexture(CLIENTLOGO,
+                new TextureResource("zerwhit", "textures/clientlogo.png", "clientlogo", 178, 53));
         registerTexture(V4LOGO,
                 new TextureResource("zerwhit", "textures/v4.png", "v4logo", 76, 53));
 

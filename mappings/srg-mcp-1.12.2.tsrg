@@ -16532,7 +16532,7 @@ net/minecraft/entity/EntityLivingBase net/minecraft/entity/EntityLivingBase
 	getHeldItemOffhand ()Lnet/minecraft/item/ItemStack; func_184592_cb
 	getHurtSound (Lnet/minecraft/util/DamageSource;)Lnet/minecraft/util/SoundEvent; func_184601_bQ
 	getIdleTime ()I func_70654_ax
-	getItemInUseCount ()I func_184605_cv
+	getItemInUseCount ()I func_71052_bv
 	getItemInUseMaxCount ()I func_184612_cw
 	getItemStackFromSlot (Lnet/minecraft/inventory/EntityEquipmentSlot;)Lnet/minecraft/item/ItemStack; func_184582_a
 	getJumpUpwardsMotion ()F func_175134_bD
@@ -21828,7 +21828,7 @@ net/minecraft/init/Items net/minecraft/init/Items
 	EXPERIENCE_BOTTLE field_151062_by
 	FEATHER field_151008_G
 	FERMENTED_SPIDER_EYE field_151071_bq
-	FILLED_MAP field_151098_aY
+	filled_map field_151098_aY
 	FIREWORKS field_151152_bP
 	FIREWORK_CHARGE field_151154_bQ
 	FIRE_CHARGE field_151059_bz

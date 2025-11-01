@@ -8,6 +8,8 @@ plugins {
     id 'java'
 }
 
+targetCompatibility = sourceCompatibility = 1.8
+
 group = 'com.zerwhit'
 version = '1.0-SNAPSHOT'
 

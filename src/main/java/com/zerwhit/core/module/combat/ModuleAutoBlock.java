@@ -13,24 +13,16 @@ import net.minecraft.world.WorldServer;
 
 public class ModuleAutoBlock extends Module {
     private boolean isBlocking = false;
-    private long lastBlockTime = 0;
 
     public ModuleAutoBlock() {
         super("AutoBlock", true, "Combat");
         addConfig("Mode", "Smart");
-        addConfig("Delay", 100);
         addConfig("HoldTime", 200);
     }
 
     public void onPlayerHurt() {
-        if (!enabled) return;
-
         String mode = (String) getConfig("Mode");
-        int delay = (Integer) getConfig("Delay");
         int holdTime = (Integer) getConfig("HoldTime");
-        long currentTime = System.currentTimeMillis();
-
-        if (currentTime - lastBlockTime < delay) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer == null || mc.thePlayer.getHeldItem() == null) return;
@@ -41,7 +33,6 @@ public class ModuleAutoBlock extends Module {
             case "Smart":
                 if (!isBlocking) {
                     startBlocking();
-                    lastBlockTime = currentTime;
 
                     new Thread(() -> {
                         try {

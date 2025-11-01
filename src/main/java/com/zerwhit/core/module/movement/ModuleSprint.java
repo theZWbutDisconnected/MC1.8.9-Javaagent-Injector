@@ -36,6 +36,12 @@ public class ModuleSprint extends Module {
                 break;
         }
     }
+
+    @Override
+    public void onDisable() {
+        mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
+        mc.thePlayer.setSprinting(false);
+    }
     
     @Override
     public void cycleStringConfig(String key) {

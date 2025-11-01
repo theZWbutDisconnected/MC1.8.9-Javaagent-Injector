@@ -76,6 +76,12 @@ public class ClassTransformer implements ClassFileTransformer {
                             return new AutoBlockHookMethodVisitor(mv);
                     }
                     break;
+                case "net/minecraft/client/renderer/ItemRenderer":
+                    switch (methodKey) {
+                        case "func_78440_a(F)V": case "renderItemInFirstPerson(F)V":
+                            return new ItemRendererHookMethodVisitor(mv);
+                    }
+                    break;
             }
             return mv;
         }
@@ -124,6 +130,27 @@ public class ClassTransformer implements ClassFileTransformer {
                     getClassPackage(Hooks.class),
                     "onPlayerHurt",
                     "()V");
+        }
+    }
+
+    private static class ItemRendererHookMethodVisitor extends MethodVisitor {
+        public ItemRendererHookMethodVisitor(MethodVisitor mv) {
+            super(Opcodes.ASM4, mv);
+        }
+
+        @Override
+        public void visitCode() {
+            mv.visitVarInsn(Opcodes.FLOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    getClassPackage(Hooks.class),
+                    "renderItemInFirstPersonHook",
+                    "(F)V");
+            mv.visitInsn(Opcodes.RETURN);
+        }
+
+        @Override
+        public void visitMaxs(int maxStack, int maxLocals) {
+            mv.visitMaxs(1, 2);
         }
     }
 

@@ -1,6 +1,8 @@
 package com.zerwhit.core.module.combat;
 
 import com.zerwhit.core.module.Module;
+import com.zerwhit.core.util.KeyRobot;
+
 import org.lwjgl.input.Mouse;
 
 public class ModuleAutoClicker extends Module {
@@ -25,8 +27,12 @@ public class ModuleAutoClicker extends Module {
         if (currentTime - lastClickTime >= delay) {
             if (leftClick && Mouse.isButtonDown(0)) {
                 lastClickTime = currentTime;
+                KeyRobot.clickMouse(0);
+                KeyRobot.releaseMouse(0);
             } else if (rightClick && Mouse.isButtonDown(1)) {
                 lastClickTime = currentTime;
+                KeyRobot.clickMouse(1);
+                KeyRobot.releaseMouse(1);
             }
         }
     }

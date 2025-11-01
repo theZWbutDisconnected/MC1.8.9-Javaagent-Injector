@@ -4,6 +4,7 @@ import com.zerwhit.core.module.combat.ModuleAutoBlock;
 import com.zerwhit.core.module.combat.ModuleAutoClicker;
 import com.zerwhit.core.module.combat.ModuleKillAura;
 import com.zerwhit.core.module.combat.ModuleReach;
+import com.zerwhit.core.module.movement.ModuleEdgeSneak;
 import com.zerwhit.core.module.movement.ModuleFly;
 import com.zerwhit.core.module.movement.ModuleNoFall;
 import com.zerwhit.core.module.movement.ModuleSpeed;
@@ -31,6 +32,7 @@ public class Module {
         addModule(new ModuleSprint());
         addModule(new ModuleSpeed());
         addModule(new ModuleNoFall());
+        addModule(new ModuleEdgeSneak());
         addModule(new ModuleArraylist());
         addModule(new ModuleXRay());
         addModule(new ModuleKillAura());
@@ -50,8 +52,6 @@ public class Module {
         this.category = category;
         if (enabled) {
             onEnable();
-        } else {
-            onDisable();
         }
     }
 
