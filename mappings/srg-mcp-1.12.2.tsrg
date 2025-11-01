@@ -5497,7 +5497,7 @@ net/minecraft/client/entity/EntityPlayerSP net/minecraft/client/entity/EntityPla
 	activeHand field_184843_cn
 	autoJumpEnabled field_189811_cr
 	autoJumpTime field_189812_cs
-	connection field_71174_a
+	sendQueue field_71174_a
 	handActive field_184842_cm
 	hasValidHealth field_175169_bQ
 	horseJumpPower field_110321_bQ
@@ -9187,7 +9187,7 @@ net/minecraft/client/network/NetHandlerPlayClient net/minecraft/client/network/N
 	handleWorldBorder (Lnet/minecraft/network/play/server/SPacketWorldBorder;)V func_175093_a
 	onDisconnect (Lnet/minecraft/util/text/ITextComponent;)V func_147231_a
 	processChunkUnload (Lnet/minecraft/network/play/server/SPacketUnloadChunk;)V func_184326_a
-	sendPacket (Lnet/minecraft/network/Packet;)V func_147297_a
+	addToSendQueue (Lnet/minecraft/network/Packet;)V func_147297_a
 	validateResourcePackUrl (Ljava/lang/String;)Z func_189688_b
 net/minecraft/client/network/NetHandlerPlayClient$1 net/minecraft/client/network/NetHandlerPlayClient$1
 	field_146299_f field_146299_f
@@ -15835,7 +15835,7 @@ net/minecraft/entity/Entity net/minecraft/entity/Entity
 	timeUntilPortal field_71088_bW
 	velocityChanged field_70133_I
 	width field_70130_N
-	world field_70170_p
+	worldObj field_70170_p
 	addEntityCrashInfo (Lnet/minecraft/crash/CrashReportCategory;)V func_85029_a
 	addPassenger (Lnet/minecraft/entity/Entity;)V func_184200_o
 	addTag (Ljava/lang/String;)Z func_184211_a
@@ -16614,6 +16614,7 @@ net/minecraft/entity/EntityLivingBase net/minecraft/entity/EntityLivingBase
 	setRotationYawHead (F)V func_70034_d
 	setSprinting (Z)V func_70031_b
 	stopActiveHand ()V func_184597_cx
+	swingItem ()V func_71038_i
 	swingArm (Lnet/minecraft/util/EnumHand;)V func_184609_a
 	travel (FFF)V func_191986_a
 	updateActiveHand ()V func_184608_ct
@@ -28116,9 +28117,10 @@ net/minecraft/server/MinecraftServer net/minecraft/server/MinecraftServer
 	getTabCompletions (Lnet/minecraft/command/ICommandSender;Ljava/lang/String;Lnet/minecraft/util/math/BlockPos;Z)Ljava/util/List; func_184104_a
 	getTickCounter ()I func_71259_af
 	getUserMessage ()Ljava/lang/String; func_71195_b_
-	getWorld (I)Lnet/minecraft/world/WorldServer; func_71218_a
+	worldServerForDimension (I)Lnet/minecraft/world/WorldServer; func_71218_a
 	getWorldIconFile ()Ljava/io/File; func_184109_z
 	getWorldName ()Ljava/lang/String; func_71221_J
+	getServer ()Lnet/minecraft/server/MinecraftServer; func_71276_C
 	init ()Z func_71197_b
 	initialWorldChunkLoad ()V func_71222_d
 	initiateShutdown ()V func_71263_m
@@ -31133,7 +31135,7 @@ net/minecraft/util/math/ChunkPos net/minecraft/util/math/ChunkPos
 	getZStart ()I func_180333_d
 	hashCode ()I hashCode
 	toString ()Ljava/lang/String; toString
-net/minecraft/util/math/MathHelper net/minecraft/util/math/MathHelper
+net/minecraft/util/MathHelper net/minecraft/util/MathHelper
 	ASINE_TAB field_181164_e
 	COS_TAB field_181165_f
 	FRAC_BIAS field_181163_d
@@ -31190,8 +31192,8 @@ net/minecraft/util/math/MathHelper net/minecraft/util/math/MathHelper
 	smallestEncompassingPowerOfTwo (I)I func_151236_b
 	sqrt (D)F func_76133_a
 	sqrt (F)F func_76129_c
-	wrapDegrees (D)D func_76138_g
-	wrapDegrees (F)F func_76142_g
+	wrapAngleTo180_double (D)D func_76138_g
+	wrapAngleTo180_float (F)F func_76142_g
 	wrapDegrees (I)I func_188209_b
 net/minecraft/util/math/RayTraceResult net/minecraft/util/math/RayTraceResult
 	blockPos field_178783_e

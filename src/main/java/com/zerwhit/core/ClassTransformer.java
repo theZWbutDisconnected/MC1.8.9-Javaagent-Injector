@@ -55,7 +55,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
         private MethodVisitor createHookMethodVisitor(MethodVisitor mv, String name, String desc) {
             String methodKey = name + desc;
-            
+
             switch (className) {
                 case "net/minecraft/client/Minecraft":
                     switch (methodKey) {
@@ -71,6 +71,9 @@ public class ClassTransformer implements ClassFileTransformer {
                     switch (methodKey) {
                         case "func_70071_h_()V": case "onUpdate()V":
                             return new HookMethodVisitor(mv, "onPlayerPreUpdate", "onPlayerPostUpdate");
+                        case "func_70097_a(Lnet/minecraft/util/DamageSource;F)Z":
+                        case "attackEntityFrom(Lnet/minecraft/util/DamageSource;F)Z":
+                            return new AutoBlockHookMethodVisitor(mv);
                     }
                     break;
             }
@@ -106,6 +109,21 @@ public class ClassTransformer implements ClassFileTransformer {
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, getClassPackage(Hooks.class), afterHook, "()V");
             }
             super.visitInsn(opcode);
+        }
+    }
+
+    private static class AutoBlockHookMethodVisitor extends MethodVisitor {
+        public AutoBlockHookMethodVisitor(MethodVisitor mv) {
+            super(Opcodes.ASM4, mv);
+        }
+
+        @Override
+        public void visitCode() {
+            super.visitCode();
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    getClassPackage(Hooks.class),
+                    "onPlayerHurt",
+                    "()V");
         }
     }
 

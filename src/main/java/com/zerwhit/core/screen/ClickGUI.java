@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.zerwhit.core.Control.*;
+import static com.zerwhit.core.module.Module.categories;
 
 public class ClickGUI extends GuiScreen {
-    public static final Map<String, List<Module>> categories = new HashMap<>();
-    private static final ColorScheme colorScheme = new ColorScheme();
+    public static final ColorScheme colorScheme = new ColorScheme();
 
     private static final int WINDOW_WIDTH = 400;
     private static final int WINDOW_HEIGHT = 300;
@@ -66,21 +66,6 @@ public class ClickGUI extends GuiScreen {
     private Map<String, String> configInputValues = new HashMap<>();
 
     public static ClickGUI INSTANCE = new ClickGUI().init();
-
-    static {
-        addModule(new ModuleKillAura());
-        addModule(new ModuleFly());
-        addModule(new ModuleSprint());
-        addModule(new ModuleSpeed());
-        addModule(new ModuleNoFall());
-        addModule(new ModuleXRay());
-        addModule(new ModuleAutoClicker());
-        addModule(new ModuleReach());
-    }
-
-    private static void addModule(Module module) {
-        categories.computeIfAbsent(module.category, k -> new ArrayList<>()).add(module);
-    }
 
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (!Meta.clickGUIOpened)
@@ -404,6 +389,11 @@ public class ClickGUI extends GuiScreen {
                             if (mouseX >= toggleX && mouseX <= toggleX + 30 &&
                                     mouseY >= moduleY + 5 && mouseY <= moduleY + 15) {
                                 module.enabled = !module.enabled;
+                                if (module.enabled) {
+                                    module.onEnable();
+                                } else {
+                                    module.onDisable();
+                                }
                             }
                             break;
                         }

@@ -1,6 +1,8 @@
 package com.zerwhit.core.module.movement;
 
 import com.zerwhit.core.module.Module;
+import net.minecraft.network.play.client.C0APacketAnimation;
+import net.minecraft.network.play.client.C0BPacketEntityAction;
 
 public class ModuleSprint extends Module {
     public ModuleSprint() {
@@ -18,15 +20,18 @@ public class ModuleSprint extends Module {
             case "Legit":
                 if (omniDirectional) {
                     if (mc.thePlayer.moveForward != 0 || mc.thePlayer.moveStrafing != 0) {
+                        mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
                         mc.thePlayer.setSprinting(true);
                     }
                 } else {
                     if (mc.thePlayer.moveForward > 0 && !mc.thePlayer.isCollidedHorizontally) {
+                        mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
                         mc.thePlayer.setSprinting(true);
                     }
                 }
                 break;
             case "Rage":
+                mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
                 mc.thePlayer.setSprinting(true);
                 break;
         }

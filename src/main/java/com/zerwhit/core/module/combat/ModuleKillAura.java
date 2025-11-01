@@ -33,9 +33,11 @@ public class ModuleKillAura extends Module {
             switch (mode) {
                 case "Normal":
                     mc.playerController.attackEntity(mc.thePlayer, target);
+                    mc.thePlayer.swingItem();
                     break;
                 case "Silent":
                     mc.playerController.attackEntity(mc.thePlayer, target);
+                    mc.thePlayer.swingItem();
                     break;
             }
             lastAttackTime = currentTime;
