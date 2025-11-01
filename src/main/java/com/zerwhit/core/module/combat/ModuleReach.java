@@ -1,6 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.combat;
 
-import net.minecraft.client.Minecraft;
+import com.zerwhit.core.module.Module;
 
 public class ModuleReach extends Module {
     public ModuleReach() {

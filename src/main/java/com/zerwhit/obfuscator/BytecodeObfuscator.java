@@ -2,12 +2,15 @@ package com.zerwhit.obfuscator;
 
 import com.zerwhit.obfuscator.parser.CsvParser;
 import com.zerwhit.obfuscator.parser.TsrgParser;
+import com.zerwhit.obfuscator.util.ClassHierarchyResolver;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,10 +22,12 @@ public class BytecodeObfuscator {
     private Set<String> excludedClasses = new HashSet<>();
     private Set<String> excludedMethods = new HashSet<>();
 
+    private static String minecraftJarPath = "minecraft.jar";
+
     private static final List<String> TARGET_PACKAGES = Arrays.asList(
             "com/zerwhit/core/"
     );
-    
+
     private static final List<String> MINECRAFT_PACKAGES = Arrays.asList(
             "net/minecraft", "com/mojang", "badlion"
     );
@@ -30,6 +35,11 @@ public class BytecodeObfuscator {
     public BytecodeObfuscator() {
         this.tsrgParser = new TsrgParser();
         initializeExclusions();
+        setupMinecraftClassLoader();
+    }
+
+    public static void setMinecraftJarPath(String jarPath) {
+        minecraftJarPath = jarPath;
     }
 
     private void initializeExclusions() {
@@ -38,17 +48,55 @@ public class BytecodeObfuscator {
         ));
     }
 
+    private void setupMinecraftClassLoader() {
+        try {
+            File jarFile = new File(minecraftJarPath);
+            if (!jarFile.exists()) {
+                System.err.println("Minecraft JAR not found at: " + minecraftJarPath);
+                System.err.println("Trying to find minecraft.jar in current directory...");
+
+                File currentDir = new File(".");
+                File[] jars = currentDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".jar") &&
+                        (name.toLowerCase().contains("minecraft") || name.toLowerCase().contains("client")));
+
+                if (jars != null && jars.length > 0) {
+                    jarFile = jars[0];
+                    System.out.println("Found Minecraft JAR: " + jarFile.getName());
+                } else {
+                    System.err.println("No Minecraft JAR found. Class hierarchy resolution may not work properly.");
+                    return;
+                }
+            }
+
+            URL jarUrl = jarFile.toURI().toURL();
+            URLClassLoader mcClassLoader = new URLClassLoader(new URL[]{jarUrl},
+                    BytecodeObfuscator.class.getClassLoader());
+
+            ClassHierarchyResolver.setClassLoader(mcClassLoader);
+
+            System.out.println("Successfully loaded Minecraft JAR: " + jarFile.getAbsolutePath());
+        } catch (Exception e) {
+            System.err.println("Failed to setup Minecraft class loader: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) throws IOException {
-        if (args.length < 2) {
-            System.out.println("Usage: BytecodeObfuscator <classes-directory> <tsrg-file>");
-            System.out.println("Example: BytecodeObfuscator build/classes/java/main mappings/srg-mcp-1.12.2.tsrg");
+        if (args.length < 4) {
+            System.out.println("Usage: BytecodeObfuscator <classes-directory> <tsrg-file> <fields-csv> <methods-csv> [minecraft-jar]");
+            System.out.println("Example: BytecodeObfuscator build/classes/java/main mappings/srg-mcp-1.12.2.tsrg fields.csv methods.csv");
             return;
         }
 
         String classesDir = args[0];
         String tsrgFile = args[1];
-        csvParser = new CsvParser(args[2], args[3]);
+        String fieldsCsv = args[2];
+        String methodsCsv = args[3];
 
+        if (args.length > 4) {
+            setMinecraftJarPath(args[4]);
+        }
+
+        csvParser = new CsvParser(fieldsCsv, methodsCsv);
         BytecodeObfuscator obfuscator = new BytecodeObfuscator();
         try {
             obfuscator.obfuscate(classesDir, tsrgFile);
@@ -62,6 +110,8 @@ public class BytecodeObfuscator {
         System.out.println("Starting bytecode obfuscation...");
         System.out.println("Classes directory: " + classesDir);
         System.out.println("TSRG file: " + tsrgFile);
+
+        ClassHierarchyResolver.clearCache();
 
         tsrgParser.parseTsrgFile(tsrgFile);
         System.out.println("Loaded " + tsrgParser.getClassMappings().size() + " class mappings");

@@ -4950,7 +4950,7 @@ net/minecraft/client/Minecraft net/minecraft/client/Minecraft
 	entityRenderer field_71460_t
 	fileAssets field_110446_Y
 	fileResourcepacks field_130070_K
-	fontRenderer field_71466_p
+	fontRendererObj field_71466_p
 	fpsCounter field_71420_M
 	frameTimer field_181542_y
 	framebufferMc field_147124_at
@@ -4987,7 +4987,7 @@ net/minecraft/client/Minecraft net/minecraft/client/Minecraft
 	mouseHelper field_71417_B
 	myNetworkManager field_71453_ak
 	objectMouseOver field_71476_x
-	player field_71439_g
+	thePlayer field_71439_g
 	playerController field_71442_b
 	pointedEntity field_147125_j
 	prevFrameTime field_71421_N
@@ -5023,7 +5023,7 @@ net/minecraft/client/Minecraft net/minecraft/client/Minecraft
 	twitchDetails field_152356_J
 	usageSnooper field_71427_U
 	versionType field_184130_ao
-	world field_71441_e
+	theWorld field_71441_e
 	access$000 (Lnet/minecraft/client/Minecraft;)Ljava/lang/String; access$000
 	access$100 (Lnet/minecraft/client/Minecraft;)Lnet/minecraft/client/resources/LanguageManager; access$100
 	addGraphicsAndWorldToCrashReport (Lnet/minecraft/crash/CrashReport;)Lnet/minecraft/crash/CrashReport; func_71396_d
@@ -10887,7 +10887,7 @@ net/minecraft/client/renderer/Tessellator net/minecraft/client/renderer/Tessella
 	buffer field_178183_a
 	vboUploader field_178182_b
 	draw ()V func_78381_a
-	getBuffer ()Lnet/minecraft/client/renderer/BufferBuilder; func_178180_c
+	getWorldRenderer ()Lnet/minecraft/client/renderer/WorldRenderer; func_178180_c
 	getInstance ()Lnet/minecraft/client/renderer/Tessellator; func_178181_a
 net/minecraft/client/renderer/ThreadDownloadImageData net/minecraft/client/renderer/ThreadDownloadImageData
 	LOGGER field_147644_c
@@ -15766,8 +15766,8 @@ net/minecraft/entity/Entity net/minecraft/entity/Entity
 	chunkCoordZ field_70164_aj
 	cmdResultStats field_174837_as
 	collided field_70132_H
-	collidedHorizontally field_70123_F
-	collidedVertically field_70124_G
+	isCollidedHorizontally field_70123_F
+	isCollidedVertically field_70124_G
 	dataManager field_70180_af
 	dimension field_71093_bK
 	distanceWalkedModified field_70140_Q
@@ -15892,9 +15892,9 @@ net/minecraft/entity/Entity net/minecraft/entity/Entity
 	getDataManager ()Lnet/minecraft/network/datasync/EntityDataManager; func_184212_Q
 	getDisplayName ()Lnet/minecraft/util/text/ITextComponent; func_145748_c_
 	getDistance (DDD)D func_70011_f
-	getDistance (Lnet/minecraft/entity/Entity;)F func_70032_d
+	getDistanceToEntity (Lnet/minecraft/entity/Entity;)F func_70032_d
 	getDistanceSq (DDD)D func_70092_e
-	getDistanceSq (Lnet/minecraft/entity/Entity;)D func_70068_e
+	getDistanceToEntitySq (Lnet/minecraft/entity/Entity;)D func_70068_e
 	getDistanceSq (Lnet/minecraft/util/math/BlockPos;)D func_174818_b
 	getDistanceSqToCenter (Lnet/minecraft/util/math/BlockPos;)D func_174831_c
 	getEntityBoundingBox ()Lnet/minecraft/util/math/AxisAlignedBB; func_174813_aQ
@@ -16443,7 +16443,7 @@ net/minecraft/entity/EntityLivingBase net/minecraft/entity/EntityLivingBase
 	limbSwingAmount field_70721_aZ
 	maxHurtResistantTime field_70771_an
 	maxHurtTime field_70738_aO
-	moveForward field_191988_bg
+	moveForward field_70701_bs
 	moveStrafing field_70702_br
 	moveVertical field_70701_bs
 	movedDistance field_70764_aw

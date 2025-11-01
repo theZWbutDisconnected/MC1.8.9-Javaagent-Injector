@@ -1,7 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.render;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.init.Blocks;
+import com.zerwhit.core.module.Module;
 
 import java.util.HashSet;
 import java.util.Set;

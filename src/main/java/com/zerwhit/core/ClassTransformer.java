@@ -68,8 +68,9 @@ public class ClassTransformer implements ClassFileTransformer {
                     }
                     break;
                 case "net/minecraft/entity/player/EntityPlayer":
-                    if ("onUpdate()V".equals(methodKey)) {
-                        return new HookMethodVisitor(mv, "onPlayerPreUpdate", "onPlayerPostUpdate");
+                    switch (methodKey) {
+                        case "func_70071_h_()V": case "onUpdate()V":
+                            return new HookMethodVisitor(mv, "onPlayerPreUpdate", "onPlayerPostUpdate");
                     }
                     break;
             }

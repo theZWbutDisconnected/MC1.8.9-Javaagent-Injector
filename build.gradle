@@ -36,7 +36,8 @@ task obfuscateBytecode(type: JavaExec) {
             "${buildDir}/classes/java/main",
             'mappings/srg-mcp-1.12.2.tsrg',
             'mappings/fields.csv',
-            'mappings/methods.csv'
+            'mappings/methods.csv',
+            'minecraft.jar'
     ]
 }
 

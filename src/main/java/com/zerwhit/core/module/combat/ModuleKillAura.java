@@ -1,9 +1,8 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.combat;
 
-import net.minecraft.client.Minecraft;
+import com.zerwhit.core.module.Module;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.MathHelper;
 
 public class ModuleKillAura extends Module {
     private long lastAttackTime = 0;
@@ -15,12 +14,11 @@ public class ModuleKillAura extends Module {
         addConfig("Players", true);
         addConfig("Mobs", false);
         addConfig("Mode", "Normal");
+        addConfig("Animation", true);
     }
 
     @Override
     public void onModuleTick() {
-        if (!enabled || mc.theWorld == null || mc.thePlayer == null) return;
-        
         double range = (Double) getConfig("Range");
         int delay = (Integer) getConfig("Delay");
         boolean attackPlayers = (Boolean) getConfig("Players");
@@ -31,7 +29,7 @@ public class ModuleKillAura extends Module {
         if (currentTime - lastAttackTime < delay) return;
         
         Entity target = findTarget(range, attackPlayers, attackMobs);
-        if (target != null) {
+        if (target != null && target.hurtResistantTime <= 0) {
             switch (mode) {
                 case "Normal":
                     mc.playerController.attackEntity(mc.thePlayer, target);

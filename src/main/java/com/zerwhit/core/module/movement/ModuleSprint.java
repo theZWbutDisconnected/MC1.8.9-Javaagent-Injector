@@ -1,6 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.movement;
 
-import net.minecraft.client.Minecraft;
+import com.zerwhit.core.module.Module;
 
 public class ModuleSprint extends Module {
     public ModuleSprint() {
@@ -11,8 +11,6 @@ public class ModuleSprint extends Module {
 
     @Override
     public void onModuleTick() {
-        if (!enabled || mc.thePlayer == null) return;
-        
         boolean omniDirectional = (Boolean) getConfig("OmniDirectional");
         String mode = (String) getConfig("Mode");
         

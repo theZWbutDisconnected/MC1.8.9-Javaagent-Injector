@@ -3,9 +3,12 @@ package com.zerwhit.obfuscator;
 import com.zerwhit.core.ClassTransformer;
 import com.zerwhit.obfuscator.parser.CsvParser;
 import com.zerwhit.obfuscator.parser.TsrgParser;
+import com.zerwhit.obfuscator.util.ClassHierarchyResolver;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
+import java.util.List;
 
 class ObfuscatingMethodVisitor extends MethodVisitor {
     private String ownerClassName;
@@ -48,21 +51,21 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
     }
 
     private String getMappedMethodName(String owner, String name, String descriptor, int opcode) {
-        String mappedName = tsrgParser.getMappedMethod(owner, name, descriptor);
+        String mappedName = findMappedMethodInHierarchy(owner, name, descriptor);
 
         if (mappedName == null || mappedName.equals(name)) {
-            if (extendsMinecraftClass && superClassName != null && 
-                (opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKESPECIAL) &&
-                owner.equals(ownerClassName) && name.equals(originalMethodName)) {
+            if (extendsMinecraftClass && superClassName != null &&
+                    (opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKESPECIAL) &&
+                    owner.equals(ownerClassName) && name.equals(originalMethodName)) {
                 String parentMappedName = tsrgParser.getMappedMethod(superClassName, name, descriptor);
                 if (!parentMappedName.equals(name)) {
                     return parentMappedName;
                 }
             }
 
-            if (implementsMinecraftInterface && interfaces != null && 
-                (opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKEVIRTUAL) &&
-                owner.equals(ownerClassName) && name.equals(originalMethodName)) {
+            if (implementsMinecraftInterface && interfaces != null &&
+                    (opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKEVIRTUAL) &&
+                    owner.equals(ownerClassName) && name.equals(originalMethodName)) {
                 for (String iface : interfaces) {
                     if (isMinecraftClass(iface)) {
                         String interfaceMappedName = tsrgParser.getMappedMethod(iface, name, descriptor);
@@ -72,7 +75,7 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
                     }
                 }
             }
-            
+
             if (name.equals(originalMethodName) && owner.equals(ownerClassName)) {
                 mappedName = obfuscatedMethodName;
             } else {
@@ -81,6 +84,42 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
         }
 
         return ClassTransformer.isMCClass(owner) ? csvParser.methodMappings.getOrDefault(mappedName, mappedName) : mappedName;
+    }
+
+    private String findMappedMethodInHierarchy(String className, String methodName, String descriptor) {
+        // First check the current class with descriptor
+        String mappedName = tsrgParser.getMappedMethod(className, methodName, descriptor);
+        if (!mappedName.equals(methodName)) {
+            return mappedName;
+        }
+
+        // If not found, check without descriptor
+        mappedName = tsrgParser.getMappedMethod(className, methodName);
+        if (!mappedName.equals(methodName)) {
+            return mappedName;
+        }
+
+        // If still not found, traverse the class hierarchy
+        List<String> hierarchy = ClassHierarchyResolver.getClassHierarchy(className);
+        for (String classInHierarchy : hierarchy) {
+            if (classInHierarchy.equals(className)) {
+                continue; // Skip the original class as we already checked it
+            }
+
+            // Try with descriptor first
+            mappedName = tsrgParser.getMappedMethod(classInHierarchy, methodName, descriptor);
+            if (!mappedName.equals(methodName)) {
+                return mappedName;
+            }
+
+            // Try without descriptor
+            mappedName = tsrgParser.getMappedMethod(classInHierarchy, methodName);
+            if (!mappedName.equals(methodName)) {
+                return mappedName;
+            }
+        }
+
+        return methodName;
     }
 
     private boolean isMinecraftClass(String className) {
@@ -93,12 +132,33 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
         String mappedOwner = tsrgParser.getMappedClass(owner);
-        String mappedName = tsrgParser.getMappedField(owner, name);
-
+        String mappedName = findMappedFieldInHierarchy(owner, name);
+        if (ClassTransformer.isMCClass(mappedOwner)) {
+            mappedName = csvParser.fieldMappings.getOrDefault(mappedName, mappedName);
+        }
         if (!name.equals(mappedName)) {
             System.out.println("Mapping Field: " + owner + "." + name + " -> " + mappedOwner + "." + mappedName);
         }
-        super.visitFieldInsn(opcode, mappedOwner, ClassTransformer.isMCClass(mappedOwner) ? csvParser.fieldMappings.getOrDefault(mappedName, mappedName) : mappedName, descriptor);
+        super.visitFieldInsn(opcode, mappedOwner, mappedName, descriptor);
+    }
+
+    private String findMappedFieldInHierarchy(String className, String fieldName) {
+        String mappedName = tsrgParser.getMappedField(className, fieldName);
+        if (!mappedName.equals(fieldName)) {
+            return mappedName;
+        }
+        List<String> hierarchy = ClassHierarchyResolver.getClassHierarchy(className);
+        for (String classInHierarchy : hierarchy) {
+            if (classInHierarchy.equals(className)) {
+                continue;
+            }
+            mappedName = tsrgParser.getMappedField(classInHierarchy, fieldName);
+            if (!mappedName.equals(fieldName)) {
+                return mappedName;
+            }
+        }
+
+        return fieldName;
     }
 
     @Override

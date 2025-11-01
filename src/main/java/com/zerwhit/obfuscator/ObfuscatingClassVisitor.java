@@ -2,10 +2,13 @@ package com.zerwhit.obfuscator;
 
 import com.zerwhit.obfuscator.parser.CsvParser;
 import com.zerwhit.obfuscator.parser.TsrgParser;
+import com.zerwhit.obfuscator.util.ClassHierarchyResolver;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
+import java.util.List;
 
 class ObfuscatingClassVisitor extends ClassVisitor {
     private String className;
@@ -83,8 +86,8 @@ class ObfuscatingClassVisitor extends ClassVisitor {
     }
 
     private String getMappedMethodName(int access, String name, String descriptor) {
-        String mappedName = tsrgParser.getMappedMethod(className, name, descriptor);
-        
+        String mappedName = findMappedMethodInHierarchy(className, name, descriptor);
+
         if (mappedName.equals(name) && extendsMinecraftClass && superClassName != null) {
             String parentMappedName = tsrgParser.getMappedMethod(superClassName, name, descriptor);
             if (!parentMappedName.equals(name)) {
@@ -101,8 +104,40 @@ class ObfuscatingClassVisitor extends ClassVisitor {
                 }
             }
         }
-        
+
         return mappedName;
+    }
+
+    private String findMappedMethodInHierarchy(String className, String methodName, String descriptor) {
+        // Implementation similar to the one in ObfuscatingMethodVisitor
+        String mappedName = tsrgParser.getMappedMethod(className, methodName, descriptor);
+        if (!mappedName.equals(methodName)) {
+            return mappedName;
+        }
+
+        mappedName = tsrgParser.getMappedMethod(className, methodName);
+        if (!mappedName.equals(methodName)) {
+            return mappedName;
+        }
+
+        List<String> hierarchy = ClassHierarchyResolver.getClassHierarchy(className);
+        for (String classInHierarchy : hierarchy) {
+            if (classInHierarchy.equals(className)) {
+                continue;
+            }
+
+            mappedName = tsrgParser.getMappedMethod(classInHierarchy, methodName, descriptor);
+            if (!mappedName.equals(methodName)) {
+                return mappedName;
+            }
+
+            mappedName = tsrgParser.getMappedMethod(classInHierarchy, methodName);
+            if (!mappedName.equals(methodName)) {
+                return mappedName;
+            }
+        }
+
+        return methodName;
     }
 
     private boolean isMinecraftClass(String className) {

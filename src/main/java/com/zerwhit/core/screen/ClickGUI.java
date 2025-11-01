@@ -4,6 +4,14 @@ import com.zerwhit.core.ColorScheme;
 import com.zerwhit.core.Meta;
 import com.zerwhit.core.Renderer;
 import com.zerwhit.core.module.*;
+import com.zerwhit.core.module.combat.ModuleAutoClicker;
+import com.zerwhit.core.module.combat.ModuleKillAura;
+import com.zerwhit.core.module.combat.ModuleReach;
+import com.zerwhit.core.module.movement.ModuleFly;
+import com.zerwhit.core.module.movement.ModuleNoFall;
+import com.zerwhit.core.module.movement.ModuleSpeed;
+import com.zerwhit.core.module.movement.ModuleSprint;
+import com.zerwhit.core.module.render.ModuleXRay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
@@ -18,7 +26,7 @@ import java.util.Map;
 import static com.zerwhit.core.Control.*;
 
 public class ClickGUI extends GuiScreen {
-    private static final Map<String, List<Module>> categories = new HashMap<>();
+    public static final Map<String, List<Module>> categories = new HashMap<>();
     private static final ColorScheme colorScheme = new ColorScheme();
 
     private static final int WINDOW_WIDTH = 400;

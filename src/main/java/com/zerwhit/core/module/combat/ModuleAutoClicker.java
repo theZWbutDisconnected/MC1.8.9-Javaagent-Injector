@@ -1,6 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.combat;
 
-import net.minecraft.client.Minecraft;
+import com.zerwhit.core.module.Module;
 import org.lwjgl.input.Mouse;
 
 public class ModuleAutoClicker extends Module {
@@ -15,8 +15,6 @@ public class ModuleAutoClicker extends Module {
 
     @Override
     public void onModuleTick() {
-        if (!enabled || mc.thePlayer == null) return;
-        
         int cps = (Integer) getConfig("CPS");
         boolean leftClick = (Boolean) getConfig("LeftClick");
         boolean rightClick = (Boolean) getConfig("RightClick");

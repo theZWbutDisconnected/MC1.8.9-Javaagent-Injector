@@ -1,7 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.movement;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.potion.Potion;
+import com.zerwhit.core.module.Module;
 
 public class ModuleSpeed extends Module {
     public ModuleSpeed() {
@@ -12,8 +11,6 @@ public class ModuleSpeed extends Module {
 
     @Override
     public void onModuleTick() {
-        if (!enabled || mc.thePlayer == null) return;
-        
         double speed = (Double) getConfig("Speed");
         String mode = (String) getConfig("Mode");
         

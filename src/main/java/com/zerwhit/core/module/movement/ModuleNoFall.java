@@ -1,6 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.movement;
 
-import net.minecraft.client.Minecraft;
+import com.zerwhit.core.module.Module;
 import net.minecraft.network.play.client.C03PacketPlayer;
 
 public class ModuleNoFall extends Module {
@@ -11,8 +11,6 @@ public class ModuleNoFall extends Module {
 
     @Override
     public void onModuleTick() {
-        if (!enabled || mc.thePlayer == null) return;
-        
         String mode = (String) getConfig("Mode");
         
         if (mc.thePlayer.fallDistance > 2.5f) {

@@ -13,8 +13,8 @@ public class CsvParser {
     public Map<String, String> methodMappings = new HashMap<>();
 
     public CsvParser(String fieldsCSV, String methodsCSV) throws IOException {
-        loadMappings(fieldsCSV, fieldMappings, true);
-        loadMappings(methodsCSV, methodMappings, false);
+//        loadMappings(fieldsCSV, fieldMappings, true);
+//        loadMappings(methodsCSV, methodMappings, false);
     }
 
     private static void loadMappings(String csvFile, Map<String, String> mappings, boolean isField) throws IOException {

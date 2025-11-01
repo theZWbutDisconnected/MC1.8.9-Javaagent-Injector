@@ -1,6 +1,6 @@
-package com.zerwhit.core.module;
+package com.zerwhit.core.module.movement;
 
-import net.minecraft.client.Minecraft;
+import com.zerwhit.core.module.Module;
 
 public class ModuleFly extends Module {
     public ModuleFly() {
@@ -25,14 +25,12 @@ public class ModuleFly extends Module {
 
     @Override
     public void onModuleTick() {
-        if (!enabled || mc.thePlayer == null) return;
-        
         double speed = (Double) getConfig("Speed");
         boolean antiKick = (Boolean) getConfig("AntiKick");
-        
+
         mc.thePlayer.capabilities.setFlySpeed((float) speed * 0.05f);
         mc.thePlayer.capabilities.isFlying = true;
-        
+
         if (antiKick && mc.thePlayer.ticksExisted % 20 == 0) {
             mc.thePlayer.motionY = -0.04;
         }
