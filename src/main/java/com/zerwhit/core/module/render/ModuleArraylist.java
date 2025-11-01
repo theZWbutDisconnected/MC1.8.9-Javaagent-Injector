@@ -32,10 +32,18 @@ public class ModuleArraylist extends Module {
     @Override
     public void render(int screenWidth, int screenHeight) {
         if (!Meta.arraylistEnabled) return;
-
+        
         List<Module> enabledModules = getEnabledModulesSorted();
         if (enabledModules.isEmpty()) return;
-
+        boolean boxStyle = (Boolean) getConfig("BoxStyle");
+        if (boxStyle) {
+            renderBoxStyle(screenWidth, screenHeight, enabledModules);
+        } else {
+            renderNormalStyle(screenWidth, screenHeight, enabledModules);
+        }
+    }
+    
+    private void renderBoxStyle(int screenWidth, int screenHeight, List<Module> enabledModules) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
         int x = screenWidth - 5;
         int y = 30;
@@ -96,6 +104,36 @@ public class ModuleArraylist extends Module {
                     moduleName,
                     x - backgroundWidth + (backgroundWidth - moduleNameWidth) / 2,
                     moduleY + 1,
+                    getModuleColor(module)
+            );
+
+            moduleY += fontRenderer.FONT_HEIGHT + moduleSpacing;
+        }
+    }
+    
+    private void renderNormalStyle(int screenWidth, int screenHeight, List<Module> enabledModules) {
+        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+        int x = screenWidth - 5;
+        int y = 30;
+        int moduleSpacing = 2;
+
+        int maxWidth = 0;
+        for (Module module : enabledModules) {
+            int width = fontRenderer.getStringWidth(module.getDisplayName());
+            if (width > maxWidth) {
+                maxWidth = width;
+            }
+        }
+
+        int moduleY = y;
+        for (Module module : enabledModules) {
+            String moduleName = module.getDisplayName();
+            int moduleNameWidth = fontRenderer.getStringWidth(moduleName);
+            
+            Renderer.drawStringWithShadow(
+                    moduleName,
+                    x - moduleNameWidth,
+                    moduleY,
                     getModuleColor(module)
             );
 

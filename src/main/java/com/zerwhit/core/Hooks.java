@@ -78,8 +78,6 @@ public class Hooks {
 
     private static void render(int screenWidth, int screenHeight) {
         drawVapeIcons(screenWidth);
-        
-        // Call render method for Arraylist module if enabled
         for (Module module : Module.categories.get("Render")) {
             if (module instanceof com.zerwhit.core.module.render.ModuleArraylist && module.enabled) {
                 module.render(new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth(), screenHeight);
