@@ -1,6 +1,6 @@
 package com.zerwhit.core.screen;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ModuleBase;
 import com.zerwhit.core.ColorScheme;
 import com.zerwhit.core.Meta;
 import com.zerwhit.core.Renderer;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.zerwhit.core.Control.*;
-import static com.zerwhit.core.module.Module.categories;
+import static com.zerwhit.core.module.ModuleBase.categories;
 
 public class ClickGUI extends GuiScreen {
     public static final ColorScheme colorScheme = new ColorScheme();
@@ -47,7 +47,7 @@ public class ClickGUI extends GuiScreen {
     private float currentAlpha = 0.0f;
     private static final long ANIMATION_DURATION = 300;
 
-    private Module selectedModule = null;
+    private ModuleBase selectedModule = null;
     private boolean showConfigMenu = false;
     private int configMenuX, configMenuY;
     private static final int CONFIG_MENU_WIDTH = 180;
@@ -161,7 +161,7 @@ public class ClickGUI extends GuiScreen {
             categoryY += categoryHeight + categorySpacing;
         }
 
-        List<Module> currentModules = categories.get(currentCategory);
+        List<ModuleBase> currentModules = categories.get(currentCategory);
         if (currentModules == null)
             currentModules = new ArrayList<>();
         int moduleHeight = 25;
@@ -180,7 +180,7 @@ public class ClickGUI extends GuiScreen {
         }
 
         int moduleY = windowY + 25 - moduleListScrollOffset;
-        for (Module module : currentModules) {
+        for (ModuleBase module : currentModules) {
             if (moduleY + moduleHeight >= windowY + 25 && moduleY <= windowY + WINDOW_HEIGHT - BORDER_SIZE) {
                 renderModule(module, windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE, moduleY);
             }
@@ -221,7 +221,7 @@ public class ClickGUI extends GuiScreen {
         return (float) (1 - Math.pow(1 - x, 3));
     }
 
-    private void renderModule(Module module, int x, int y) {
+    private void renderModule(ModuleBase module, int x, int y) {
         boolean hovered = isMouseOverModule(x, y);
 
         int bgColor = hovered ? colorScheme.moduleHover : colorScheme.moduleBackground;
@@ -312,11 +312,11 @@ public class ClickGUI extends GuiScreen {
             return;
 
         if (mouseButton == 1) {
-            List<Module> currentModules = categories.get(currentCategory);
+            List<ModuleBase> currentModules = categories.get(currentCategory);
             if (currentModules != null) {
                 int moduleHeight = 25;
                 int moduleY = windowY + 25 - moduleListScrollOffset;
-                for (Module module : currentModules) {
+                for (ModuleBase module : currentModules) {
                     if (moduleY + moduleHeight >= windowY + 25 && moduleY <= windowY + WINDOW_HEIGHT) {
                         if (isMouseOverModule(windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE, moduleY)) {
                             selectedModule = module;
@@ -370,11 +370,11 @@ public class ClickGUI extends GuiScreen {
                 categoryY += categoryHeight + categorySpacing;
             }
 
-            List<Module> currentModules = categories.get(currentCategory);
+            List<ModuleBase> currentModules = categories.get(currentCategory);
             if (currentModules != null) {
                 int moduleHeight = 25;
                 int moduleY = windowY + 25 - moduleListScrollOffset;
-                for (Module module : currentModules) {
+                for (ModuleBase module : currentModules) {
                     if (moduleY + moduleHeight >= windowY + 25 && moduleY <= windowY + WINDOW_HEIGHT) {
                         if (isMouseOverModule(windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE, moduleY)) {
                             int toggleX = windowX + SIDEBAR_WIDTH + 10 + BORDER_SIZE + MODULE_LIST_WIDTH - 60;

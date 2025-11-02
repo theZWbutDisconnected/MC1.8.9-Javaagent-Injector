@@ -2,28 +2,18 @@ package com.zerwhit.core;
 
 import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import com.zerwhit.core.module.combat.ModuleAutoBlock;
+import com.zerwhit.core.module.IRenderModule;
+import com.zerwhit.core.module.IVisualModule;
 import com.zerwhit.core.resource.TextureResource;
-import com.zerwhit.core.util.ObfuscationReflectionHelper;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.init.Items;
-import net.minecraft.item.EnumAction;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-
-import static com.zerwhit.core.screen.ClickGUI.colorScheme;
-import static com.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Hooks {
     private static boolean texturesInitialized = false;
@@ -69,8 +59,8 @@ public class Hooks {
 
     private static void triggerAutoBlock() {
         try {
-            List<Module> combatModules = Module.categories.get("Combat");
-            for (Module module : combatModules) {
+            List<ModuleBase> combatModules = ModuleBase.categories.get("Combat");
+            for (ModuleBase module : combatModules) {
                 if (module instanceof ModuleAutoBlock) {
                     ((ModuleAutoBlock) module).onPlayerHurt();
                     break;
@@ -91,9 +81,9 @@ public class Hooks {
 
     private static void render(int screenWidth, int screenHeight) {
         drawVapeIcons(screenWidth);
-        for (Module module : Module.categories.get("Render")) {
-            if (module instanceof com.zerwhit.core.module.render.ModuleArraylist && module.enabled) {
-                module.render(new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth(), screenHeight);
+        for (ModuleBase module : ModuleBase.categories.get("Render")) {
+            if (module instanceof IRenderModule && module.enabled) {
+                ((IRenderModule) module).onRender(new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth(), new ScaledResolution(Minecraft.getMinecraft()).getScaledHeight());
                 break;
             }
         }
@@ -135,88 +125,30 @@ public class Hooks {
      * Args: partialTickTime - the partial tick time for interpolation
      */
     public static void renderItemInFirstPersonHook(float partialTicks) {
-        ItemRenderer renderer = Minecraft.getMinecraft().getItemRenderer();
-        Object prevEquippedProgressObj = getObfuscatedFieldValue(ItemRenderer.class, new String[]{"prevEquippedProgress", "field_78451_d"}, renderer);
-        Object equippedProgressObj = getObfuscatedFieldValue(ItemRenderer.class, new String[]{"equippedProgress", "field_78454_c"}, renderer);
-        float prevEquippedProgress = prevEquippedProgressObj != null ? (float)prevEquippedProgressObj : 0.0F;
-        float equippedProgress = equippedProgressObj != null ? (float)equippedProgressObj : 0.0F;
-        
-        float f = 1.0F - (prevEquippedProgress + (equippedProgress - prevEquippedProgress) * partialTicks);
-        AbstractClientPlayer abstractclientplayer = Minecraft.getMinecraft().thePlayer;
-        float f1 = abstractclientplayer.getSwingProgress(partialTicks);
-        float f2 = abstractclientplayer.prevRotationPitch + (abstractclientplayer.rotationPitch - abstractclientplayer.prevRotationPitch) * partialTicks;
-        float f3 = abstractclientplayer.prevRotationYaw + (abstractclientplayer.rotationYaw - abstractclientplayer.prevRotationYaw) * partialTicks;
-        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"rotateArroundXAndY", "func_178101_a"}, renderer, f2, f3);
-        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"setLightMapFromPlayer", "func_178109_a"}, renderer, abstractclientplayer);
-        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"rotateWithPlayerRotations", "func_178110_a"}, renderer, (EntityPlayerSP)abstractclientplayer, partialTicks);
-        GlStateManager.enableRescaleNormal();
-        GlStateManager.pushMatrix();
-
-        ItemStack itemToRenderObj = (ItemStack) getObfuscatedFieldValue(ItemRenderer.class, new String[]{"itemToRender", "field_78453_b"}, renderer);
-        if (itemToRenderObj != null)
-        {
-            Item itemObj = itemToRenderObj.getItem();
-            if (itemObj == Items.filled_map)
-            {
-                invokeObfuscatedMethod(ItemRenderer.class, new String[]{"renderItemMap", "func_178097_a"}, renderer, abstractclientplayer, f2, f, f1);
-            }
-            else if (abstractclientplayer.getItemInUseCount() > 0)
-            {
-                EnumAction enumaction = ((ItemStack)itemToRenderObj).getItemUseAction();
-
-                switch (enumaction)
-                {
-                    case NONE:
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"transformFirstPersonItem", "func_178096_b"}, renderer, f, f1);
-                        break;
-
-                    case EAT:
-                    case DRINK:
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"performDrinking", "func_178104_a"}, renderer, abstractclientplayer, partialTicks);
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"transformFirstPersonItem", "func_178096_b"}, renderer, f, f1);
-                        break;
-
-                    case BLOCK:
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"transformFirstPersonItem", "func_178096_b"}, renderer, f, f1);
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"doBlockTransformations", "func_178103_d"}, renderer);
-                        break;
-
-                    case BOW:
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"transformFirstPersonItem", "func_178096_b"}, renderer, f, f1);
-                        invokeObfuscatedMethod(ItemRenderer.class, new String[]{"doBowTransformations", "func_178098_a"}, renderer, partialTicks, abstractclientplayer);
-                        break;
-                }
-            }
-            else
-            {
-                invokeObfuscatedMethod(ItemRenderer.class, new String[]{"doItemUsedTransformations", "func_178105_d"}, renderer, f1);
-                invokeObfuscatedMethod(ItemRenderer.class, new String[]{"transformFirstPersonItem", "func_178096_b"}, renderer, f, f1);
-            }
-
-            invokeObfuscatedMethod(ItemRenderer.class, new String[]{"renderItem", "func_178099_a"}, renderer, abstractclientplayer, itemToRenderObj, ItemCameraTransforms.TransformType.FIRST_PERSON);
-        }
-        else if (!abstractclientplayer.isInvisible())
-        {
-            invokeObfuscatedMethod(ItemRenderer.class, new String[]{"renderPlayerArm", "func_178095_a"}, renderer, abstractclientplayer, f, f1);
-        }
-
-        GlStateManager.popMatrix();
-        GlStateManager.disableRescaleNormal();
-        RenderHelper.disableStandardItemLighting();
+        triggerVisualModule("LegacyAnim", partialTicks);
     }
 
     private static void triggerModuleTick() {
-        for (String key : Module.categories.keySet()) {
+        for (String key : ModuleBase.categories.keySet()) {
             triggerModuleTick(key);
         }
     }
 
     private static void triggerModuleTick(String categorie) {
-        List<Module> modules = Module.categories.get(categorie);
-        for (Module module : modules) {
+        List<ModuleBase> modules = ModuleBase.categories.get(categorie);
+        for (ModuleBase module : modules) {
             Minecraft mc = Minecraft.getMinecraft();
-            if (!module.enabled || mc.theWorld == null || mc.thePlayer == null) return;
-            module.onModuleTick();
+            if (!(module instanceof ITickableModule) || !module.enabled || mc.theWorld == null || mc.thePlayer == null) return;
+            ((ITickableModule)module).onModuleTick();
+        }
+    }
+
+    private static void triggerVisualModule(String name, float partialTicks) {
+        List<ModuleBase> modules = ModuleBase.categories.get("Visual");
+        for (ModuleBase module : modules) {
+            Minecraft mc = Minecraft.getMinecraft();
+            if (!(module instanceof IVisualModule) || !Objects.equals(module.name, name) || !module.enabled || mc.theWorld == null || mc.thePlayer == null) return;
+            ((IVisualModule)module).onHook(partialTicks);
         }
     }
 

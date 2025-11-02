@@ -1,9 +1,10 @@
 package com.zerwhit.core.module.movement;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.network.play.client.C03PacketPlayer;
 
-public class ModuleNoFall extends Module {
+public class ModuleNoFall extends ModuleBase implements ITickableModule {
     public ModuleNoFall() {
         super("NoFall", true, "Movement");
         addConfig("Mode", "Packet");

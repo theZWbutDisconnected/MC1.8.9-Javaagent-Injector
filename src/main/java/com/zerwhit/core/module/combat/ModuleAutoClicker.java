@@ -1,11 +1,12 @@
 package com.zerwhit.core.module.combat;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import com.zerwhit.core.util.KeyRobot;
 
 import org.lwjgl.input.Mouse;
 
-public class ModuleAutoClicker extends Module {
+public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
     private long lastClickTime = 0;
     
     public ModuleAutoClicker() {

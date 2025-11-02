@@ -1,15 +1,11 @@
 package com.zerwhit.core.module.movement;
 
-import com.zerwhit.core.module.Module;
-import com.zerwhit.core.util.KeyRobot;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
 import net.minecraft.network.play.client.C0CPacketInput;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
 
-public class ModuleEdgeSneak extends Module {
+public class ModuleEdgeSneak extends ModuleBase implements ITickableModule {
     private long lastSneakTime = 0;
     private boolean wasOnEdge = false;
     private boolean isSneaking = false;

@@ -11,6 +11,7 @@ import com.zerwhit.core.module.movement.ModuleSpeed;
 import com.zerwhit.core.module.movement.ModuleSprint;
 import com.zerwhit.core.module.render.ModuleArraylist;
 import com.zerwhit.core.module.render.ModuleXRay;
+import com.zerwhit.core.module.visual.ModuleLegacyAnim;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Module {
-    public static final Map<String, List<Module>> categories = new HashMap<>();
+public class ModuleBase {
+    public static final Map<String, List<ModuleBase>> categories = new HashMap<>();
     public String name;
     public boolean enabled;
     public String category;
@@ -39,13 +40,14 @@ public class Module {
         addModule(new ModuleAutoClicker());
         addModule(new ModuleAutoBlock());
         addModule(new ModuleReach());
+        addModule(new ModuleLegacyAnim());
     }
 
-    private static void addModule(Module module) {
+    private static void addModule(ModuleBase module) {
         categories.computeIfAbsent(module.category, k -> new ArrayList<>()).add(module);
     }
 
-    public Module(String name, boolean enabled, String category) {
+    public ModuleBase(String name, boolean enabled, String category) {
         this.mc = Minecraft.getMinecraft();
         this.name = name;
         this.enabled = enabled;
@@ -64,7 +66,8 @@ public class Module {
             case "Combat": return 0;
             case "Movement": return 1;
             case "Render": return 2;
-            default: return 3;
+            case "Visual": return 3;
+            default: return 4;
         }
     }
 
@@ -81,11 +84,8 @@ public class Module {
         config.put(key, value);
     }
 
-    public void onModuleTick() {}
     public void onEnable() {}
     public void onDisable() {}
-    
-    public void render(int screenWidth, int screenHeight) {}
     
     public void cycleStringConfig(String key) {
         Object currentValue = getConfig(key);

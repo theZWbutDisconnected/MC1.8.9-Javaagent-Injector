@@ -1,8 +1,9 @@
 package com.zerwhit.core.module.movement;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 
-public class ModuleFly extends Module {
+public class ModuleFly extends ModuleBase implements ITickableModule {
     public ModuleFly() {
         super("Fly", false, "Movement");
         addConfig("Speed", 1.0);

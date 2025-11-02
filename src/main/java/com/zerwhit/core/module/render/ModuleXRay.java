@@ -1,11 +1,12 @@
 package com.zerwhit.core.module.render;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.IRenderModule;
+import com.zerwhit.core.module.ModuleBase;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ModuleXRay extends Module {
+public class ModuleXRay extends ModuleBase implements IRenderModule {
     private Set<Integer> xrayBlocks = new HashSet<>();
     
     public ModuleXRay() {
@@ -39,5 +40,10 @@ public class ModuleXRay extends Module {
     
     public int getOpacity() {
         return (Integer) getConfig("Opacity");
+    }
+
+    @Override
+    public void onRender(int screenWidth, int screenHeight) {
+
     }
 }

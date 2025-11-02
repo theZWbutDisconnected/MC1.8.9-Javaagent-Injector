@@ -1,17 +1,17 @@
 package com.zerwhit.core.module.combat;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemSword;
 import net.minecraft.network.play.client.C07PacketPlayerDigging;
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 import net.minecraft.network.play.server.S0BPacketAnimation;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.WorldServer;
 
-public class ModuleAutoBlock extends Module {
+public class ModuleAutoBlock extends ModuleBase {
     private boolean isBlocking = false;
 
     public ModuleAutoBlock() {

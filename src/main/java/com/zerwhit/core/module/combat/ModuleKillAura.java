@@ -1,19 +1,15 @@
 package com.zerwhit.core.module.combat;
 
-import com.zerwhit.core.module.Module;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.EnumAction;
-import net.minecraft.network.play.client.C0APacketAnimation;
-import net.minecraft.network.play.client.C0BPacketEntityAction;
-import net.minecraft.network.play.server.S0BPacketAnimation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.WorldServer;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ModuleKillAura extends Module {
+public class ModuleKillAura extends ModuleBase implements ITickableModule {
     private long lastAttackTime = 0;
 
     public ModuleKillAura() {

@@ -1,10 +1,10 @@
 package com.zerwhit.core.module.movement;
 
-import com.zerwhit.core.module.Module;
-import net.minecraft.network.play.client.C0APacketAnimation;
+import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
 
-public class ModuleSprint extends Module {
+public class ModuleSprint extends ModuleBase implements ITickableModule {
     public ModuleSprint() {
         super("Sprint", true, "Movement");
         addConfig("OmniDirectional", false);

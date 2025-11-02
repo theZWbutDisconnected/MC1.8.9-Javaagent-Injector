@@ -15,6 +15,7 @@ public class ColorScheme {
     public int combatColor = 0xFFFF6B6B;
     public int movementColor = 0xFF4ECDC4;
     public int renderColor = 0xFF45B7D1;
+    public int visualColor = 0xFFCD6DFF;
     public int otherColor = 0xFFFFFFFF;
 
     public int withAlpha(int rgb, int alpha) {

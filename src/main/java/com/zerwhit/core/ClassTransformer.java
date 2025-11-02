@@ -145,12 +145,18 @@ public class ClassTransformer implements ClassFileTransformer {
                     getClassPackage(Hooks.class),
                     "renderItemInFirstPersonHook",
                     "(F)V");
+            mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "legacyAnimEnabled", "Z");
+            Label skipReturn = new Label();
+            mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
+            Label label = new Label();
+            mv.visitLabel(label);
             mv.visitInsn(Opcodes.RETURN);
+            mv.visitLabel(skipReturn);
         }
 
         @Override
         public void visitMaxs(int maxStack, int maxLocals) {
-            mv.visitMaxs(1, 2);
+            mv.visitMaxs(2, 2);
         }
     }
 
