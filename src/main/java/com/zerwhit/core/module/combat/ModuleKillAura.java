@@ -15,7 +15,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
     public ModuleKillAura() {
         super("KillAura", true, "Combat");
         addConfig("Range", 4.0);
-        addConfig("Delay", 500);
+        addConfig("Delay", 100);
         addConfig("Players", true);
         addConfig("Mobs", false);
         addConfig("Mode", "Normal");
@@ -30,7 +30,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         String mode = (String) getConfig("Mode");
 
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastAttackTime < delay) return;
+        if (currentTime - lastAttackTime < Math.max(50, delay)) return;
 
         Entity target = findTarget(range, attackPlayers, attackMobs);
         if (target != null && isValidTarget(target, range)) {
