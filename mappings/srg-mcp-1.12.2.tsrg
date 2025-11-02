@@ -32260,7 +32260,9 @@ net/minecraft/world/World net/minecraft/world/World
 	playSound (DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FFZ)V func_184134_a
 	playSound (Lnet/minecraft/entity/player/EntityPlayer;DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V func_184148_a
 	playSound (Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V func_184133_a
-	rayTraceBlocks (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/RayTraceResult; func_72933_a
+	rayTraceBlocs (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/RayTraceResult; func_72933_a
+	rayTraceBlocs (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Z)Lnet/minecraft/util/math/RayTraceResult; func_72901_a
+	rayTraceBlocks (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;ZZZ)Lnet/minecraft/util/math/RayTraceResult; func_147447_a
 	removeEntity (Lnet/minecraft/entity/Entity;)V func_72900_e
 	removeEntityDangerously (Lnet/minecraft/entity/Entity;)V func_72973_f
 	removeEventListener (Lnet/minecraft/world/IWorldEventListener;)V func_72848_b
