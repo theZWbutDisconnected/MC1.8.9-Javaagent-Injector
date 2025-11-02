@@ -7,7 +7,7 @@ public class ModuleSpeed extends ModuleBase implements ITickableModule {
     public ModuleSpeed() {
         super("Speed", false, "Movement");
         addConfig("Speed", 1.5);
-        addConfig("Mode", "Vanilla");
+        addConfig("Mode", "BHop");
     }
 
     @Override

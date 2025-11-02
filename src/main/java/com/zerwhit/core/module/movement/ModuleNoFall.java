@@ -7,7 +7,7 @@ import net.minecraft.network.play.client.C03PacketPlayer;
 public class ModuleNoFall extends ModuleBase implements ITickableModule {
     public ModuleNoFall() {
         super("NoFall", true, "Movement");
-        addConfig("Mode", "Packet");
+        addConfig("Mode", "Spoof");
     }
 
     @Override

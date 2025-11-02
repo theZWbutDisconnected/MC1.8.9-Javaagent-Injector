@@ -5,6 +5,7 @@ import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
 
 public class ModuleSprint extends ModuleBase implements ITickableModule {
+    private boolean sendedPacket;
     public ModuleSprint() {
         super("Sprint", true, "Movement");
         addConfig("OmniDirectional", false);
@@ -20,18 +21,27 @@ public class ModuleSprint extends ModuleBase implements ITickableModule {
             case "Legit":
                 if (omniDirectional) {
                     if (mc.thePlayer.moveForward != 0 || mc.thePlayer.moveStrafing != 0) {
-                        mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                        if (!sendedPacket) {
+                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                            sendedPacket = true;
+                        }
                         mc.thePlayer.setSprinting(true);
                     }
                 } else {
                     if (mc.thePlayer.moveForward > 0 && !mc.thePlayer.isCollidedHorizontally) {
-                        mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                        if (!sendedPacket) {
+                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                            sendedPacket = true;
+                        }
                         mc.thePlayer.setSprinting(true);
                     }
                 }
                 break;
             case "Rage":
-                mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                if (!sendedPacket) {
+                    mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                    sendedPacket = true;
+                }
                 mc.thePlayer.setSprinting(true);
                 break;
         }
@@ -41,6 +51,7 @@ public class ModuleSprint extends ModuleBase implements ITickableModule {
     public void onDisable() {
         mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
         mc.thePlayer.setSprinting(false);
+        sendedPacket = false;
     }
     
     @Override

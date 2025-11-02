@@ -2,27 +2,30 @@ package com.zerwhit.core;
 
 import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
-import com.zerwhit.core.module.ITickableModule;
+import com.zerwhit.core.manager.ModuleManager;
 import com.zerwhit.core.module.ModuleBase;
 import com.zerwhit.core.module.combat.ModuleAutoBlock;
-import com.zerwhit.core.module.IRenderModule;
-import com.zerwhit.core.module.IVisualModule;
 import com.zerwhit.core.resource.TextureResource;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 
 import java.util.List;
-import java.util.Objects;
 
 public class Hooks {
     private static boolean texturesInitialized = false;
+    private static boolean modulesInitialized = false;
     private static final int MARGIN = 10;
+    private static final ModuleManager moduleManager = ModuleManager.getInstance();
 
     public static void onUpdateDisplay() {
         Minecraft mc = Minecraft.getMinecraft();
-
-        triggerModuleTick("Render");
+        if (!modulesInitialized) {
+            moduleManager.initialize();
+            modulesInitialized = true;
+        }
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.RENDER, ModuleManager.ModuleHookType.TICK);
+        
         try {
             if (!texturesInitialized) {
                 initializeTextures();
@@ -49,8 +52,8 @@ public class Hooks {
     public static void onPlayerPreUpdate() {
     }
     public static void onPlayerPostUpdate() {
-        triggerModuleTick("Movement");
-        triggerModuleTick("Combat");
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
     }
 
     public static void onPlayerHurt() {
@@ -81,12 +84,9 @@ public class Hooks {
 
     private static void render(int screenWidth, int screenHeight) {
         drawVapeIcons(screenWidth);
-        for (ModuleBase module : ModuleBase.categories.get("Render")) {
-            if (module instanceof IRenderModule && module.enabled) {
-                ((IRenderModule) module).onRender(new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth(), new ScaledResolution(Minecraft.getMinecraft()).getScaledHeight());
-                break;
-            }
-        }
+        int scaledWidth = new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth();
+        int scaledHeight = new ScaledResolution(Minecraft.getMinecraft()).getScaledHeight();
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.RENDER, ModuleManager.ModuleHookType.RENDER, scaledWidth, scaledHeight);
     }
 
     private static void drawVapeIcons(int screenWidth) {
@@ -115,8 +115,10 @@ public class Hooks {
 
     public static void cleanup() {
         TextureRegistry.cleanup();
+        moduleManager.cleanup();
         texturesInitialized = false;
-        System.out.println("Hooks texture system cleaned up");
+        modulesInitialized = false;
+        System.out.println("Hooks system cleaned up");
     }
 
     /**
@@ -125,31 +127,7 @@ public class Hooks {
      * Args: partialTickTime - the partial tick time for interpolation
      */
     public static void renderItemInFirstPersonHook(float partialTicks) {
-        triggerVisualModule("LegacyAnim", partialTicks);
-    }
-
-    private static void triggerModuleTick() {
-        for (String key : ModuleBase.categories.keySet()) {
-            triggerModuleTick(key);
-        }
-    }
-
-    private static void triggerModuleTick(String categorie) {
-        List<ModuleBase> modules = ModuleBase.categories.get(categorie);
-        for (ModuleBase module : modules) {
-            Minecraft mc = Minecraft.getMinecraft();
-            if (!(module instanceof ITickableModule) || !module.enabled || mc.theWorld == null || mc.thePlayer == null) return;
-            ((ITickableModule)module).onModuleTick();
-        }
-    }
-
-    private static void triggerVisualModule(String name, float partialTicks) {
-        List<ModuleBase> modules = ModuleBase.categories.get("Visual");
-        for (ModuleBase module : modules) {
-            Minecraft mc = Minecraft.getMinecraft();
-            if (!(module instanceof IVisualModule) || !Objects.equals(module.name, name) || !module.enabled || mc.theWorld == null || mc.thePlayer == null) return;
-            ((IVisualModule)module).onHook(partialTicks);
-        }
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.VISUAL, partialTicks);
     }
 
     static {
