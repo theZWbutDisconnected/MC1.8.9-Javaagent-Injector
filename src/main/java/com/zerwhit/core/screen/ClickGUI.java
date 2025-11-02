@@ -52,10 +52,14 @@ public class ClickGUI extends GuiScreen {
     private int configMenuX, configMenuY;
     private static final int CONFIG_MENU_WIDTH = 180;
     private static final int CONFIG_ITEM_HEIGHT = 25;
+    private static final int CONFIG_MENU_MAX_HEIGHT = 200;
 
     private String editingConfigKey = null;
     private boolean isDraggingSlider = false;
     private Map<String, String> configInputValues = new HashMap<>();
+    
+    private int configMenuScrollOffset = 0;
+    private boolean isScrollingConfigMenu = false;
 
     public static ClickGUI INSTANCE = new ClickGUI().init();
 
@@ -410,28 +414,50 @@ public class ClickGUI extends GuiScreen {
         if (selectedModule == null)
             return;
 
-        int itemY = configMenuY;
-        for (Map.Entry<String, Object> entry : selectedModule.config.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-
-            if (isMouseOverConfigItem(configMenuX, itemY, mouseX, mouseY)) {
-                if (value instanceof Boolean) {
-                    selectedModule.setConfig(key, !(Boolean) value);
-                } else if (value instanceof Integer) {
-                    editingConfigKey = key;
-                    isDraggingSlider = true;
-                    updateIntegerSliderValue(mouseX, key, (Integer) value);
-                } else if (value instanceof Double) {
-                    editingConfigKey = key;
-                    isDraggingSlider = true;
-                    updateDoubleSliderValue(mouseX, key, (Double) value);
-                } else if (value instanceof String) {
-                    selectedModule.cycleStringConfig(key);
-                }
-                break;
+        int totalHeight = selectedModule.config.size() * CONFIG_ITEM_HEIGHT;
+        int actualHeight = Math.min(totalHeight, CONFIG_MENU_MAX_HEIGHT);
+        
+        if (totalHeight > actualHeight) {
+            int scrollbarWidth = 5;
+            int scrollbarX = configMenuX + CONFIG_MENU_WIDTH - scrollbarWidth;
+            int scrollbarHeight = (int) ((float) actualHeight / totalHeight * actualHeight);
+            int scrollbarY = configMenuY + (int) ((float) configMenuScrollOffset / totalHeight * actualHeight);
+            
+            if (mouseX >= scrollbarX && mouseX <= scrollbarX + scrollbarWidth &&
+                mouseY >= scrollbarY && mouseY <= scrollbarY + scrollbarHeight) {
+                isScrollingConfigMenu = true;
+                return;
             }
-            itemY += CONFIG_ITEM_HEIGHT;
+        }
+
+        int itemIndex = 0;
+        for (Map.Entry<String, Object> entry : selectedModule.config.entrySet()) {
+            int itemPosition = itemIndex * CONFIG_ITEM_HEIGHT;
+            if (itemPosition >= configMenuScrollOffset && 
+                itemPosition < configMenuScrollOffset + actualHeight) {
+                int visibleItemY = configMenuY + (itemPosition - configMenuScrollOffset);
+                
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                if (isMouseOverConfigItem(configMenuX, visibleItemY, mouseX, mouseY)) {
+                    if (value instanceof Boolean) {
+                        selectedModule.setConfig(key, !(Boolean) value);
+                    } else if (value instanceof Integer) {
+                        editingConfigKey = key;
+                        isDraggingSlider = true;
+                        updateIntegerSliderValue(mouseX, key, (Integer) value);
+                    } else if (value instanceof Double) {
+                        editingConfigKey = key;
+                        isDraggingSlider = true;
+                        updateDoubleSliderValue(mouseX, key, (Double) value);
+                    } else if (value instanceof String) {
+                        selectedModule.cycleStringConfig(key);
+                    }
+                    break;
+                }
+            }
+            itemIndex++;
         }
     }
 
@@ -497,13 +523,20 @@ public class ClickGUI extends GuiScreen {
         int mouseWheel = Mouse.getDWheel();
         if (mouseWheel != 0) {
             if (isMouseOverSidebar()) {
-                sidebarScrollOffset -= mouseWheel / 10;
+                sidebarScrollOffset -= mouseWheel;
                 sidebarScrollOffset = Math.max(0,
                         Math.min(sidebarScrollOffset, sidebarTotalHeight - (WINDOW_HEIGHT - 25)));
             } else if (isMouseOverModuleList()) {
-                moduleListScrollOffset -= mouseWheel / 10;
+                moduleListScrollOffset -= mouseWheel;
                 moduleListScrollOffset = Math.max(0,
                         Math.min(moduleListScrollOffset, moduleListTotalHeight - (WINDOW_HEIGHT - 25)));
+            } else if (showConfigMenu && selectedModule != null && isMouseOverConfigMenu(configMenuX, configMenuY)) {
+                int totalHeight = selectedModule.config.size() * CONFIG_ITEM_HEIGHT;
+                int actualHeight = Math.min(totalHeight, CONFIG_MENU_MAX_HEIGHT);
+                int maxScrollOffset = Math.max(0, totalHeight - actualHeight);
+                
+                configMenuScrollOffset -= mouseWheel;
+                configMenuScrollOffset = Math.max(0, Math.min(configMenuScrollOffset, maxScrollOffset));
             }
         }
 
@@ -524,6 +557,19 @@ public class ClickGUI extends GuiScreen {
                     Math.min(moduleListScrollOffset, moduleListTotalHeight - (WINDOW_HEIGHT - 25)));
         } else {
             isScrollingModuleList = false;
+        }
+        
+        if (showConfigMenu && selectedModule != null && isScrollingConfigMenu && Mouse.isButtonDown(0)) {
+            int totalHeight = selectedModule.config.size() * CONFIG_ITEM_HEIGHT;
+            int actualHeight = Math.min(totalHeight, CONFIG_MENU_MAX_HEIGHT);
+            int maxScrollOffset = Math.max(0, totalHeight - actualHeight);
+            
+            int mouseY = getMouseY();
+            float scrollPercentage = (float) (mouseY - configMenuY) / actualHeight;
+            configMenuScrollOffset = (int) (scrollPercentage * totalHeight);
+            configMenuScrollOffset = Math.max(0, Math.min(configMenuScrollOffset, maxScrollOffset));
+        } else {
+            isScrollingConfigMenu = false;
         }
     }
 
@@ -554,42 +600,63 @@ public class ClickGUI extends GuiScreen {
 
         int x = configMenuX;
         int y = configMenuY;
-        int height = selectedModule.config.size() * CONFIG_ITEM_HEIGHT;
+        int totalHeight = selectedModule.config.size() * CONFIG_ITEM_HEIGHT;
+        int actualHeight = Math.min(totalHeight, CONFIG_MENU_MAX_HEIGHT);
 
         if (x + CONFIG_MENU_WIDTH > windowX + WINDOW_WIDTH) {
             x = windowX + WINDOW_WIDTH - CONFIG_MENU_WIDTH;
         }
-        if (y + height > windowY + WINDOW_HEIGHT) {
-            y = windowY + WINDOW_HEIGHT - height;
+        if (y + actualHeight > windowY + WINDOW_HEIGHT) {
+            y = windowY + WINDOW_HEIGHT - actualHeight;
         }
 
-        Renderer.drawRoundedRect(x, y, CONFIG_MENU_WIDTH, height, 5, colorScheme.background);
+        int maxScrollOffset = Math.max(0, totalHeight - actualHeight);
+        configMenuScrollOffset = Math.max(0, Math.min(configMenuScrollOffset, maxScrollOffset));
+
+        Renderer.drawRoundedRect(x, y, CONFIG_MENU_WIDTH, actualHeight, 5, colorScheme.background);
+
+        if (totalHeight > actualHeight) {
+            int scrollbarWidth = 5;
+            int scrollbarX = x + CONFIG_MENU_WIDTH - scrollbarWidth;
+            int scrollbarHeight = (int) ((float) actualHeight / totalHeight * actualHeight);
+            int scrollbarY = y + (int) ((float) configMenuScrollOffset / totalHeight * actualHeight);
+            
+            Renderer.drawRect(scrollbarX, y, scrollbarWidth, actualHeight, colorScheme.moduleHover);
+            Renderer.drawRect(scrollbarX, scrollbarY, scrollbarWidth, scrollbarHeight, colorScheme.accent);
+        }
 
         int itemY = y;
+        int itemIndex = 0;
         for (Map.Entry<String, Object> entry : selectedModule.config.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            int mouseX = getMouseX();
-            int mouseY = getMouseY();
-            boolean hovered = isMouseOverConfigItem(x, itemY, mouseX, mouseY);
-            int bgColor = hovered ? colorScheme.moduleHover : colorScheme.moduleBackground;
+            int itemPosition = itemIndex * CONFIG_ITEM_HEIGHT;
+            if (itemPosition >= configMenuScrollOffset && 
+                itemPosition < configMenuScrollOffset + actualHeight) {
+                int visibleItemY = y + (itemPosition - configMenuScrollOffset);
+                
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                int mouseX = getMouseX();
+                int mouseY = getMouseY();
+                boolean hovered = isMouseOverConfigItem(x, visibleItemY, mouseX, mouseY);
+                int bgColor = hovered ? colorScheme.moduleHover : colorScheme.moduleBackground;
 
-            Renderer.drawRect(x, itemY, CONFIG_MENU_WIDTH, CONFIG_ITEM_HEIGHT, bgColor);
-            Renderer.drawStringWithShadow(key, x + 5, itemY + 6, colorScheme.text);
+                Renderer.drawRect(x, visibleItemY, CONFIG_MENU_WIDTH, CONFIG_ITEM_HEIGHT, bgColor);
+                Renderer.drawStringWithShadow(key, x + 5, visibleItemY + 6, colorScheme.text);
 
-            if (value instanceof Boolean) {
-                drawBooleanControl(x, itemY, key, (Boolean) value, mouseX, mouseY);
-            } else if (value instanceof Integer) {
-                drawIntegerControl(x, itemY, key, (Integer) value, mouseX, mouseY);
-            } else if (value instanceof Double) {
-                drawDoubleControl(x, itemY, key, (Double) value, mouseX, mouseY);
-            } else if (value instanceof String) {
-                drawStringControl(x, itemY, key, (String) value, mouseX, mouseY);
-            } else {
-                Renderer.drawStringWithShadow(String.valueOf(value), x + CONFIG_MENU_WIDTH - 50, itemY + 6, colorScheme.text);
+                if (value instanceof Boolean) {
+                    drawBooleanControl(x, visibleItemY, key, (Boolean) value, mouseX, mouseY);
+                } else if (value instanceof Integer) {
+                    drawIntegerControl(x, visibleItemY, key, (Integer) value, mouseX, mouseY);
+                } else if (value instanceof Double) {
+                    drawDoubleControl(x, visibleItemY, key, (Double) value, mouseX, mouseY);
+                } else if (value instanceof String) {
+                    drawStringControl(x, visibleItemY, key, (String) value, mouseX, mouseY);
+                } else {
+                    Renderer.drawStringWithShadow(String.valueOf(value), x + CONFIG_MENU_WIDTH - 50, visibleItemY + 6, colorScheme.text);
+                }
             }
-
-            itemY += CONFIG_ITEM_HEIGHT;
+            
+            itemIndex++;
         }
     }
 
