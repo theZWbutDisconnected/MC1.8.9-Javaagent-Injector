@@ -173,4 +173,18 @@ public class Renderer {
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
     }
+
+    public static void pushScissor(int x, int y, int width, int height) {
+        Minecraft mc = Minecraft.getMinecraft();
+        ScaledResolution scaledResolution = new ScaledResolution(mc);
+        int scaleFactor = scaledResolution.getScaleFactor();
+        
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        GL11.glScissor(x * scaleFactor, mc.displayHeight - (y + height) * scaleFactor, 
+                      width * scaleFactor, height * scaleFactor);
+    }
+
+    public static void popScissor() {
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+    }
 }

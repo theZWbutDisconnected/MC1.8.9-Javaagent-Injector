@@ -461,7 +461,7 @@ public class ClickGUI extends GuiScreen {
         float percentage = relativeX / sliderWidth;
 
         int min = 0;
-        int max = getMaxValueForConfig(key);
+        int max = selectedModule.getMaxValueForConfig(key);
         int newValue = min + (int) (percentage * (max - min));
 
         selectedModule.setConfig(key, newValue);
@@ -475,7 +475,7 @@ public class ClickGUI extends GuiScreen {
         float percentage = relativeX / sliderWidth;
 
         double min = 0.0;
-        double max = getMaxDoubleValueForConfig(key);
+        double max = selectedModule.getMaxDoubleValueForConfig(key);
         double newValue = min + percentage * (max - min);
         newValue = Math.round(newValue * 10.0) / 10.0;
 
@@ -623,7 +623,7 @@ public class ClickGUI extends GuiScreen {
         int sliderY = y + (CONFIG_ITEM_HEIGHT - sliderHeight) / 2;
 
         int min = 0;
-        int max = getMaxValueForConfig(key);
+        int max = selectedModule.getMaxValueForConfig(key);
 
         float percentage = (float) (value - min) / (max - min);
         int sliderPos = (int) (percentage * sliderWidth);
@@ -652,7 +652,7 @@ public class ClickGUI extends GuiScreen {
         int sliderY = y + (CONFIG_ITEM_HEIGHT - sliderHeight) / 2;
 
         double min = 0.0;
-        double max = getMaxDoubleValueForConfig(key);
+        double max = selectedModule.getMaxDoubleValueForConfig(key);
 
         float percentage = (float) ((value - min) / (max - min));
         int sliderPos = (int) (percentage * sliderWidth);
@@ -687,24 +687,6 @@ public class ClickGUI extends GuiScreen {
         Renderer.drawStringWithShadow(value, buttonX + 5, buttonY + 4, colorScheme.text);
 
         Renderer.drawStringWithShadow(value, buttonX - 40, y + 6, colorScheme.text);
-    }
-
-    private int getMaxValueForConfig(String key) {
-        switch (key) {
-            case "CPS": return 20;
-            case "Delay": return 1000;
-            case "Range": return 10;
-            case "Opacity": return 100;
-            case "Reach": return 10;
-            default: return 100;
-        }
-    }
-
-    private double getMaxDoubleValueForConfig(String key) {
-        switch (key) {
-            case "Speed": return 5.0;
-            default: return 10.0;
-        }
     }
 
     private boolean isMouseOverToggle(int x, int y, int width, int height, int mouseX, int mouseY) {

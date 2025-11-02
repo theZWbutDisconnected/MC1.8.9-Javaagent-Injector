@@ -36,4 +36,12 @@ public class ModuleFly extends ModuleBase implements ITickableModule {
             mc.thePlayer.motionY = -0.04;
         }
     }
+    
+    @Override
+    public double getMaxDoubleValueForConfig(String key) {
+        if ("Speed".equals(key)) {
+            return 5.0;
+        }
+        return super.getMaxDoubleValueForConfig(key);
+    }
 }

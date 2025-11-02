@@ -52,4 +52,14 @@ public class ModuleEdgeSneak extends ModuleBase implements ITickableModule {
             }
         }
     }
+    
+    @Override
+    public double getMaxDoubleValueForConfig(String key) {
+        if ("Distance".equals(key)) {
+            return 5.0;
+        } else if ("DetectionRadius".equals(key)) {
+            return 3.0;
+        }
+        return super.getMaxDoubleValueForConfig(key);
+    }
 }

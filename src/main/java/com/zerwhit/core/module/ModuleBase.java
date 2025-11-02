@@ -92,4 +92,12 @@ public class ModuleBase {
         if (currentValue instanceof String) {
         }
     }
+    
+    public int getMaxValueForConfig(String key) {
+        return 100;
+    }
+    
+    public double getMaxDoubleValueForConfig(String key) {
+        return 10.0;
+    }
 }

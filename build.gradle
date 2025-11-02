@@ -25,7 +25,7 @@ dependencies {
     implementation 'net.java.dev.jna:jna-platform:5.5.0'
 
     implementation files("${System.getProperty('java.home')}/../lib/tools.jar")
-    compileOnly files("/minecraft.jar", "/jinput-2.0.5.jar", "/jutils-1.0.0.jar", "/lwjgl-2.9.4-nightly-20150209.jar", "/lwjgl_util-2.9.4-nightly-20150209.jar")
+    compileOnly files("/minecraft.jar", "/jinput-2.0.5.jar", "/jutils-1.0.0.jar", "/lwjgl-2.9.4-nightly-20150209.jar", "/lwjgl_util-2.9.4-nightly-20150209.jar", "/authlib-1.5.21.jar")
 }
 
 task obfuscateBytecode(type: JavaExec) {

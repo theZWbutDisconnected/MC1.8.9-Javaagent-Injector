@@ -96,4 +96,12 @@ public class ModuleAutoBlock extends ModuleBase {
             }
         }
     }
+    
+    @Override
+    public int getMaxValueForConfig(String key) {
+        if ("HoldTime".equals(key)) {
+            return 2000;
+        }
+        return super.getMaxValueForConfig(key);
+    }
 }

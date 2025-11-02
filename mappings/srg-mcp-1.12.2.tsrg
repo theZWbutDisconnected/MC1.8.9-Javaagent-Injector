@@ -31149,10 +31149,10 @@ net/minecraft/util/MathHelper net/minecraft/util/MathHelper
 	absMax (DD)D func_76132_a
 	atan2 (DD)D func_181159_b
 	average ([J)D func_76127_a
-	ceil (D)I func_76143_f
-	ceil (F)I func_76123_f
-	clamp (DDD)D func_151237_a
-	clamp (FFF)F func_76131_a
+	ceiling_double_int (D)I func_76143_f
+	ceiling_float_int (F)I func_76123_f
+	clamp_double (DDD)D func_151237_a
+	clamp_float (FFF)F func_76131_a
 	clamp (III)I func_76125_a
 	clampedLerp (DDD)D func_151238_b
 	cos (F)F func_76134_b
@@ -32261,8 +32261,6 @@ net/minecraft/world/World net/minecraft/world/World
 	playSound (Lnet/minecraft/entity/player/EntityPlayer;DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V func_184148_a
 	playSound (Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FF)V func_184133_a
 	rayTraceBlocks (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/RayTraceResult; func_72933_a
-	rayTraceBlocks (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Z)Lnet/minecraft/util/math/RayTraceResult; func_72901_a
-	rayTraceBlocks (Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;ZZZ)Lnet/minecraft/util/math/RayTraceResult; func_147447_a
 	removeEntity (Lnet/minecraft/entity/Entity;)V func_72900_e
 	removeEntityDangerously (Lnet/minecraft/entity/Entity;)V func_72973_f
 	removeEventListener (Lnet/minecraft/world/IWorldEventListener;)V func_72848_b

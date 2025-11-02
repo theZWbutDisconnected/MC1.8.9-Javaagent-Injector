@@ -46,4 +46,12 @@ public class ModuleXRay extends ModuleBase implements IRenderModule {
     public void onRender(int screenWidth, int screenHeight) {
 
     }
+    
+    @Override
+    public int getMaxValueForConfig(String key) {
+        if ("Opacity".equals(key)) {
+            return 100;
+        }
+        return super.getMaxValueForConfig(key);
+    }
 }
