@@ -3,14 +3,10 @@ package com.zerwhit.core;
 import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
 import com.zerwhit.core.manager.ModuleManager;
-import com.zerwhit.core.module.ModuleBase;
-import com.zerwhit.core.module.combat.ModuleAutoBlock;
 import com.zerwhit.core.resource.TextureResource;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
-
-import java.util.List;
 
 public class Hooks {
     private static boolean texturesInitialized = false;
@@ -54,24 +50,11 @@ public class Hooks {
     public static void onPlayerPostUpdate() {
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);
     }
 
     public static void onPlayerHurt() {
-        triggerAutoBlock();
-    }
-
-    private static void triggerAutoBlock() {
-        try {
-            List<ModuleBase> combatModules = ModuleBase.categories.get("Combat");
-            for (ModuleBase module : combatModules) {
-                if (module instanceof ModuleAutoBlock) {
-                    ((ModuleAutoBlock) module).onPlayerHurt();
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error in AutoBlock: " + e.getMessage());
-        }
+        moduleManager.invokeModule(ModuleManager.ModuleHookType.EVENT, "playerHurt");
     }
 
     private static void initializeTextures() {

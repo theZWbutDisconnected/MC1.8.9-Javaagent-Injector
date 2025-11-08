@@ -1,5 +1,6 @@
 package com.zerwhit.core.manager;
 
+import com.zerwhit.core.module.IEventModule;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.IRenderModule;
 import com.zerwhit.core.module.IVisualModule;
@@ -179,6 +180,9 @@ public class ModuleManager {
         if (module instanceof IVisualModule) {
             modulesByHookType.get(ModuleHookType.VISUAL).add(module);
         }
+        if (module instanceof IEventModule) {
+            modulesByHookType.get(ModuleHookType.EVENT).add(module);
+        }
     }
     
     public List<ModuleBase> getModulesByCategory(ModuleCategory category) {
@@ -257,17 +261,16 @@ public class ModuleManager {
         }
     }
     
-    public void invokeModule(String moduleName, ModuleHookType hookType, Object... args) {
+    public void invokeModule(ModuleHookType hookType, Object... args) {
         if (!initialized) return;
         
         for (List<ModuleBase> modules : modulesByCategory.values()) {
             for (ModuleBase module : modules) {
-                if (module.name.equals(moduleName) && shouldInvokeModule(module) && hasHookType(module, hookType)) {
+                if (shouldInvokeModule(module) && hasHookType(module, hookType)) {
                     try {
                         invokeModuleHook(module, hookType, args);
                         return;
                     } catch (Exception e) {
-                        System.err.println("Error invoking module " + moduleName + ": " + e.getMessage());
                         e.printStackTrace();
                     }
                 }
@@ -285,6 +288,7 @@ public class ModuleManager {
             case TICK: return module instanceof ITickableModule;
             case RENDER: return module instanceof IRenderModule;
             case VISUAL: return module instanceof IVisualModule;
+            case EVENT: return module instanceof IEventModule;
             default: return false;
         }
     }
@@ -302,6 +306,14 @@ public class ModuleManager {
             case VISUAL:
                 if (args.length >= 1 && args[0] instanceof Float) {
                     ((IVisualModule) module).onHook((Float) args[0]);
+                }
+                break;
+            case EVENT:
+                if (args.length >= 1 && args[0] instanceof String) {
+                    String eventType = (String) args[0];
+                    Object[] eventArgs = new Object[args.length - 1];
+                    System.arraycopy(args, 1, eventArgs, 0, eventArgs.length);
+                    ((IEventModule) module).onEvent(eventType, eventArgs);
                 }
                 break;
         }

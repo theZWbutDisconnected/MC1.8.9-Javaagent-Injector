@@ -1,6 +1,7 @@
 package com.zerwhit.core.module.visual;
 
 import com.zerwhit.core.Meta;
+import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.IVisualModule;
 import com.zerwhit.core.module.ModuleBase;
 
@@ -11,14 +12,19 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 
 import static com.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
-public class ModuleLegacyAnim extends ModuleBase implements IVisualModule {
+public class ModuleLegacyAnim extends ModuleBase implements IVisualModule, ITickableModule {
+    public boolean hasClicked;
+
     public ModuleLegacyAnim() {
         super("LegacyAnim", true, "Visual");
     }
@@ -92,6 +98,18 @@ public class ModuleLegacyAnim extends ModuleBase implements IVisualModule {
         GlStateManager.popMatrix();
         GlStateManager.disableRescaleNormal();
         RenderHelper.disableStandardItemLighting();
+    }
+
+    @Override
+    public void onModuleTick() {
+        int i = Mouse.getEventButton();
+        if (i == 0 && !hasClicked && Mouse.getEventButtonState()) {
+            mc.thePlayer.swingItem();
+            hasClicked = true;
+        }
+        if (i == 0 && hasClicked && !Mouse.getEventButtonState()) {
+            hasClicked = false;
+        }
     }
 
     @Override

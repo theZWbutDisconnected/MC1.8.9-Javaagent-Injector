@@ -1,6 +1,5 @@
 package com.zerwhit.core.module;
 
-import com.zerwhit.core.module.combat.ModuleAutoBlock;
 import com.zerwhit.core.module.combat.ModuleAutoClicker;
 import com.zerwhit.core.module.combat.ModuleKillAura;
 import com.zerwhit.core.module.combat.ModuleReach;
@@ -38,7 +37,6 @@ public class ModuleBase {
         addModule(new ModuleXRay());
         addModule(new ModuleKillAura());
         addModule(new ModuleAutoClicker());
-        addModule(new ModuleAutoBlock());
         addModule(new ModuleReach());
         addModule(new ModuleLegacyAnim());
     }
@@ -99,5 +97,9 @@ public class ModuleBase {
     
     public double getMaxDoubleValueForConfig(String key) {
         return 10.0;
+    }
+    
+    public int getMinValueForConfig(String key) {
+        return 0;
     }
 }
