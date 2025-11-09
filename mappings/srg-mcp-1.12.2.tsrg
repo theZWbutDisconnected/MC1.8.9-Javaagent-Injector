@@ -30736,7 +30736,7 @@ net/minecraft/util/Timer net/minecraft/util/Timer
 	elapsedPartialTicks field_194148_c
 	elapsedTicks field_74280_b
 	lastSyncSysClock field_74277_g
-	renderPartialTicks field_194147_b
+	renderPartialTicks field_74281_c
 	tickLength field_194149_e
 	updateTimer ()V func_74275_a
 net/minecraft/util/Tuple net/minecraft/util/Tuple

@@ -8,7 +8,14 @@ plugins {
     id 'java'
 }
 
-targetCompatibility = sourceCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 group = 'com.zerwhit'
 version = '1.0-SNAPSHOT'
@@ -23,8 +30,9 @@ dependencies {
     implementation 'org.ow2.asm:asm-commons:9.6'
     implementation 'net.java.dev.jna:jna:5.5.0'
     implementation 'net.java.dev.jna:jna-platform:5.5.0'
+    implementation 'com.google.code.gson:gson:2.13.2'
 
-    implementation files("${System.getProperty('java.home')}/../lib/tools.jar")
+    implementation files("C:/Users/86158/.jdks/corretto-1.8.0_452/lib/tools.jar")
     compileOnly files("/minecraft.jar", "/jinput-2.0.5.jar", "/jutils-1.0.0.jar", "/lwjgl-2.9.4-nightly-20150209.jar", "/lwjgl_util-2.9.4-nightly-20150209.jar", "/authlib-1.5.21.jar")
 }
 

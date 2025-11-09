@@ -1,5 +1,5 @@
 package com.zerwhit.core.module;
 
 public interface IRenderModule {
-    void onRender(int screenWidth, int screenHeight);
+    void onRender(float partialTicks, int screenWidth, int screenHeight);
 }

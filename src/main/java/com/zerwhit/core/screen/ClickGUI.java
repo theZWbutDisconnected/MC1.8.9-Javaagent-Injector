@@ -447,10 +447,10 @@ public class ClickGUI extends GuiScreen {
                         editingConfigKey = key;
                         isDraggingSlider = true;
                         updateIntegerSliderValue(mouseX, key, (Integer) value);
-                    } else if (value instanceof Double) {
+                    } else if (value instanceof Double || value instanceof Float) {
                         editingConfigKey = key;
                         isDraggingSlider = true;
-                        updateDoubleSliderValue(mouseX, key, (Double) value);
+                        updateFloatingPointSliderValue(mouseX, key, value);
                     } else if (value instanceof String) {
                         selectedModule.cycleStringConfig(key);
                     }
@@ -468,8 +468,8 @@ public class ClickGUI extends GuiScreen {
 
             if (currentValue instanceof Integer) {
                 updateIntegerSliderValue(mouseX, editingConfigKey, (Integer) currentValue);
-            } else if (currentValue instanceof Double) {
-                updateDoubleSliderValue(mouseX, editingConfigKey, (Double) currentValue);
+            } else if (currentValue instanceof Double || currentValue instanceof Float) {
+                updateFloatingPointSliderValue(mouseX, editingConfigKey, currentValue);
             }
         }
 
@@ -487,25 +487,29 @@ public class ClickGUI extends GuiScreen {
         float percentage = relativeX / sliderWidth;
 
         int min = 0;
-        int max = selectedModule.getMaxValueForConfig(key);
+        int max = (int) selectedModule.getMaxValueForConfig(key);
         int newValue = min + (int) (percentage * (max - min));
 
         selectedModule.setConfig(key, newValue);
     }
 
-    private void updateDoubleSliderValue(int mouseX, String key, double currentValue) {
+    private void updateFloatingPointSliderValue(int mouseX, String key, Object currentValue) {
         int sliderWidth = 80;
         int sliderX = configMenuX + CONFIG_MENU_WIDTH - sliderWidth - 5;
 
         float relativeX = Math.max(0, Math.min(mouseX - sliderX, sliderWidth));
         float percentage = relativeX / sliderWidth;
 
+        double maxValue = selectedModule.getMaxValueForConfig(key);
         double min = 0.0;
-        double max = selectedModule.getMaxDoubleValueForConfig(key);
+        double max = maxValue;
         double newValue = min + percentage * (max - min);
         newValue = Math.round(newValue * 10.0) / 10.0;
-
-        selectedModule.setConfig(key, newValue);
+        if (currentValue instanceof Float) {
+            selectedModule.setConfig(key, (float) newValue);
+        } else {
+            selectedModule.setConfig(key, newValue);
+        }
     }
 
     private void handleDragging() {
@@ -647,8 +651,8 @@ public class ClickGUI extends GuiScreen {
                     drawBooleanControl(x, visibleItemY, key, (Boolean) value, mouseX, mouseY);
                 } else if (value instanceof Integer) {
                     drawIntegerControl(x, visibleItemY, key, (Integer) value, mouseX, mouseY);
-                } else if (value instanceof Double) {
-                    drawDoubleControl(x, visibleItemY, key, (Double) value, mouseX, mouseY);
+                } else if (value instanceof Double || value instanceof Float) {
+                    drawDoubleControl(x, visibleItemY, key, ((Number) value).doubleValue(), mouseX, mouseY);
                 } else if (value instanceof String) {
                     drawStringControl(x, visibleItemY, key, (String) value, mouseX, mouseY);
                 } else {
@@ -690,7 +694,7 @@ public class ClickGUI extends GuiScreen {
         int sliderY = y + (CONFIG_ITEM_HEIGHT - sliderHeight) / 2;
 
         int min = 0;
-        int max = selectedModule.getMaxValueForConfig(key);
+        int max = (int) selectedModule.getMaxValueForConfig(key);
 
         float percentage = (float) (value - min) / (max - min);
         int sliderPos = (int) (percentage * sliderWidth);
@@ -719,7 +723,7 @@ public class ClickGUI extends GuiScreen {
         int sliderY = y + (CONFIG_ITEM_HEIGHT - sliderHeight) / 2;
 
         double min = 0.0;
-        double max = selectedModule.getMaxDoubleValueForConfig(key);
+        double max = selectedModule.getMaxValueForConfig(key);
 
         float percentage = (float) ((value - min) / (max - min));
         int sliderPos = (int) (percentage * sliderWidth);

@@ -19,10 +19,10 @@ public class ModuleReach extends ModuleBase implements ITickableModule {
     }
     
     @Override
-    public double getMaxDoubleValueForConfig(String key) {
+    public double getMaxValueForConfig(String key) {
         if ("Reach".equals(key)) {
             return 6.0;
         }
-        return super.getMaxDoubleValueForConfig(key);
+        return super.getMaxValueForConfig(key);
     }
 }

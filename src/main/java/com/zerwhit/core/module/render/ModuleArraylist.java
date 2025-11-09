@@ -28,7 +28,7 @@ public class ModuleArraylist extends ModuleBase implements IRenderModule {
     }
 
     @Override
-    public void onRender(int screenWidth, int screenHeight) {
+    public void onRender(float partialTicks, int screenWidth, int screenHeight) {
         if (!Meta.arraylistEnabled) return;
         
         List<ModuleBase> enabledModules = getEnabledModulesSorted();

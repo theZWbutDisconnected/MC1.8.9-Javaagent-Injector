@@ -49,10 +49,10 @@ public class ModuleSpeed extends ModuleBase implements ITickableModule {
     }
     
     @Override
-    public double getMaxDoubleValueForConfig(String key) {
+    public double getMaxValueForConfig(String key) {
         if ("Speed".equals(key)) {
             return 5.0;
         }
-        return super.getMaxDoubleValueForConfig(key);
+        return super.getMaxValueForConfig(key);
     }
 }

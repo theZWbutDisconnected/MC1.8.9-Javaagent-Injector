@@ -43,14 +43,14 @@ public class ModuleXRay extends ModuleBase implements IRenderModule {
     }
 
     @Override
-    public void onRender(int screenWidth, int screenHeight) {
+    public void onRender(float partialTicks, int screenWidth, int screenHeight) {
 
     }
     
     @Override
-    public int getMaxValueForConfig(String key) {
+    public double getMaxValueForConfig(String key) {
         if ("Opacity".equals(key)) {
-            return 100;
+            return 100.0;
         }
         return super.getMaxValueForConfig(key);
     }

@@ -4,9 +4,11 @@ import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
 import com.zerwhit.core.manager.ModuleManager;
 import com.zerwhit.core.resource.TextureResource;
+import com.zerwhit.core.util.ObfuscationReflectionHelper;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.util.Timer;
 
 public class Hooks {
     private static boolean texturesInitialized = false;
@@ -69,7 +71,12 @@ public class Hooks {
         drawVapeIcons(screenWidth);
         int scaledWidth = new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth();
         int scaledHeight = new ScaledResolution(Minecraft.getMinecraft()).getScaledHeight();
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.RENDER, ModuleManager.ModuleHookType.RENDER, scaledWidth, scaledHeight);
+        Timer timer = (Timer) ObfuscationReflectionHelper.getObfuscatedFieldValue(Minecraft.class, new String[]{"timer", "field_71428_T"}, Minecraft.getMinecraft());
+        float partialTicks = 0;
+        if (timer != null) {
+            partialTicks = timer.renderPartialTicks;
+        }
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.RENDER, ModuleManager.ModuleHookType.RENDER, partialTicks, scaledWidth, scaledHeight);
     }
 
     private static void drawVapeIcons(int screenWidth) {

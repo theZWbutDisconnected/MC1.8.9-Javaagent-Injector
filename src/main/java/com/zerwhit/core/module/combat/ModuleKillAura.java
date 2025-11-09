@@ -119,15 +119,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
     }
     
     @Override
-    public int getMaxValueForConfig(String key) {
-        if ("Delay".equals(key)) {
-            return 1000;
-        }
-        return super.getMaxValueForConfig(key);
-    }
-    
-    @Override
-    public double getMaxDoubleValueForConfig(String key) {
+    public double getMaxValueForConfig(String key) {
         if ("Range".equals(key)) {
             return 6.0;
         } else if ("FOV".equals(key)) {
@@ -136,7 +128,9 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
             return 360.0;
         } else if ("AntiDetectionStrength".equals(key)) {
             return 3.0;
+        }else if ("Delay".equals(key)) {
+            return 1000.0;
         }
-        return super.getMaxDoubleValueForConfig(key);
+        return super.getMaxValueForConfig(key);
     }
 }

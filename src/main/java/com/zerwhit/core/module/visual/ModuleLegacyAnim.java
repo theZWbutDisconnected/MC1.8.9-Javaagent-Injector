@@ -23,8 +23,6 @@ import org.lwjgl.opengl.Display;
 import static com.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
 public class ModuleLegacyAnim extends ModuleBase implements IVisualModule, ITickableModule {
-    public boolean hasClicked;
-
     public ModuleLegacyAnim() {
         super("LegacyAnim", true, "Visual");
     }
@@ -102,14 +100,6 @@ public class ModuleLegacyAnim extends ModuleBase implements IVisualModule, ITick
 
     @Override
     public void onModuleTick() {
-        int i = Mouse.getEventButton();
-        if (i == 0 && !hasClicked && Mouse.getEventButtonState()) {
-            mc.thePlayer.swingItem();
-            hasClicked = true;
-        }
-        if (i == 0 && hasClicked && !Mouse.getEventButtonState()) {
-            hasClicked = false;
-        }
     }
 
     @Override

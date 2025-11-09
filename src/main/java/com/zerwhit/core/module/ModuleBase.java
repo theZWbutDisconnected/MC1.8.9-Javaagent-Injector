@@ -10,7 +10,9 @@ import com.zerwhit.core.module.movement.ModuleSpeed;
 import com.zerwhit.core.module.movement.ModuleSprint;
 import com.zerwhit.core.module.render.ModuleArraylist;
 import com.zerwhit.core.module.render.ModuleXRay;
+import com.zerwhit.core.module.visual.ModuleFreeLook;
 import com.zerwhit.core.module.visual.ModuleLegacyAnim;
+import com.zerwhit.core.module.visual.ModulePostProcessing;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModuleBase {
+public abstract class ModuleBase {
     public static final Map<String, List<ModuleBase>> categories = new HashMap<>();
     public String name;
     public boolean enabled;
@@ -39,6 +41,8 @@ public class ModuleBase {
         addModule(new ModuleAutoClicker());
         addModule(new ModuleReach());
         addModule(new ModuleLegacyAnim());
+        addModule(new ModuleFreeLook());
+        addModule(new ModulePostProcessing());
     }
 
     private static void addModule(ModuleBase module) {
@@ -91,15 +95,11 @@ public class ModuleBase {
         }
     }
     
-    public int getMaxValueForConfig(String key) {
-        return 100;
-    }
-    
-    public double getMaxDoubleValueForConfig(String key) {
+    public double getMaxValueForConfig(String key) {
         return 10.0;
     }
     
-    public int getMinValueForConfig(String key) {
+    public double getMinValueForConfig(String key) {
         return 0;
     }
 }

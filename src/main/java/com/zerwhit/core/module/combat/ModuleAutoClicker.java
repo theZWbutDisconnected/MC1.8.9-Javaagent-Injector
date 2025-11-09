@@ -39,9 +39,9 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
     }
     
     @Override
-    public int getMaxValueForConfig(String key) {
+    public double getMaxValueForConfig(String key) {
         if ("CPS".equals(key)) {
-            return 20;
+            return 20.0;
         }
         return super.getMaxValueForConfig(key);
     }

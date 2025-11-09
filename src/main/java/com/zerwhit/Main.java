@@ -22,8 +22,8 @@ public class Main {
     public static void main(String[] args)
             throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
 
-        List<String> pids = findPidsByWindowName("Minecraft 1.8.9");
-        List<WinDef.HWND> hwnds = findHWNDByWindowName("Minecraft 1.8.9");
+        List<String> pids = findPidsByWindowName(" 1.8.9");
+        List<WinDef.HWND> hwnds = findHWNDByWindowName(" 1.8.9");
         System.out.println("Found " + pids.size() + " Minecraft processes:");
         for (String pid : pids) {
             System.out.println("PID: " + pid);

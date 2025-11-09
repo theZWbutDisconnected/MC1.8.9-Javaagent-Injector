@@ -299,8 +299,8 @@ public class ModuleManager {
                 ((ITickableModule) module).onModuleTick();
                 break;
             case RENDER:
-                if (args.length >= 2 && args[0] instanceof Integer && args[1] instanceof Integer) {
-                    ((IRenderModule) module).onRender((Integer) args[0], (Integer) args[1]);
+                if (args.length >= 2 && args[1] instanceof Integer && args[2] instanceof Integer) {
+                    ((IRenderModule) module).onRender((Float) args[0], (Integer) args[1], (Integer) args[2]);
                 }
                 break;
             case VISUAL:
