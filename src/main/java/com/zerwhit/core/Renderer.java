@@ -37,7 +37,7 @@ public class Renderer {
 
         Minecraft mc = Minecraft.getMinecraft();
         ScaledResolution scale = new ScaledResolution(mc);
-        worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         worldrenderer.pos((double) x / scale.getScaleFactor(), (double) (y + height) / scale.getScaleFactor(), 0.0D).tex(0.0D, 1.0D).endVertex();
         worldrenderer.pos((double) (x + width) / scale.getScaleFactor(), (double) (y + height) / scale.getScaleFactor(), 0.0D).tex(1.0D, 1.0D).endVertex();
         worldrenderer.pos((double) (x + width) / scale.getScaleFactor(), (double) y / scale.getScaleFactor(), 0.0D).tex(1.0D, 0.0D).endVertex();

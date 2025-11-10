@@ -3,12 +3,15 @@ package com.zerwhit.core;
 import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
 import com.zerwhit.core.manager.ModuleManager;
+import com.zerwhit.core.manager.ScreenEffects;
 import com.zerwhit.core.resource.TextureResource;
 import com.zerwhit.core.util.ObfuscationReflectionHelper;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.Timer;
+
+import java.io.IOException;
 
 public class Hooks {
     private static boolean texturesInitialized = false;
@@ -22,7 +25,7 @@ public class Hooks {
             moduleManager.initialize();
             modulesInitialized = true;
         }
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.RENDER, ModuleManager.ModuleHookType.TICK);
+        moduleManager.invokeHook(ModuleManager.ModuleHookType.TICK);
         
         try {
             if (!texturesInitialized) {
@@ -62,9 +65,14 @@ public class Hooks {
     private static void initializeTextures() {
         TextureRegistry.initialize();
         TextureLoader.loadAllTextureResources();
+        try {
+            ScreenEffects.INSTANCE.init();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         texturesInitialized = true;
-        System.out.println("Texture system initialized");
+        System.out.println("Texture system and ScreenEffects initialized");
     }
 
     private static void render(int screenWidth, int screenHeight) {
@@ -76,7 +84,7 @@ public class Hooks {
         if (timer != null) {
             partialTicks = timer.renderPartialTicks;
         }
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.RENDER, ModuleManager.ModuleHookType.RENDER, partialTicks, scaledWidth, scaledHeight);
+        moduleManager.invokeHook(ModuleManager.ModuleHookType.RENDER, partialTicks, scaledWidth, scaledHeight);
     }
 
     private static void drawVapeIcons(int screenWidth) {

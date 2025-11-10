@@ -14,7 +14,7 @@ import java.util.List;
 public class ModuleArraylist extends ModuleBase implements IRenderModule {
     public ModuleArraylist() {
         super("Arraylist", true, "Render");
-        addConfig("BoxStyle", true);
+        addConfig("BoxStyle", false);
     }
 
     @Override
