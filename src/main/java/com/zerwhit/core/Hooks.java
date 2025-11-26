@@ -4,6 +4,7 @@ import com.zerwhit.core.manager.TextureLoader;
 import com.zerwhit.core.manager.TextureRegistry;
 import com.zerwhit.core.manager.ModuleManager;
 import com.zerwhit.core.manager.ScreenEffects;
+import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.resource.TextureResource;
 import com.zerwhit.core.util.ObfuscationReflectionHelper;
 
@@ -53,6 +54,9 @@ public class Hooks {
     public static void onPlayerPreUpdate() {
     }
     public static void onPlayerPostUpdate() {
+        // 更新RotationManager
+        RotationManager.getInstance().updateRotation();
+        
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);

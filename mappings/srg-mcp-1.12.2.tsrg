@@ -8903,7 +8903,7 @@ net/minecraft/client/multiplayer/PlayerControllerMP net/minecraft/client/multipl
 	onStoppedUsingItem (Lnet/minecraft/entity/player/EntityPlayer;)V func_78766_c
 	pickItem (I)V func_187100_a
 	sendUseItem (Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;)Z func_78769_a
-	processRightClickBlock (Lnet/minecraft/client/entity/EntityPlayerSP;Lnet/minecraft/client/multiplayer/WorldClient;Lnet/minecraft/util/BlockPos;Lnet/minecraft/util/EnumFacing;Lnet/minecraft/util/Vec3;Lnet/minecraft/util/EnumHand;)Lnet/minecraft/util/EnumActionResult; func_187099_a
+	onPlayerRightClick (Lnet/minecraft/client/entity/EntityPlayerSP;Lnet/minecraft/client/multiplayer/WorldClient;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/BlockPos;Lnet/minecraft/util/EnumFacing;Lnet/minecraft/util/Vec3;)Z func_178890_a
 	resetBlockRemoving ()V func_78767_c
 	sendEnchantPacket (II)V func_78756_a
 	sendPacketDropItem (Lnet/minecraft/item/ItemStack;)V func_78752_a
@@ -30582,7 +30582,7 @@ net/minecraft/util/MovementInput net/minecraft/util/MovementInput
 	forwardKeyDown field_187255_c
 	jump field_78901_c
 	leftKeyDown field_187257_e
-	moveForward field_192832_b
+	moveForward field_78900_b
 	moveStrafe field_78902_a
 	rightKeyDown field_187258_f
 	sneak field_78899_d
