@@ -1,5 +1,6 @@
 package com.zerwhit.core.module.movement;
 
+import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.block.Block;
@@ -8,10 +9,9 @@ import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
+
+import java.util.List;
 
 public class ModuleScaffold extends ModuleBase implements ITickableModule {
     private BlockPos targetPos;
@@ -34,7 +34,42 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
     @Override
     public void onModuleTick() {
         if (mc.thePlayer == null || mc.theWorld == null) return;
-        BlockPos
+
+        setRotationMode(RotationManager.RotationMode.SMOOTH);
+        setRotationSpeed(720.0F);
+        setRotationThreshold(0.5F);
+        Vec3 lookVec = mc.thePlayer.getLookVec();
+        Vec3 dir = new Vec3(-lookVec.xCoord, -lookVec.yCoord, -lookVec.zCoord).normalize();
+        double range = (Double) getConfig("Range");
+        double playerX = mc.thePlayer.posX;
+        double playerY = mc.thePlayer.posY;
+        double playerZ = mc.thePlayer.posZ;
+        BlockPos targetPos = null;
+        for (double offset = 0; offset <= range; offset += 0.5) {
+            double behindX = playerX + dir.xCoord * offset;
+            double behindZ = playerZ + dir.zCoord * offset;
+            for (int yOffset = 0; yOffset <= 3; yOffset++) {
+                BlockPos checkPos = new BlockPos(behindX, playerY - yOffset, behindZ);
+                BlockPos belowPos = new BlockPos(behindX, playerY - yOffset - 1, behindZ);
+                Block currentBlock = mc.theWorld.getBlockState(checkPos).getBlock();
+                Block belowBlock = mc.theWorld.getBlockState(belowPos).getBlock();
+                if ((currentBlock instanceof BlockAir || currentBlock instanceof BlockLiquid) && 
+                    !(belowBlock instanceof BlockAir) && !(belowBlock instanceof BlockLiquid)) {
+                    targetPos = checkPos;
+                    break;
+                }
+            }
+            
+            if (targetPos != null) break;
+        }
+
+        if (targetPos == null) {
+            targetPos = new BlockPos(playerX, playerY - 1, playerZ);
+        }
+
+        if (targetPos != null) {
+            rotationManager.setTargetRotationToPos(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+        }
     }
 
     @Override

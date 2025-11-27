@@ -102,86 +102,34 @@ public abstract class ModuleBase {
     public double getMinValueForConfig(String key) {
         return 0;
     }
-    
-    // ========== Rotation Manager 集成方法 ==========
-    
-    /**
-     * 设置目标旋转角度
-     * @param yaw 目标偏航角
-     * @param pitch 目标俯仰角
-     */
+
     protected void setTargetRotation(float yaw, float pitch) {
         rotationManager.setTargetRotation(yaw, pitch);
     }
-    
-    /**
-     * 设置目标旋转到实体位置
-     * @param targetX 目标X坐标
-     * @param targetY 目标Y坐标
-     * @param targetZ 目标Z坐标
-     */
     protected void setTargetRotationToEntity(double targetX, double targetY, double targetZ) {
-        rotationManager.setTargetRotationToEntity(targetX, targetY, targetZ);
+        rotationManager.setTargetRotationToPos(targetX, targetY, targetZ);
     }
-    
-    /**
-     * 停止旋转
-     */
     protected void stopRotation() {
         rotationManager.stopRotation();
     }
-    
-    /**
-     * 检查是否正在旋转
-     * @return 是否正在旋转
-     */
     protected boolean isRotating() {
         return rotationManager.isRotating();
     }
-    
-    /**
-     * 获取旋转进度 (0.0 - 1.0)
-     * @return 旋转进度
-     */
     protected float getRotationProgress() {
         return rotationManager.getRotationProgress();
     }
-    
-    /**
-     * 设置旋转模式
-     * @param mode 旋转模式
-     */
     protected void setRotationMode(RotationManager.RotationMode mode) {
         rotationManager.setRotationMode(mode);
     }
-    
-    /**
-     * 设置旋转速度
-     * @param speed 旋转速度 (度/秒)
-     */
     protected void setRotationSpeed(float speed) {
         rotationManager.setRotationSpeed(speed);
     }
-    
-    /**
-     * 设置最大旋转速度
-     * @param maxSpeed 最大旋转速度 (度/秒)
-     */
     protected void setMaxRotationSpeed(float maxSpeed) {
         rotationManager.setMaxRotationSpeed(maxSpeed);
     }
-    
-    /**
-     * 设置旋转完成阈值
-     * @param threshold 阈值角度
-     */
     protected void setRotationThreshold(float threshold) {
         rotationManager.setRotationThreshold(threshold);
     }
-    
-    /**
-     * 获取当前旋转配置
-     */
     protected RotationManager.RotationMode getRotationMode() { return rotationManager.getRotationMode(); }
     protected float getRotationSpeed() { return rotationManager.getRotationSpeed(); }
     protected float getMaxRotationSpeed() { return rotationManager.getMaxRotationSpeed(); }

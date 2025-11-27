@@ -15765,7 +15765,7 @@ net/minecraft/entity/Entity net/minecraft/entity/Entity
 	chunkCoordY field_70162_ai
 	chunkCoordZ field_70164_aj
 	cmdResultStats field_174837_as
-	collided field_70132_H
+	isCollided field_70132_H
 	isCollidedHorizontally field_70123_F
 	isCollidedVertically field_70124_G
 	dataManager field_70180_af
@@ -31190,8 +31190,8 @@ net/minecraft/util/MathHelper net/minecraft/util/MathHelper
 	roundUp (II)I func_154354_b
 	sin (F)F func_76126_a
 	smallestEncompassingPowerOfTwo (I)I func_151236_b
-	sqrt (D)F func_76133_a
-	sqrt (F)F func_76129_c
+	sqrt_double (D)F func_76133_a
+	sqrt_float (F)F func_76129_c
 	wrapAngleTo180_double (D)D func_76138_g
 	wrapAngleTo180_float (F)F func_76142_g
 	wrapDegrees (I)I func_188209_b
