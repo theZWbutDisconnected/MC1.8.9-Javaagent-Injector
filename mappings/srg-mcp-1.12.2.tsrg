@@ -4923,7 +4923,7 @@ net/minecraft/client/LoadingScreenRenderer net/minecraft/client/LoadingScreenRen
 	setDoneWorking ()V func_146586_a
 	setLoadingProgress (I)V func_73718_a
 net/minecraft/client/Minecraft net/minecraft/client/Minecraft
-	IS_RUNNING_ON_MAC field_142025_a
+	isRunningOnMac field_142025_a
 	LOCATION_MOJANG_PNG field_110444_H
 	LOGGER field_147123_G
 	MAC_DISPLAY_MODES field_110445_I
@@ -16063,7 +16063,7 @@ net/minecraft/entity/Entity net/minecraft/entity/Entity
 	startRiding (Lnet/minecraft/entity/Entity;)Z func_184220_m
 	startRiding (Lnet/minecraft/entity/Entity;Z)Z func_184205_a
 	toString ()Ljava/lang/String; toString
-	turn (FF)V func_70082_c
+	setAngles (FF)V func_70082_c
 	updateFallState (DZLnet/minecraft/block/state/IBlockState;Lnet/minecraft/util/BlockPos;)V func_184231_a
 	updatePassenger (Lnet/minecraft/entity/Entity;)V func_184232_k
 	updateRidden ()V func_70098_U

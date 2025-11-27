@@ -36,9 +36,9 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
         if (mc.thePlayer == null || mc.theWorld == null) return;
 
         setRotationMode(RotationManager.RotationMode.SMOOTH);
-        setRotationSpeed(720.0F);
+        setRotationSpeed(560.0F);
         setRotationThreshold(0.5F);
-        Vec3 lookVec = mc.thePlayer.getLookVec();
+        Vec3 lookVec = RotationManager.getInstance().rendererViewEntity.getLookVec();
         Vec3 dir = new Vec3(-lookVec.xCoord, -lookVec.yCoord, -lookVec.zCoord).normalize();
         double range = (Double) getConfig("Range");
         double playerX = mc.thePlayer.posX;

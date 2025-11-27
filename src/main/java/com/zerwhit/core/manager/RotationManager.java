@@ -1,5 +1,6 @@
 package com.zerwhit.core.manager;
 
+import com.zerwhit.core.Meta;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
@@ -17,7 +18,7 @@ public class RotationManager {
 
     private RotationMode rotationMode = RotationMode.LINEAR;
     private float rotationSpeed = 180.0f;
-    private float maxRotationSpeed = 360.0f;
+    private float maxRotationSpeed = 1000.0f;
     private float rotationThreshold = 0.1f;
 
     public Entity rendererViewEntity;
@@ -64,8 +65,11 @@ public class RotationManager {
     }
 
     public void updateRotation() {
+        if (!Meta.slientAimEnabled) {
+            Minecraft.getMinecraft().thePlayer.rotationYaw = RotationManager.getInstance().rendererViewEntity.rotationYaw;
+            Minecraft.getMinecraft().thePlayer.rotationPitch = RotationManager.getInstance().rendererViewEntity.rotationPitch;
+        }
         if (!isRotating || mc.thePlayer == null) return;
-
         long currentTime = System.currentTimeMillis();
         float deltaTime = (currentTime - rotationStartTime) / 1000.0f;
 

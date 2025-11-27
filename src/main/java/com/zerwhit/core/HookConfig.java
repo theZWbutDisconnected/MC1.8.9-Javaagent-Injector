@@ -98,10 +98,10 @@ public class HookConfig {
                      "(F)V", 
                      HookType.REPLACE, "orientCameraHook", new String[]{"F"});
         
-        addHookConfig("net/minecraft/client/renderer/EntityRenderer", 
-                     new String[]{"func_181560_a", "updateCameraAndRender"}, 
-                     "(F)V", 
-                     HookType.REPLACE, "updateCameraAndRenderHook", new String[]{"F"});
+        addHookConfig("net/minecraft/client/renderer/EntityRenderer",
+                     new String[]{"func_181560_a", "updateCameraAndRender"},
+                     "(FJ)V",
+                     HookType.REPLACE, "updateCameraAndRenderHook", new String[]{"FJ"});
     }
     
     private static void addHookConfig(String className, String[] methodNames, String methodDesc,

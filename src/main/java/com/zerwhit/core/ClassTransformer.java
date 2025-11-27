@@ -73,7 +73,7 @@ public class ClassTransformer implements ClassFileTransformer {
                         return new EntityRendererOrientCameraHookMethodVisitor(mv);
                     }
                     if (hookConfig.hookMethod.equals("updateCameraAndRenderHook")) {
-                        return new EntityRendererUpdateCameraAndRenderHookMethodVisitor(mv);
+                        return new EntityRendererCameraHookMethodVisitor(mv);
                     }
                     break;
                 case CONDITIONAL:
@@ -200,13 +200,7 @@ public class ClassTransformer implements ClassFileTransformer {
                     getClassPackage(Hooks.class),
                     "orientCameraHook",
                     "(F)V");
-            mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "slientAimEnabled", "Z");
-            Label skipReturn = new Label();
-            mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
-            Label label = new Label();
-            mv.visitLabel(label);
             mv.visitInsn(Opcodes.RETURN);
-            mv.visitLabel(skipReturn);
         }
 
         @Override
@@ -215,25 +209,20 @@ public class ClassTransformer implements ClassFileTransformer {
         }
     }
 
-    private static class EntityRendererUpdateCameraAndRenderHookMethodVisitor extends MethodVisitor {
-        public EntityRendererUpdateCameraAndRenderHookMethodVisitor(MethodVisitor mv) {
+    private static class EntityRendererCameraHookMethodVisitor extends MethodVisitor {
+        public EntityRendererCameraHookMethodVisitor(MethodVisitor mv) {
             super(Opcodes.ASM4, mv);
         }
 
         @Override
         public void visitCode() {
             mv.visitVarInsn(Opcodes.FLOAD, 1);
+            mv.visitVarInsn(Opcodes.LLOAD, 2);
             mv.visitMethodInsn(Opcodes.INVOKESTATIC,
                     getClassPackage(Hooks.class),
                     "updateCameraAndRenderHook",
-                    "(F)V");
-            mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "slientAimEnabled", "Z");
-            Label skipReturn = new Label();
-            mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
-            Label label = new Label();
-            mv.visitLabel(label);
+                    "(FJ)V");
             mv.visitInsn(Opcodes.RETURN);
-            mv.visitLabel(skipReturn);
         }
 
         @Override

@@ -1,13 +1,16 @@
 package com.zerwhit.core.module.combat;
 
+import com.zerwhit.core.Meta;
 import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.play.client.C0BPacketEntityAction;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class ModuleKillAura extends ModuleBase implements ITickableModule {
@@ -34,11 +37,12 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         if (currentTime - lastAttackTime < Math.max(50, delay)) return;
 
         Entity target = findTarget(range, attackPlayers, attackMobs);
-        setRotationSpeed(720.0F);
-        setRotationMode(RotationManager.RotationMode.SMOOTH);
-        setRotationThreshold(0.0F);
         if (isValidTarget(target, range)) {
-            rotationManager.setTargetRotationToPos(target.posX, target.posY + 0.5F, target.posZ);
+            setRotationSpeed(720.0F);
+            setRotationMode(RotationManager.RotationMode.SMOOTH);
+            setRotationThreshold(0.5F);
+            Meta.slientAimEnabled = true;
+            rotationManager.setTargetRotationToPos(target.posX, target.posY + new Random().nextFloat(), target.posZ);
             if (!target.isEntityAlive() || target.hurtResistantTime > 15 || target.isDead) return;
 
             if (mc.thePlayer.getDistanceToEntity(target) > range + 0.5) return;
@@ -46,13 +50,27 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                 case "Normal":
                 case "Silent":
                     if (mc.playerController != null && mc.thePlayer != null) {
+                        boolean sprint = mc.thePlayer.isSprinting();
+                        if (sprint) {
+                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
+                            mc.thePlayer.setSprinting(false);
+                        }
                         mc.thePlayer.swingItem();
                         mc.playerController.attackEntity(mc.thePlayer, target);
+                        if (sprint) {
+                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                            mc.thePlayer.setSprinting(true);
+                        }
                     }
                     break;
             }
             lastAttackTime = currentTime;
         }
+    }
+
+    @Override
+    public void onDisable() {
+        Meta.slientAimEnabled = false;
     }
 
     private Entity findTarget(double range, boolean players, boolean mobs) {

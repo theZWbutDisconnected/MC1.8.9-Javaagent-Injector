@@ -1,5 +1,6 @@
 package com.zerwhit.core.module.visual;
 
+import com.zerwhit.core.Meta;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.client.gui.ScaledResolution;
@@ -13,14 +14,17 @@ public class ModuleFreeLook extends ModuleBase implements ITickableModule {
 
     @Override
     public void onEnable() {
+        Meta.slientAimEnabled = true;
     }
 
     @Override
     public void onDisable() {
+        Meta.slientAimEnabled = false;
     }
 
     @Override
     public void onModuleTick() {
         if (mc.thePlayer == null || mc.theWorld == null) return;
+        Meta.slientAimEnabled = true;
     }
 }

@@ -23,6 +23,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
@@ -51,6 +52,24 @@ public class Hooks {
             moduleManager.initialize();
             modulesInitialized = true;
         }
+        if (RotationManager.getInstance().rendererViewEntity == null) {
+            RotationManager.getInstance().rendererViewEntity = new Entity(Minecraft.getMinecraft().theWorld){
+                @Override
+                protected void entityInit() {
+
+                }
+
+                @Override
+                protected void readEntityFromNBT(NBTTagCompound nbtTagCompound) {
+
+                }
+
+                @Override
+                protected void writeEntityToNBT(NBTTagCompound nbtTagCompound) {
+
+                }
+            };
+        }
         moduleManager.invokeHook(ModuleManager.ModuleHookType.TICK, "onUpdateDisplay");
         
         try {
@@ -74,15 +93,17 @@ public class Hooks {
         Control.checkRShiftKey();
     }
 
-    public static void onPreTick() {}
+    public static void onPreTick() {
+    }
     public static void onPostTick() {}
     public static void onPlayerPreUpdate() {
+        Meta.slientAimEnabled = false;
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
+        moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
     }
     public static void onPlayerPostUpdate() {
-        RotationManager.getInstance().updateRotation();
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);
+        RotationManager.getInstance().updateRotation();
     }
 
     public static void onPlayerHurt() {
@@ -162,9 +183,6 @@ public class Hooks {
      */
     public static void orientCameraHook(float partialTicks) {
         Minecraft mc = Minecraft.getMinecraft();
-        if (RotationManager.getInstance().rendererViewEntity == null) {
-            RotationManager.getInstance().rendererViewEntity = new EntityLiving(Minecraft.getMinecraft().theWorld){};
-        }
         Entity entity = RotationManager.getInstance().rendererViewEntity;
         entity.posX = mc.thePlayer.posX;
         entity.posY = mc.thePlayer.posY;
