@@ -4,10 +4,13 @@ import com.zerwhit.core.Meta;
 import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
+import com.zerwhit.core.util.ObfuscationReflectionHelper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
+import net.minecraft.util.Timer;
 
 import java.util.List;
 import java.util.Random;
@@ -45,7 +48,13 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
             rotationManager.setTargetRotationToPos(target.posX, target.posY + new Random().nextFloat(), target.posZ);
             if (!target.isEntityAlive() || target.hurtResistantTime > 15 || target.isDead) return;
 
-            if (mc.thePlayer.getDistanceToEntity(target) > range + 0.5) return;
+            double dis = mc.thePlayer.getDistanceToEntity(target);
+            Timer timer = (Timer) ObfuscationReflectionHelper.getObfuscatedFieldValue(Minecraft.class, new String[]{"timer", "field_71428_T"}, Minecraft.getMinecraft());
+            float partialTicks = 0;
+            if (timer != null) {
+                partialTicks = timer.renderPartialTicks;
+            }
+            if (dis > range + 0.5/* || mc.thePlayer.rayTrace(dis, partialTicks).entityHit != target*/) return;
             switch (mode) {
                 case "Normal":
                 case "Silent":
