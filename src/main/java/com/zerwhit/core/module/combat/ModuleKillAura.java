@@ -52,14 +52,14 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                     if (mc.playerController != null && mc.thePlayer != null) {
                         boolean sprint = mc.thePlayer.isSprinting();
                         if (sprint) {
-                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
                             mc.thePlayer.setSprinting(false);
+                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
                         }
                         mc.thePlayer.swingItem();
                         mc.playerController.attackEntity(mc.thePlayer, target);
                         if (sprint) {
-                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
                             mc.thePlayer.setSprinting(true);
+                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
                         }
                     }
                     break;
