@@ -1,5 +1,6 @@
 package com.zerwhit.core.module.combat;
 
+import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.entity.Entity;
@@ -33,7 +34,11 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         if (currentTime - lastAttackTime < Math.max(50, delay)) return;
 
         Entity target = findTarget(range, attackPlayers, attackMobs);
-        if (target != null && isValidTarget(target, range)) {
+        setRotationSpeed(720.0F);
+        setRotationMode(RotationManager.RotationMode.SMOOTH);
+        setRotationThreshold(0.0F);
+        if (isValidTarget(target, range)) {
+            rotationManager.setTargetRotationToPos(target.posX, target.posY + 0.5F, target.posZ);
             if (!target.isEntityAlive() || target.hurtResistantTime > 15 || target.isDead) return;
 
             if (mc.thePlayer.getDistanceToEntity(target) > range + 0.5) return;
@@ -41,8 +46,8 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                 case "Normal":
                 case "Silent":
                     if (mc.playerController != null && mc.thePlayer != null) {
-                        mc.playerController.attackEntity(mc.thePlayer, target);
                         mc.thePlayer.swingItem();
+                        mc.playerController.attackEntity(mc.thePlayer, target);
                     }
                     break;
             }

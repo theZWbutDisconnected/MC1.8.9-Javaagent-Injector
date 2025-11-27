@@ -225,7 +225,7 @@ public class ModuleManager {
         return enabledModules;
     }
     
-    public void invokeHook(ModuleHookType hookType, Object... args) {
+    public void invokeHook(ModuleHookType hookType, String funcName, Object... args) {
         if (!initialized) return;
         
         List<ModuleBase> modules = getModulesByHookTypeSorted(hookType);
@@ -233,7 +233,7 @@ public class ModuleManager {
             if (shouldInvokeModule(module)) {
                 try {
                     setModuleState(module, ModuleState.ENABLED);
-                    invokeModuleHook(module, hookType, args);
+                    invokeModuleHook(module, hookType, funcName, args);
                 } catch (Exception e) {
                     System.err.println("Error invoking hook for module " + module.name + ": " + e.getMessage());
                     setModuleState(module, ModuleState.ERROR);
@@ -294,6 +294,10 @@ public class ModuleManager {
     }
     
     private void invokeModuleHook(ModuleBase module, ModuleHookType hookType, Object[] args) {
+        invokeModuleHook(module, hookType, "", args);
+    }
+    
+    private void invokeModuleHook(ModuleBase module, ModuleHookType hookType, String funcName, Object[] args) {
         switch (hookType) {
             case TICK:
                 ((ITickableModule) module).onModuleTick();
@@ -305,7 +309,7 @@ public class ModuleManager {
                 break;
             case VISUAL:
                 if (args.length >= 1 && args[0] instanceof Float) {
-                    ((IVisualModule) module).onHook((Float) args[0]);
+                    ((IVisualModule) module).onHook(funcName, (Float) args[0]);
                 }
                 break;
             case EVENT:

@@ -69,6 +69,12 @@ public class ClassTransformer implements ClassFileTransformer {
                     if (hookConfig.hookMethod.equals("renderItemInFirstPersonHook")) {
                         return new ItemRendererHookMethodVisitor(mv);
                     }
+                    if (hookConfig.hookMethod.equals("orientCameraHook")) {
+                        return new EntityRendererOrientCameraHookMethodVisitor(mv);
+                    }
+                    if (hookConfig.hookMethod.equals("updateCameraAndRenderHook")) {
+                        return new EntityRendererUpdateCameraAndRenderHookMethodVisitor(mv);
+                    }
                     break;
                 case CONDITIONAL:
                     return new ConditionalHookMethodVisitor(mv, hookConfig);
@@ -168,6 +174,60 @@ public class ClassTransformer implements ClassFileTransformer {
                     "renderItemInFirstPersonHook",
                     "(F)V");
             mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "legacyAnimEnabled", "Z");
+            Label skipReturn = new Label();
+            mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
+            Label label = new Label();
+            mv.visitLabel(label);
+            mv.visitInsn(Opcodes.RETURN);
+            mv.visitLabel(skipReturn);
+        }
+
+        @Override
+        public void visitMaxs(int maxStack, int maxLocals) {
+            mv.visitMaxs(2, 2);
+        }
+    }
+
+    private static class EntityRendererOrientCameraHookMethodVisitor extends MethodVisitor {
+        public EntityRendererOrientCameraHookMethodVisitor(MethodVisitor mv) {
+            super(Opcodes.ASM4, mv);
+        }
+
+        @Override
+        public void visitCode() {
+            mv.visitVarInsn(Opcodes.FLOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    getClassPackage(Hooks.class),
+                    "orientCameraHook",
+                    "(F)V");
+            mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "slientAimEnabled", "Z");
+            Label skipReturn = new Label();
+            mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
+            Label label = new Label();
+            mv.visitLabel(label);
+            mv.visitInsn(Opcodes.RETURN);
+            mv.visitLabel(skipReturn);
+        }
+
+        @Override
+        public void visitMaxs(int maxStack, int maxLocals) {
+            mv.visitMaxs(2, 2);
+        }
+    }
+
+    private static class EntityRendererUpdateCameraAndRenderHookMethodVisitor extends MethodVisitor {
+        public EntityRendererUpdateCameraAndRenderHookMethodVisitor(MethodVisitor mv) {
+            super(Opcodes.ASM4, mv);
+        }
+
+        @Override
+        public void visitCode() {
+            mv.visitVarInsn(Opcodes.FLOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    getClassPackage(Hooks.class),
+                    "updateCameraAndRenderHook",
+                    "(F)V");
+            mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "slientAimEnabled", "Z");
             Label skipReturn = new Label();
             mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
             Label label = new Label();

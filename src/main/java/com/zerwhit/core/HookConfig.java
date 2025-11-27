@@ -92,6 +92,16 @@ public class HookConfig {
                      new String[]{"func_78440_a", "renderItemInFirstPerson"}, 
                      "(F)V", 
                      HookType.REPLACE, "renderItemInFirstPersonHook", new String[]{"F"});
+        
+        addHookConfig("net/minecraft/client/renderer/EntityRenderer", 
+                     new String[]{"func_78467_g", "orientCamera"}, 
+                     "(F)V", 
+                     HookType.REPLACE, "orientCameraHook", new String[]{"F"});
+        
+        addHookConfig("net/minecraft/client/renderer/EntityRenderer", 
+                     new String[]{"func_181560_a", "updateCameraAndRender"}, 
+                     "(F)V", 
+                     HookType.REPLACE, "updateCameraAndRenderHook", new String[]{"F"});
     }
     
     private static void addHookConfig(String className, String[] methodNames, String methodDesc,

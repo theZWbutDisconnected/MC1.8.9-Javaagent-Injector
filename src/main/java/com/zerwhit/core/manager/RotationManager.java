@@ -1,6 +1,7 @@
 package com.zerwhit.core.manager;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 
 public class RotationManager {
@@ -18,6 +19,8 @@ public class RotationManager {
     private float rotationSpeed = 180.0f;
     private float maxRotationSpeed = 360.0f;
     private float rotationThreshold = 0.1f;
+
+    public Entity rendererViewEntity;
 
     public enum RotationMode {
         LINEAR,

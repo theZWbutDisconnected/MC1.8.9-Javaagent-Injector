@@ -27,7 +27,8 @@ public class ModuleLegacyAnim extends ModuleBase implements IVisualModule, ITick
         super("LegacyAnim", true, "Visual");
     }
     
-    public void onHook(float partialTicks) {
+    public void onHook(String funcName, float partialTicks) {
+        if (!funcName.equals("renderItemInFirstPerson")) return;
         ItemRenderer renderer = Minecraft.getMinecraft().getItemRenderer();
         Object prevEquippedProgressObj = getObfuscatedFieldValue(ItemRenderer.class, new String[]{"prevEquippedProgress", "field_78451_d"}, renderer);
         Object equippedProgressObj = getObfuscatedFieldValue(ItemRenderer.class, new String[]{"equippedProgress", "field_78454_c"}, renderer);
