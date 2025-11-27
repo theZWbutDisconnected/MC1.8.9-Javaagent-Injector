@@ -9,8 +9,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.C0APacketAnimation;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
 import net.minecraft.util.Timer;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import org.lwjgl.input.Mouse;
 
 import java.util.List;
 import java.util.Random;
@@ -18,6 +23,9 @@ import java.util.stream.Collectors;
 
 public class ModuleKillAura extends ModuleBase implements ITickableModule {
     private long lastAttackTime = 0;
+    private boolean hasTarget;
+    private Random random = new Random();
+    private long lastSprintToggle = 0;
 
     public ModuleKillAura() {
         super("KillAura", true, "Combat");
@@ -25,7 +33,11 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         addConfig("Delay", 100);
         addConfig("Players", true);
         addConfig("Mobs", false);
+        addConfig("RequireMouseDown", true);
         addConfig("Mode", "Normal");
+        addConfig("RandomDelay", true);
+        addConfig("RandomAngle", true);
+        addConfig("SprintFix", true);
     }
 
     @Override
@@ -34,52 +46,109 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         int delay = (Integer) getConfig("Delay");
         boolean attackPlayers = (Boolean) getConfig("Players");
         boolean attackMobs = (Boolean) getConfig("Mobs");
+        boolean mouseDown = (Boolean) getConfig("RequireMouseDown");
         String mode = (String) getConfig("Mode");
+        boolean randomDelay = (Boolean) getConfig("RandomDelay");
+        boolean randomAngle = (Boolean) getConfig("RandomAngle");
+        boolean sprintFix = (Boolean) getConfig("SprintFix");
 
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastAttackTime < Math.max(50, delay)) return;
+
+        int actualDelay = delay;
+        if (randomDelay) {
+            actualDelay = delay + random.nextInt(21) - 10;
+        }
+        
+        if (currentTime - lastAttackTime < Math.max(50, actualDelay)) return;
 
         Entity target = findTarget(range, attackPlayers, attackMobs);
-        if (isValidTarget(target, range)) {
-            setRotationSpeed(720.0F);
-            setRotationMode(RotationManager.RotationMode.SMOOTH);
-            setRotationThreshold(0.5F);
-            Meta.slientAimEnabled = true;
-            rotationManager.setTargetRotationToPos(target.posX, target.posY + new Random().nextFloat(), target.posZ);
-            if (!target.isEntityAlive() || target.hurtResistantTime > 15 || target.isDead) return;
+        boolean accept = false;
+        Label : {
+            if (mouseDown && !Mouse.isButtonDown(0)) break Label;
+            if (isValidTarget(target, range)) {
+                double dis = mc.thePlayer.getDistanceToEntity(target);
+                Timer timer = (Timer) ObfuscationReflectionHelper.getObfuscatedFieldValue(Minecraft.class, new String[]{"timer", "field_71428_T"}, Minecraft.getMinecraft());
+                float partialTicks = 0;
+                if (timer != null) {
+                    partialTicks = timer.renderPartialTicks;
+                }
+                hasTarget = true;
+                setRotationSpeed(720.0F);
+                setRotationMode(RotationManager.RotationMode.SMOOTH);
+                setRotationThreshold(0.5F);
+                Meta.slientAimEnabled = true;
+                if (dis > range + 0.5 || !canSeeHitbox(target)) break Label;
 
-            double dis = mc.thePlayer.getDistanceToEntity(target);
-            Timer timer = (Timer) ObfuscationReflectionHelper.getObfuscatedFieldValue(Minecraft.class, new String[]{"timer", "field_71428_T"}, Minecraft.getMinecraft());
-            float partialTicks = 0;
-            if (timer != null) {
-                partialTicks = timer.renderPartialTicks;
-            }
-            if (dis > range + 0.5/* || mc.thePlayer.rayTrace(dis, partialTicks).entityHit != target*/) return;
-            switch (mode) {
-                case "Normal":
-                case "Silent":
-                    if (mc.playerController != null && mc.thePlayer != null) {
-                        boolean sprint = mc.thePlayer.isSprinting();
-                        if (sprint) {
-                            mc.thePlayer.setSprinting(false);
-                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
+                double yOffset = target.posY + (randomAngle ? (random.nextFloat() * 0.4 - 0.2) : 0);
+                rotationManager.setTargetRotationToPos(target.posX, yOffset, target.posZ);
+                if (!target.isEntityAlive() || ((EntityLivingBase) target).hurtTime > 8 || target.isDead) break Label;
+
+                accept = true;
+                
+                switch (mode) {
+                    case "Normal":
+                    case "Silent":
+                        if (mc.playerController != null && mc.thePlayer != null) {
+                            boolean sprint = mc.thePlayer.isSprinting();
+                            boolean block = mc.thePlayer.isBlocking();
+                            
+                            if (block) {
+                                mc.thePlayer.stopUsingItem();
+                            }
+                            
+                            if (sprint && sprintFix) {
+                                if (currentTime - lastSprintToggle > 100) {
+                                    mc.thePlayer.setSprinting(false);
+                                    mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
+                                    lastSprintToggle = currentTime;
+                                }
+                            }
+                            
+                            mc.thePlayer.swingItem();
+                            mc.playerController.attackEntity(mc.thePlayer, target);
+                            
+                            if (sprint && sprintFix && currentTime - lastSprintToggle > 50) {
+                                mc.thePlayer.setSprinting(true);
+                                mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
+                                lastSprintToggle = currentTime;
+                            }
                         }
-                        mc.thePlayer.swingItem();
-                        mc.playerController.attackEntity(mc.thePlayer, target);
-                        if (sprint) {
-                            mc.thePlayer.setSprinting(true);
-                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
-                        }
-                    }
-                    break;
+                        break;
+                }
+
+                if (randomDelay) {
+                    lastAttackTime = currentTime + random.nextInt(11) - 5;
+                } else {
+                    lastAttackTime = currentTime;
+                }
             }
-            lastAttackTime = currentTime;
+        }
+        if (!accept){
+            if (hasTarget)
+                Meta.slientAimEnabled = false;
+            hasTarget = false;
         }
     }
 
     @Override
     public void onDisable() {
         Meta.slientAimEnabled = false;
+    }
+
+    private boolean canSeeHitbox(Entity target) {
+        if (target == null || mc.thePlayer == null || mc.theWorld == null) {
+            return false;
+        }
+
+        Vec3 playerEyes = mc.thePlayer.getPositionEyes(1.0F);
+        Vec3 targetPos = new Vec3(target.posX, target.posY + target.height / 2, target.posZ);
+
+        MovingObjectPosition rayTraceResult = mc.theWorld.rayTraceBlocks(
+            playerEyes,
+            targetPos
+        );
+
+        return rayTraceResult == null || rayTraceResult.entityHit == target;
     }
 
     private Entity findTarget(double range, boolean players, boolean mobs) {
@@ -128,7 +197,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
 
         return !target.isDead &&
                 target.isEntityAlive() &&
-                target.hurtResistantTime <= 15 &&
+                target instanceof EntityLivingBase &&
                 mc.thePlayer.getDistanceToEntity(target) <= range &&
                 mc.theWorld.loadedEntityList.contains(target);
     }

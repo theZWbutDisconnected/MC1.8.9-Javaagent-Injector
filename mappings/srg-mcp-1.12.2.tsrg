@@ -5527,6 +5527,8 @@ net/minecraft/client/entity/EntityPlayerSP net/minecraft/client/entity/EntityPla
 	statWriter field_146108_bO
 	timeInPortal field_71086_bY
 	wasFallFlying field_189813_ct
+	isBlocking ()Z func_70632_aY
+	stopUsingItem ()V func_71034_by
 	addStat (Lnet/minecraft/stats/StatBase;I)V func_71064_a
 	attackEntityFrom (Lnet/minecraft/util/DamageSource;F)Z func_70097_a
 	canUseCommand (ILjava/lang/String;)Z func_70003_b

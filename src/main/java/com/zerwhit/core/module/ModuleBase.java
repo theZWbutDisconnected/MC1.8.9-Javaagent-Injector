@@ -9,7 +9,6 @@ import com.zerwhit.core.module.render.ModuleXRay;
 import com.zerwhit.core.module.visual.ModuleFreeLook;
 import com.zerwhit.core.module.visual.ModuleLegacyAnim;
 import com.zerwhit.core.module.visual.ModulePostProcessing;
-import com.zerwhit.core.module.test.ModuleRotationTest;
 import com.zerwhit.core.manager.RotationManager;
 import net.minecraft.client.Minecraft;
 
@@ -42,7 +41,6 @@ public abstract class ModuleBase {
         addModule(new ModuleLegacyAnim());
         addModule(new ModuleFreeLook());
         addModule(new ModulePostProcessing());
-        addModule(new ModuleRotationTest());
     }
 
     private static void addModule(ModuleBase module) {
