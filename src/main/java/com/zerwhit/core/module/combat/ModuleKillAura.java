@@ -26,11 +26,14 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
     private boolean hasTarget;
     private Random random = new Random();
     private long lastSprintToggle = 0;
+    private int missCounter = 0;
+    private long lastHumanBehavior = 0;
+    private boolean isAttacking = false;
 
     public ModuleKillAura() {
         super("KillAura", true, "Combat");
-        addConfig("Range", 4.0);
-        addConfig("Delay", 100);
+        addConfig("Range", 3.5);
+        addConfig("Delay", 150);
         addConfig("Players", true);
         addConfig("Mobs", false);
         addConfig("RequireMouseDown", true);
@@ -38,6 +41,9 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         addConfig("RandomDelay", true);
         addConfig("RandomAngle", true);
         addConfig("SprintFix", true);
+        addConfig("HumanBehavior", true);
+        addConfig("MissChance", 5);
+        addConfig("AttackBurst", true);
     }
 
     @Override
@@ -51,15 +57,26 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         boolean randomDelay = (Boolean) getConfig("RandomDelay");
         boolean randomAngle = (Boolean) getConfig("RandomAngle");
         boolean sprintFix = (Boolean) getConfig("SprintFix");
+        boolean humanBehavior = (Boolean) getConfig("HumanBehavior");
+        int missChance = (Integer) getConfig("MissChance");
+        boolean attackBurst = (Boolean) getConfig("AttackBurst");
 
         long currentTime = System.currentTimeMillis();
 
+        if (humanBehavior && currentTime - lastHumanBehavior > 2000 + random.nextInt(3000)) {
+            if (random.nextBoolean()) {
+                lastHumanBehavior = currentTime;
+                return;
+            }
+            lastHumanBehavior = currentTime;
+        }
+
         int actualDelay = delay;
         if (randomDelay) {
-            actualDelay = delay + random.nextInt(21) - 10;
+            actualDelay = delay + random.nextInt(41) - 20; // ±20ms随机
         }
         
-        if (currentTime - lastAttackTime < Math.max(50, actualDelay)) return;
+        if (currentTime - lastAttackTime < Math.max(80, actualDelay)) return;
 
         Entity target = findTarget(range, attackPlayers, attackMobs);
         boolean accept = false;
@@ -67,23 +84,34 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
             if (mouseDown && !Mouse.isButtonDown(0)) break Label;
             if (isValidTarget(target, range)) {
                 double dis = mc.thePlayer.getDistanceToEntity(target);
-                Timer timer = (Timer) ObfuscationReflectionHelper.getObfuscatedFieldValue(Minecraft.class, new String[]{"timer", "field_71428_T"}, Minecraft.getMinecraft());
-                float partialTicks = 0;
-                if (timer != null) {
-                    partialTicks = timer.renderPartialTicks;
-                }
+                
                 hasTarget = true;
                 setRotationSpeed(720.0F);
-                setRotationMode(RotationManager.RotationMode.SMOOTH);
-                setRotationThreshold(0.5F);
+                setRotationMode(RotationManager.RotationMode.CUSTOM);
+                setRotationThreshold(0.2F);
                 Meta.slientAimEnabled = true;
                 if (dis > range + 0.5 || !canSeeHitbox(target)) break Label;
 
-                double yOffset = target.posY + (randomAngle ? (random.nextFloat() * 0.4 - 0.2) : 0);
-                rotationManager.setTargetRotationToPos(target.posX, yOffset, target.posZ);
+                double yOffset = target.posY + (randomAngle ? (random.nextFloat() * 0.3 - 0.15) : 0);
+                rotationManager.setTargetRotationToPos(
+                    target.posX + (random.nextFloat() * 0.3 - 0.15),
+                    yOffset, 
+                    target.posZ + (random.nextFloat() * 0.3 - 0.15)
+                );
                 if (!target.isEntityAlive() || ((EntityLivingBase) target).hurtTime > 8 || target.isDead) break Label;
 
                 accept = true;
+                
+                boolean shouldMiss = humanBehavior && random.nextInt(100) < missChance;
+                if (shouldMiss) {
+                    missCounter++;
+                    if (missCounter > 2) {
+                        missCounter = 0;
+                        break Label;
+                    }
+                } else {
+                    missCounter = 0;
+                }
                 
                 switch (mode) {
                     case "Normal":
@@ -91,23 +119,24 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                         if (mc.playerController != null && mc.thePlayer != null) {
                             boolean sprint = mc.thePlayer.isSprinting();
                             boolean block = mc.thePlayer.isBlocking();
-                            
                             if (block) {
                                 mc.thePlayer.stopUsingItem();
                             }
-                            
                             if (sprint && sprintFix) {
-                                if (currentTime - lastSprintToggle > 100) {
+                                if (currentTime - lastSprintToggle > 150 + random.nextInt(100)) {
                                     mc.thePlayer.setSprinting(false);
                                     mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
                                     lastSprintToggle = currentTime;
                                 }
                             }
-                            
+                            if (attackBurst && isAttacking && random.nextInt(100) < 30) {
+                                isAttacking = false;
+                                break Label;
+                            }
+                            isAttacking = true;
                             mc.thePlayer.swingItem();
                             mc.playerController.attackEntity(mc.thePlayer, target);
-                            
-                            if (sprint && sprintFix && currentTime - lastSprintToggle > 50) {
+                            if (sprint && sprintFix && currentTime - lastSprintToggle > 80 + random.nextInt(70)) {
                                 mc.thePlayer.setSprinting(true);
                                 mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
                                 lastSprintToggle = currentTime;
@@ -117,7 +146,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                 }
 
                 if (randomDelay) {
-                    lastAttackTime = currentTime + random.nextInt(11) - 5;
+                    lastAttackTime = currentTime + random.nextInt(21) - 10;
                 } else {
                     lastAttackTime = currentTime;
                 }
@@ -127,12 +156,14 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
             if (hasTarget)
                 Meta.slientAimEnabled = false;
             hasTarget = false;
+            isAttacking = false;
         }
     }
 
     @Override
     public void onDisable() {
         Meta.slientAimEnabled = false;
+        isAttacking = false;
     }
 
     private boolean canSeeHitbox(Entity target) {
@@ -231,6 +262,8 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
             return 3.0;
         }else if ("Delay".equals(key)) {
             return 1000.0;
+        } else if ("MissChance".equals(key)) {
+            return 20.0;
         }
         return super.getMaxValueForConfig(key);
     }
