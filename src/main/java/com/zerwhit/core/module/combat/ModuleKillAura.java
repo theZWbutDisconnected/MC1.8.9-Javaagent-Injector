@@ -41,8 +41,6 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         addConfig("RandomDelay", true);
         addConfig("RandomAngle", true);
         addConfig("SprintFix", true);
-        addConfig("HumanBehavior", true);
-        addConfig("MissChance", 5);
         addConfig("AttackBurst", true);
     }
 
@@ -57,13 +55,11 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         boolean randomDelay = (Boolean) getConfig("RandomDelay");
         boolean randomAngle = (Boolean) getConfig("RandomAngle");
         boolean sprintFix = (Boolean) getConfig("SprintFix");
-        boolean humanBehavior = (Boolean) getConfig("HumanBehavior");
-        int missChance = (Integer) getConfig("MissChance");
         boolean attackBurst = (Boolean) getConfig("AttackBurst");
 
         long currentTime = System.currentTimeMillis();
 
-        if (humanBehavior && currentTime - lastHumanBehavior > 2000 + random.nextInt(3000)) {
+        if (currentTime - lastHumanBehavior > 2000 + random.nextInt(3000)) {
             if (random.nextBoolean()) {
                 lastHumanBehavior = currentTime;
                 return;
@@ -73,7 +69,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
 
         int actualDelay = delay;
         if (randomDelay) {
-            actualDelay = delay + random.nextInt(41) - 20; // ±20ms随机
+            actualDelay = delay + random.nextInt(41) - 20;
         }
         
         if (currentTime - lastAttackTime < Math.max(80, actualDelay)) return;
@@ -102,7 +98,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
 
                 accept = true;
                 
-                boolean shouldMiss = humanBehavior && random.nextInt(100) < missChance;
+                boolean shouldMiss = random.nextInt(100) < 5;
                 if (shouldMiss) {
                     missCounter++;
                     if (missCounter > 2) {
