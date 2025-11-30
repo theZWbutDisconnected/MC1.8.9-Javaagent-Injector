@@ -12,13 +12,12 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 
 import static com.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
@@ -38,8 +37,8 @@ public class ModuleLegacyAnim extends ModuleBase implements IVisualModule, ITick
         float f = 1.0F - (prevEquippedProgress + (equippedProgress - prevEquippedProgress) * partialTicks);
         AbstractClientPlayer abstractclientplayer = Minecraft.getMinecraft().thePlayer;
         float f1 = abstractclientplayer.getSwingProgress(partialTicks);
-        float f2 = abstractclientplayer.prevRotationPitch + (abstractclientplayer.rotationPitch - abstractclientplayer.prevRotationPitch) * partialTicks;
-        float f3 = abstractclientplayer.prevRotationYaw + (abstractclientplayer.rotationYaw - abstractclientplayer.prevRotationYaw) * partialTicks;
+        float f2 = rotMng.rendererViewEntity.prevRotationPitch + (rotMng.rendererViewEntity.rotationPitch - rotMng.rendererViewEntity.prevRotationPitch) * partialTicks;
+        float f3 = rotMng.rendererViewEntity.prevRotationYaw + (rotMng.rendererViewEntity.rotationYaw - rotMng.rendererViewEntity.prevRotationYaw) * partialTicks;
         invokeObfuscatedMethod(ItemRenderer.class, new String[]{"rotateArroundXAndY", "func_178101_a"}, renderer, f2, f3);
         invokeObfuscatedMethod(ItemRenderer.class, new String[]{"setLightMapFromPlayer", "func_178109_a"}, renderer, abstractclientplayer);
         invokeObfuscatedMethod(ItemRenderer.class, new String[]{"rotateWithPlayerRotations", "func_178110_a"}, renderer, (EntityPlayerSP)abstractclientplayer, partialTicks);
@@ -57,7 +56,7 @@ public class ModuleLegacyAnim extends ModuleBase implements IVisualModule, ITick
             else if (abstractclientplayer.getItemInUseCount() > 0)
             {
                 EnumAction enumaction = ((ItemStack)itemToRenderObj).getItemUseAction();
-
+                if (itemObj instanceof ItemSword && Mouse.isButtonDown(1)) enumaction = EnumAction.BLOCK;
                 switch (enumaction)
                 {
                     case NONE:

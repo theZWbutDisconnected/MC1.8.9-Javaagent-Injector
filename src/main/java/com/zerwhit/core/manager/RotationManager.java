@@ -18,7 +18,7 @@ public class RotationManager {
 
     private RotationMode rotationMode = RotationMode.LINEAR;
     private float rotationSpeed = 180.0f;
-    private float maxRotationSpeed = 1000.0f;
+    private float maxRotationSpeed = 2000.0f;
     private float rotationThreshold = 0.1f;
 
     public Entity rendererViewEntity;
@@ -27,7 +27,7 @@ public class RotationManager {
         LINEAR,
         SMOOTH,
         INSTANT,
-        CUSTOM
+        CUSTOM;
     }
     
     private RotationManager() {
@@ -66,8 +66,17 @@ public class RotationManager {
 
     public void updateRotation() {
         if (!Meta.slientAimEnabled) {
-            Minecraft.getMinecraft().thePlayer.rotationYaw = RotationManager.getInstance().rendererViewEntity.rotationYaw;
-            Minecraft.getMinecraft().thePlayer.rotationPitch = RotationManager.getInstance().rendererViewEntity.rotationPitch;
+            setRotationThreshold(0.0F);
+            setRotationSpeed(1000.0F);
+            setRotationMode(RotationMode.CUSTOM);
+            if (rendererViewEntity != null) {
+                currentYaw = normalizeAngle(rendererViewEntity.rotationYaw);
+                currentPitch = MathHelper.clamp_float(rendererViewEntity.rotationPitch, -90.0f, 90.0f);
+                targetYaw = currentYaw;
+                targetPitch = currentPitch;
+                applyRotation();
+            }
+            return;
         }
         if (!isRotating || mc.thePlayer == null) return;
         long currentTime = System.currentTimeMillis();

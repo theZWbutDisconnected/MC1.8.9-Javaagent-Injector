@@ -3,7 +3,6 @@ package com.zerwhit.core.module.visual;
 import com.zerwhit.core.Meta;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
-import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Mouse;
 
 public class ModuleFreeLook extends ModuleBase implements ITickableModule {
@@ -39,10 +38,10 @@ public class ModuleFreeLook extends ModuleBase implements ITickableModule {
             Meta.slientAimEnabled = slient;
             mc.gameSettings.thirdPersonView = presonView;
             if (!slient) {
-                rotationManager.rendererViewEntity.rotationPitch = mc.thePlayer.rotationPitch;
-                rotationManager.rendererViewEntity.rotationYaw = mc.thePlayer.rotationYaw;
-                rotationManager.rendererViewEntity.prevRotationPitch = mc.thePlayer.rotationPitch;
-                rotationManager.rendererViewEntity.prevRotationYaw = mc.thePlayer.rotationYaw;
+                rotMng.rendererViewEntity.rotationPitch = mc.thePlayer.rotationPitch;
+                rotMng.rendererViewEntity.rotationYaw = mc.thePlayer.rotationYaw;
+                rotMng.rendererViewEntity.prevRotationPitch = mc.thePlayer.rotationPitch;
+                rotMng.rendererViewEntity.prevRotationYaw = mc.thePlayer.rotationYaw;
             }
             pressed = false;
         }

@@ -6,12 +6,7 @@ import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.client.Minecraft;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
-
-import java.util.List;
 
 public class ModuleScaffold extends ModuleBase implements ITickableModule {
     private BlockPos targetPos;
@@ -68,7 +63,7 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
         }
 
         if (targetPos != null) {
-            rotationManager.setTargetRotationToPos(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+            rotMng.setTargetRotationToPos(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
         }
     }
 

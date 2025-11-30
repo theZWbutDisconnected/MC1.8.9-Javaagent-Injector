@@ -25,7 +25,7 @@ public abstract class ModuleBase {
     public Map<String, Object> config = new HashMap<>();
     public Map<String, Class<?>> configTypes = new HashMap<>();
     public Minecraft mc;
-    protected RotationManager rotationManager = RotationManager.getInstance();
+    protected RotationManager rotMng = RotationManager.getInstance();
 
     static {
         addModule(new ModuleFly());
@@ -102,38 +102,38 @@ public abstract class ModuleBase {
     }
 
     protected void setTargetRotation(float yaw, float pitch) {
-        rotationManager.setTargetRotation(yaw, pitch);
+        rotMng.setTargetRotation(yaw, pitch);
     }
     protected void setTargetRotationToEntity(double targetX, double targetY, double targetZ) {
-        rotationManager.setTargetRotationToPos(targetX, targetY, targetZ);
+        rotMng.setTargetRotationToPos(targetX, targetY, targetZ);
     }
     protected void stopRotation() {
-        rotationManager.stopRotation();
+        rotMng.stopRotation();
     }
     protected boolean isRotating() {
-        return rotationManager.isRotating();
+        return rotMng.isRotating();
     }
     protected float getRotationProgress() {
-        return rotationManager.getRotationProgress();
+        return rotMng.getRotationProgress();
     }
     protected void setRotationMode(RotationManager.RotationMode mode) {
-        rotationManager.setRotationMode(mode);
+        rotMng.setRotationMode(mode);
     }
     protected void setRotationSpeed(float speed) {
-        rotationManager.setRotationSpeed(speed);
+        rotMng.setRotationSpeed(speed);
     }
     protected void setMaxRotationSpeed(float maxSpeed) {
-        rotationManager.setMaxRotationSpeed(maxSpeed);
+        rotMng.setMaxRotationSpeed(maxSpeed);
     }
     protected void setRotationThreshold(float threshold) {
-        rotationManager.setRotationThreshold(threshold);
+        rotMng.setRotationThreshold(threshold);
     }
-    protected RotationManager.RotationMode getRotationMode() { return rotationManager.getRotationMode(); }
-    protected float getRotationSpeed() { return rotationManager.getRotationSpeed(); }
-    protected float getMaxRotationSpeed() { return rotationManager.getMaxRotationSpeed(); }
-    protected float getRotationThreshold() { return rotationManager.getRotationThreshold(); }
-    protected float getCurrentYaw() { return rotationManager.getCurrentYaw(); }
-    protected float getCurrentPitch() { return rotationManager.getCurrentPitch(); }
-    protected float getTargetYaw() { return rotationManager.getTargetYaw(); }
-    protected float getTargetPitch() { return rotationManager.getTargetPitch(); }
+    protected RotationManager.RotationMode getRotationMode() { return rotMng.getRotationMode(); }
+    protected float getRotationSpeed() { return rotMng.getRotationSpeed(); }
+    protected float getMaxRotationSpeed() { return rotMng.getMaxRotationSpeed(); }
+    protected float getRotationThreshold() { return rotMng.getRotationThreshold(); }
+    protected float getCurrentYaw() { return rotMng.getCurrentYaw(); }
+    protected float getCurrentPitch() { return rotMng.getCurrentPitch(); }
+    protected float getTargetYaw() { return rotMng.getTargetYaw(); }
+    protected float getTargetPitch() { return rotMng.getTargetPitch(); }
 }
