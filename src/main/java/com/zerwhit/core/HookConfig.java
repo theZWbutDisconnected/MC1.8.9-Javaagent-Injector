@@ -102,6 +102,11 @@ public class HookConfig {
                      new String[]{"func_181560_a", "updateCameraAndRender"},
                      "(FJ)V",
                      HookType.REPLACE, "updateCameraAndRenderHook", new String[]{"FJ"});
+        
+        addHookConfig("net/minecraft/entity/EntityLivingBase", 
+                     new String[]{"func_70612_e", "moveEntityWithHeading"}, 
+                     "(FF)V", 
+                     HookType.BEFORE, "onMoveEntityWithHeading", new String[]{"F", "F"});
     }
     
     private static void addHookConfig(String className, String[] methodNames, String methodDesc,

@@ -10,11 +10,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.C02PacketUseEntity;
+import net.minecraft.network.play.client.C07PacketPlayerDigging;
 import net.minecraft.network.play.client.C0APacketAnimation;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
-import net.minecraft.util.Timer;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import org.lwjgl.input.Mouse;
 
 import java.util.List;
@@ -85,6 +85,10 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                     boolean sprint = mc.thePlayer.isSprinting();
                     boolean block = mc.thePlayer.isBlocking();
                     if (block) {
+                        mc.getNetHandler().addToSendQueue(new C07PacketPlayerDigging(
+                                C07PacketPlayerDigging.Action.RELEASE_USE_ITEM,
+                                BlockPos.ORIGIN, EnumFacing.DOWN
+                        ));
                         mc.thePlayer.stopUsingItem();
                     }
                     if (sprint) {
@@ -100,8 +104,9 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
                         case "Silent":
                             mc.thePlayer.swingItem();
                             mc.playerController.attackEntity(mc.thePlayer, target);
-                            mc.thePlayer.motionX *= 0.8D;
-                            mc.thePlayer.motionZ *= 0.8D;
+                            mc.getNetHandler().addToSendQueue(new C02PacketUseEntity(target, C02PacketUseEntity.Action.ATTACK));
+                            mc.thePlayer.moveStrafing /= 0.8F;
+                            mc.thePlayer.moveForward /= 0.8F;
                             break;
                     }
                     if (sprint && currentTime - lastSprintToggle > 80 + random.nextInt(70)) {
@@ -199,7 +204,7 @@ public class ModuleKillAura extends ModuleBase implements ITickableModule {
         }
         if (key.equals("RotateMode")) {
             String currentMode = (String) getConfig("RotateMode");
-            setConfig("RotateMode", RotationManager.RotationMode.values()[RotationManager.RotationMode.valueOf(currentMode).ordinal() + 1 % RotationManager.RotationMode.values().length]);
+            setConfig("RotateMode", RotationManager.RotationMode.values()[RotationManager.RotationMode.valueOf(currentMode).ordinal() + 1 % RotationManager.RotationMode.values().length].name());
         }
     }
 

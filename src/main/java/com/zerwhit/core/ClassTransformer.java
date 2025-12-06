@@ -20,11 +20,23 @@ public class ClassTransformer implements ClassFileTransformer {
     }
 
     public static boolean isSystemClass(String className) {
-        return Arrays.stream(SYSTEM_PACKAGES).anyMatch(className::startsWith);
+        if (className == null) return false;
+        for (String pkg : SYSTEM_PACKAGES) {
+            if (className.startsWith(pkg)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isMCClass(String className) {
-        return Arrays.stream(MINECRAFT_PACKAGES).anyMatch(className::startsWith);
+        if (className == null) return false;
+        for (String pkg : MINECRAFT_PACKAGES) {
+            if (className.startsWith(pkg)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private byte[] transformMinecraftClass(String className, byte[] classfileBuffer) {

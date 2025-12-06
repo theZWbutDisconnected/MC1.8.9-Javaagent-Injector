@@ -1,4 +1,4 @@
-package com.zerwhit.core.module.movement;
+package com.zerwhit.core.module.player;
 
 import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.module.ITickableModule;

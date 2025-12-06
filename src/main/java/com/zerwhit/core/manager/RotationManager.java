@@ -76,6 +76,11 @@ public class RotationManager {
                 targetPitch = currentPitch;
                 applyRotation();
             }
+//            Entity render = RotationManager.getInstance().rendererViewEntity;
+//            render.rotationPitch = mc.thePlayer.rotationPitch;
+//            render.rotationYaw = mc.thePlayer.rotationYaw;
+//            render.prevRotationPitch = mc.thePlayer.rotationPitch;
+//            render.rotationYaw = mc.thePlayer.rotationYaw;
             return;
         }
         if (!isRotating || mc.thePlayer == null) return;
@@ -163,6 +168,7 @@ public class RotationManager {
         if (mc.thePlayer != null) {
             mc.thePlayer.rotationYaw = currentYaw;
             mc.thePlayer.rotationPitch = currentPitch;
+            mc.thePlayer.setPositionAndRotation(mc.thePlayer.posX,mc.thePlayer.posY,mc.thePlayer.posZ,currentYaw,currentPitch);
         }
     }
 

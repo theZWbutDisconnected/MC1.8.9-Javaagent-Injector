@@ -97,17 +97,26 @@ public class Hooks {
     }
     public static void onPostTick() {}
     public static void onPlayerPreUpdate() {
+        RotationManager.getInstance().updateRotation();
         Meta.slientAimEnabled = false;
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
     }
     public static void onPlayerPostUpdate() {
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);
-        RotationManager.getInstance().updateRotation();
     }
 
     public static void onPlayerHurt() {
         moduleManager.invokeModule(ModuleManager.ModuleHookType.EVENT, "playerHurt");
+    }
+    
+    /**
+     * Hook method for intercepting EntityLivingBase's moveEntityWithHeading method
+     * This method is called at the beginning of the original moveEntityWithHeading method
+     * Args: strafe - the strafe movement input, forward - the forward movement input
+     */
+    public static void onMoveEntityWithHeading(float strafe, float forward) {
+        moduleManager.invokeHook(ModuleManager.ModuleHookType.EVENT, "moveEntityWithHeading", strafe, forward);
     }
 
     private static void initializeTextures() {
@@ -335,6 +344,11 @@ public class Hooks {
             int i = 1;
 
             if (Minecraft.getMinecraft().gameSettings.invertMouse)
+            {
+                i = -1;
+            }
+
+            if (Minecraft.getMinecraft().gameSettings.thirdPersonView > 0)
             {
                 i = -1;
             }

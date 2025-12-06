@@ -4,11 +4,13 @@ import com.zerwhit.core.module.combat.ModuleAutoClicker;
 import com.zerwhit.core.module.combat.ModuleKillAura;
 import com.zerwhit.core.module.combat.ModuleReach;
 import com.zerwhit.core.module.movement.*;
+import com.zerwhit.core.module.player.ModuleScaffold;
 import com.zerwhit.core.module.render.ModuleArraylist;
 import com.zerwhit.core.module.render.ModuleXRay;
 import com.zerwhit.core.module.visual.ModuleFreeLook;
 import com.zerwhit.core.module.visual.ModuleLegacyAnim;
 import com.zerwhit.core.module.visual.ModulePostProcessing;
+import com.zerwhit.core.module.movement.ModuleMovementFix;
 import com.zerwhit.core.manager.RotationManager;
 import net.minecraft.client.Minecraft;
 
@@ -33,6 +35,7 @@ public abstract class ModuleBase {
         addModule(new ModuleSpeed());
         addModule(new ModuleNoFall());
         addModule(new ModuleScaffold());
+        addModule(new ModuleMovementFix());
         addModule(new ModuleArraylist());
         addModule(new ModuleXRay());
         addModule(new ModuleKillAura());
