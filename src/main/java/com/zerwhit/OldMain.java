@@ -1,5 +1,7 @@
 package com.zerwhit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.User32;
@@ -18,36 +20,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OldMain {
+    private static final Logger logger = LogManager.getLogger(OldMain.class);
+    
     public static WinDef.HWND hwnd;
     public static void main(String[] args)
             throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
 
         List<String> pids = findPidsByWindowName("1.8.9");
         List<WinDef.HWND> hwnds = findHWNDByWindowName("1.8.9");
-        System.out.println("Found " + pids.size() + " Minecraft processes:");
+        logger.info("Found {} Minecraft processes:", pids.size());
         for (String pid : pids) {
-            System.out.println("PID: " + pid);
+            logger.info("PID: {}", pid);
         }
 
         if (pids.isEmpty()) {
-            System.err.println("No Minecraft processes found!");
+            logger.error("No Minecraft processes found!");
             return;
         }
 
         String pid = pids.get(0);
         hwnd = hwnds.get(0);
-        System.out.println("Attaching to PID: " + pid);
+        logger.info("Attaching to PID: {}", pid);
 
         String path = getCurrentJarPath();
-        System.out.println("Using agent path: " + path);
+        logger.info("Using agent path: {}", path);
 
         VirtualMachine vm = VirtualMachine.attach(pid);
         try {
-            System.out.println("Loading agent...");
+            logger.info("Loading agent...");
             vm.loadAgent(path, "useSystemClassLoader=true");
         } finally {
             vm.detach();
-            System.out.println("Detached from target VM");
+            logger.info("Detached from target VM");
         }
     }
 
@@ -77,7 +81,7 @@ public class OldMain {
                 }
             }
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("Error getting current JAR path", e);
         }
 
         File currentDir = new File("");
@@ -114,7 +118,7 @@ public class OldMain {
                 User32.INSTANCE.GetWindowThreadProcessId(hWnd, pidRef);
                 int pid = pidRef.getValue();
                 WinDef.HMODULE kernel32 = Kernel32.INSTANCE.GetModuleHandle("kernel32");
-                System.out.println("Found window: '" + title + "' with PID: " + pid);
+                logger.debug("Found window: '{}' with PID: {}", title, pid);
                 pids.add(String.valueOf(pid));
             }
             return true;

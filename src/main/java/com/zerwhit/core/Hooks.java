@@ -8,6 +8,8 @@ import com.zerwhit.core.manager.RotationManager;
 import com.zerwhit.core.resource.TextureResource;
 
 import com.zerwhit.core.util.ObfuscationReflectionHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.state.IBlockState;
@@ -41,6 +43,8 @@ import org.lwjgl.opengl.Display;
 import static com.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
 public class Hooks {
+    private static final Logger logger = LogManager.getLogger(Hooks.class);
+    
     private static boolean texturesInitialized = false;
     private static boolean modulesInitialized = false;
     private static final int MARGIN = 10;
@@ -84,8 +88,8 @@ public class Hooks {
                 TextureLoader.loadAllTextureResources();
             }
         } catch (Exception e) {
-            System.err.println("Failed to render display: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to render display: {}", e.getMessage());
+            logger.error("Error details:", e);
         }
     }
 
@@ -97,13 +101,13 @@ public class Hooks {
     }
     public static void onPostTick() {}
     public static void onPlayerPreUpdate() {
-        RotationManager.getInstance().updateRotation();
         Meta.slientAimEnabled = false;
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
     }
     public static void onPlayerPostUpdate() {
         moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);
+        RotationManager.getInstance().updateRotation();
     }
 
     public static void onPlayerHurt() {
@@ -129,7 +133,7 @@ public class Hooks {
         }
 
         texturesInitialized = true;
-        System.out.println("Texture system and ScreenEffects initialized");
+        logger.info("Texture system and ScreenEffects initialized");
     }
 
     private static void render(int screenWidth, int screenHeight) {
@@ -173,7 +177,7 @@ public class Hooks {
         moduleManager.cleanup();
         texturesInitialized = false;
         modulesInitialized = false;
-        System.out.println("Hooks system cleaned up");
+        logger.info("Hooks system cleaned up");
     }
 
     /**
@@ -477,6 +481,6 @@ public class Hooks {
     }
 
     static {
-        System.out.println("Hooks class initialized by classloader: " + Hooks.class.getClassLoader());
+        logger.info("Hooks class initialized by classloader: {}", Hooks.class.getClassLoader());
     }
 }

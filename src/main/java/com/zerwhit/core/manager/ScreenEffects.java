@@ -1,5 +1,7 @@
 package com.zerwhit.core.manager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
@@ -25,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ScreenEffects {
+    private static final Logger logger = LogManager.getLogger(ScreenEffects.class);
+    
     private boolean initialized = false;
 
     private int blurShader;
@@ -110,7 +114,7 @@ public class ScreenEffects {
             Framebuffer mainFramebuffer = mc.getFramebuffer();
             blurFramebuffer.bindFramebuffer(true);
             if (GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER) != GL30.GL_FRAMEBUFFER_COMPLETE) {
-                System.err.println("Framebuffer not complete: " + GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER));
+                logger.error("Framebuffer not complete: {}", GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER));
                 break Blur;
             }
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);

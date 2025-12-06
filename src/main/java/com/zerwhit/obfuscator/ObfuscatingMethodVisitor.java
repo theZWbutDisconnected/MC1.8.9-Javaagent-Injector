@@ -1,5 +1,7 @@
 package com.zerwhit.obfuscator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.zerwhit.core.ClassTransformer;
 import com.zerwhit.obfuscator.parser.CsvParser;
 import com.zerwhit.obfuscator.parser.TsrgParser;
@@ -11,6 +13,8 @@ import org.objectweb.asm.Opcodes;
 import java.util.List;
 
 class ObfuscatingMethodVisitor extends MethodVisitor {
+    private static final Logger logger = LogManager.getLogger(ObfuscatingMethodVisitor.class);
+    
     private String ownerClassName;
     private String originalMethodName;
     private String obfuscatedMethodName;
@@ -44,7 +48,7 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
         String mappedName = getMappedMethodName(owner, name, descriptor, opcode);
 
         if (!name.equals(mappedName)) {
-            System.out.println("Mapping Method: " + owner + "." + name + descriptor + " -> " + mappedOwner + "." + mappedName + descriptor);
+            logger.debug("Mapping Method: {}.{}{} -> {}.{}{}", owner, name, descriptor, mappedOwner, mappedName, descriptor);
         }
 
         super.visitMethodInsn(opcode, mappedOwner, mappedName, descriptor, ift);
@@ -137,7 +141,7 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
             mappedName = csvParser.fieldMappings.getOrDefault(mappedName, mappedName);
         }
         if (!name.equals(mappedName)) {
-            System.out.println("Mapping Field: " + owner + "." + name + " -> " + mappedOwner + "." + mappedName);
+            logger.debug("Mapping Field: {}.{} -> {}.{}", owner, name, mappedOwner, mappedName);
         }
         super.visitFieldInsn(opcode, mappedOwner, mappedName, descriptor);
     }
@@ -166,7 +170,7 @@ class ObfuscatingMethodVisitor extends MethodVisitor {
         String mappedType = tsrgParser.getMappedClass(type);
 
         if (!type.equals(mappedType)) {
-            System.out.println("Mapping Type Include: " + type + " -> " + mappedType);
+            logger.debug("Mapping Type Include: {} -> {}", type, mappedType);
         }
 
         super.visitTypeInsn(opcode, mappedType);

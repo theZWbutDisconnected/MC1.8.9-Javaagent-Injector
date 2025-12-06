@@ -1,5 +1,7 @@
 package com.zerwhit.obfuscator.parser;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CsvParser {
+    private static final Logger logger = LogManager.getLogger(CsvParser.class);
+    
     public Map<String, String> fieldMappings = new HashMap<>();
     public Map<String, String> methodMappings = new HashMap<>();
 
@@ -19,7 +23,7 @@ public class CsvParser {
 
     private static void loadMappings(String csvFile, Map<String, String> mappings, boolean isField) throws IOException {
         if (!Files.exists(Paths.get(csvFile))) {
-            System.err.println("CSV file not found: " + csvFile);
+            logger.warn("CSV file not found: {}", csvFile);
             return;
         }
 

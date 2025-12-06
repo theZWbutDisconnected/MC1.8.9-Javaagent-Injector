@@ -1,5 +1,7 @@
 package com.zerwhit.obfuscator.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 
 import java.io.IOException;
@@ -7,6 +9,8 @@ import java.io.InputStream;
 import java.util.*;
 
 public class ClassHierarchyResolver {
+    private static final Logger logger = LogManager.getLogger(ClassHierarchyResolver.class);
+    
     private static final Map<String, String> SUPER_CLASS_CACHE = new HashMap<>();
     private static final Map<String, String[]> INTERFACES_CACHE = new HashMap<>();
     private static final Set<String> MISSING_CLASSES = new HashSet<>();
@@ -35,7 +39,7 @@ public class ClassHierarchyResolver {
         try (InputStream is = getClassStream(className)) {
             if (is == null) {
                 if (!MISSING_CLASSES.contains(className) && !className.startsWith("java/") && !className.startsWith("[")) {
-                    System.err.println("Warning: Class not found in classpath: " + className);
+                    logger.warn("Class not found in classpath: {}", className);
                     MISSING_CLASSES.add(className);
                 }
                 SUPER_CLASS_CACHE.put(className, null);
@@ -47,7 +51,7 @@ public class ClassHierarchyResolver {
             SUPER_CLASS_CACHE.put(className, superName);
             return superName;
         } catch (IOException e) {
-            System.err.println("Error reading class: " + className + " - " + e.getMessage());
+            logger.error("Error reading class: {}", className, e);
             SUPER_CLASS_CACHE.put(className, null);
             return null;
         }

@@ -3,6 +3,8 @@ package com.zerwhit.core.manager;
 import com.zerwhit.core.resource.TextureResource;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,11 +12,13 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 public class TextureLoader {
+    private static final Logger logger = LogManager.getLogger(TextureLoader.class);
+    
     public static int loadTextureFromResource(String resourcePath, String textureName) {
         try {
             InputStream inputStream = TextureLoader.class.getClassLoader().getResourceAsStream(resourcePath);
             if (inputStream == null) {
-                System.err.println("Failed to find texture: " + resourcePath);
+                logger.error("Failed to find texture: {}", resourcePath);
                 return -1;
             }
 
@@ -22,27 +26,27 @@ public class TextureLoader {
             inputStream.close();
 
             if (image == null) {
-                System.err.println("Failed to read image data: " + resourcePath);
+                logger.error("Failed to read image data: {}", resourcePath);
                 return -1;
             }
 
             return uploadTextureToGPU(image, textureName);
 
         } catch (Exception e) {
-            System.err.println("Failed to load texture " + textureName + ": " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to load texture {}: {}", textureName, e.getMessage());
+            logger.error("Error details:", e);
             return -1;
         }
     }
 
     public static boolean loadTextureResource(TextureResource textureResource) {
         if (textureResource == null) {
-            System.err.println("TextureResource is null");
+            logger.error("TextureResource is null");
             return false;
         }
 
         if (textureResource.isLoaded()) {
-            System.out.println("Texture already loaded: " + textureResource.getTextureName());
+            logger.info("Texture already loaded: {}", textureResource.getTextureName());
             return true;
         }
 
@@ -53,10 +57,10 @@ public class TextureLoader {
 
         if (textureId != -1) {
             textureResource.setTextureId(textureId);
-            System.out.println("Successfully loaded texture resource: " + textureResource.getTextureName());
+            logger.info("Successfully loaded texture resource: {}", textureResource.getTextureName());
             return true;
         } else {
-            System.err.println("Failed to load texture resource: " + textureResource.getTextureName());
+            logger.error("Failed to load texture resource: {}", textureResource.getTextureName());
             return false;
         }
     }
@@ -72,7 +76,7 @@ public class TextureLoader {
             }
         }
 
-        System.out.println("Loaded " + successCount + "/" + textureKeys.length + " texture resources");
+        logger.info("Loaded {}/{} texture resources", successCount, textureKeys.length);
     }
 
     private static int uploadTextureToGPU(BufferedImage image, String textureName) {
@@ -106,14 +110,14 @@ public class TextureLoader {
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0,
                 GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-        System.out.println("Successfully uploaded texture to GPU: " + textureName + " (ID: " + textureId + ")");
+        logger.info("Successfully uploaded texture to GPU: {} (ID: {})", textureName, textureId);
         return textureId;
     }
 
     public static void releaseTexture(int textureId) {
         if (textureId != -1) {
             GL11.glDeleteTextures(textureId);
-            System.out.println("Released texture ID: " + textureId);
+            logger.info("Released texture ID: {}", textureId);
         }
     }
 

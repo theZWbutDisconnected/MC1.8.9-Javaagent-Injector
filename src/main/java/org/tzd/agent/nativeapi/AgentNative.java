@@ -11,7 +11,7 @@ import java.lang.instrument.UnmodifiableClassException;
  * 定义了 Agent 的上下文句柄结构以及核心功能的本地方法声明。
  * </p>
  *
- * @author tzd
+ * @author tzdwindows 7
  */
 public class AgentNative {
 
@@ -197,4 +197,23 @@ public class AgentNative {
      * @return 该类的所有实例数组
      */
     public static native Object[] getInstances(Class<?> clazz);
+
+
+    /**
+     * 获取 JVM 中所有已加载的类。
+     *
+     * @return 已加载类的数组
+     */
+    public static native Class<?>[] getAllLoadedClasses();
+
+    /**
+     * 判断指定的类是否可以被修改 (Redefine/Retransform)。
+     * <p>
+     * 原始类型的类、数组类以及一些 JVM 内部类可能无法被修改。
+     * </p>
+     *
+     * @param clazz 目标类
+     * @return 如果可以修改返回 true，否则返回 false
+     */
+    public static native boolean isModifiableClass(Class<?> clazz);
 }

@@ -1,15 +1,20 @@
 package com.zerwhit.core.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.awt.*;
 
 public class KeyRobot {
+    private static final Logger logger = LogManager.getLogger(KeyRobot.class);
+    
     private static Robot robot;
     
     static {
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Failed to create Robot instance:", e);
         }
     }
     
@@ -41,7 +46,7 @@ public class KeyRobot {
         try {
             robot.delay(ms);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during delay:", e);
         }
     }
     

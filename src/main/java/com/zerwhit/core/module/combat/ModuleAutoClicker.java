@@ -1,5 +1,7 @@
 package com.zerwhit.core.module.combat;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.zerwhit.core.module.ITickableModule;
 import com.zerwhit.core.module.ModuleBase;
 import com.zerwhit.core.util.KeyRobot;
@@ -10,6 +12,8 @@ import org.lwjgl.input.Mouse;
 import java.awt.event.InputEvent;
 
 public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
+    private static final Logger logger = LogManager.getLogger(ModuleAutoClicker.class);
+    
     private long lastClickTime = 0;
     
     public ModuleAutoClicker() {
@@ -56,7 +60,7 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Thread interrupted during click:", e);
         }
         KeyRobot.releaseMouse(buttonMask);
     }

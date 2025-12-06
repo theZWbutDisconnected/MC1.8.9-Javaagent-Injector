@@ -1,10 +1,15 @@
 package com.zerwhit.core.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class ObfuscationReflectionHelper {
+    private static final Logger logger = LogManager.getLogger(ObfuscationReflectionHelper.class);
+    
     public static Method getObfuscatedMethod(Class<?> klass, String[] methodNames, Class<?>... parameterTypes) {
         for (Method method : klass.getDeclaredMethods()) {
             boolean hasMethod = Arrays.stream(methodNames).anyMatch((v) -> v.equals(method.getName()));
@@ -113,12 +118,10 @@ public class ObfuscationReflectionHelper {
                 method.setAccessible(true);
                 return method.invoke(instance, args);
             } else {
-                for (Method m : klass.getDeclaredMethods()) {
-                    System.out.println("  " + m.getName() + " - " + Arrays.toString(m.getParameterTypes()));
-                }
+                logger.debug("Available methods in class {}: {}", klass.getName(), Arrays.toString(klass.getDeclaredMethods()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error invoking obfuscated method:", e);
         }
         return null;
     }
@@ -149,3 +152,4 @@ public class ObfuscationReflectionHelper {
         return parameterTypes;
     }
 }
+

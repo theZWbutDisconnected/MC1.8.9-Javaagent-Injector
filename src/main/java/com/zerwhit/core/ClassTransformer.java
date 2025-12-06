@@ -1,5 +1,7 @@
 package com.zerwhit.core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.*;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -7,6 +9,8 @@ import java.security.ProtectionDomain;
 import java.util.Arrays;
 
 public class ClassTransformer implements ClassFileTransformer {
+    private static final Logger logger = LogManager.getLogger(ClassTransformer.class);
+    
     private static final String[] SYSTEM_PACKAGES = {"java/", "sun/", "com/sun/", "jdk/", "javax/"};
     private static final String[] MINECRAFT_PACKAGES = {"net/minecraft", "com/mojang", "badlion"};
 
@@ -46,7 +50,7 @@ public class ClassTransformer implements ClassFileTransformer {
             reader.accept(new MinecraftClassVisitor(writer, className), ClassReader.EXPAND_FRAMES);
             return writer.toByteArray();
         } catch (Exception e) {
-            System.err.println("Failed to transform: " + className);
+            logger.error("Failed to transform class: {}", className, e);
             return classfileBuffer;
         }
     }

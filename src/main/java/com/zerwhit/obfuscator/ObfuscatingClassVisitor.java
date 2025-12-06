@@ -1,5 +1,7 @@
 package com.zerwhit.obfuscator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.zerwhit.obfuscator.parser.CsvParser;
 import com.zerwhit.obfuscator.parser.TsrgParser;
 import com.zerwhit.obfuscator.util.ClassHierarchyResolver;
@@ -11,6 +13,8 @@ import org.objectweb.asm.Opcodes;
 import java.util.List;
 
 class ObfuscatingClassVisitor extends ClassVisitor {
+    private static final Logger logger = LogManager.getLogger(ObfuscatingClassVisitor.class);
+    
     private String className;
     private String obfuscatedClassName;
     private TsrgParser tsrgParser;
@@ -28,7 +32,7 @@ class ObfuscatingClassVisitor extends ClassVisitor {
         this.obfuscatedClassName = tsrgParser.getMappedClass(className);
 
         if (!className.equals(obfuscatedClassName)) {
-            System.out.println("Class Mapping: " + className + " -> " + obfuscatedClassName);
+            logger.debug("Class Mapping: {} -> {}", className, obfuscatedClassName);
         }
     }
 
@@ -52,7 +56,7 @@ class ObfuscatingClassVisitor extends ClassVisitor {
         String obfuscatedFieldName = tsrgParser.getMappedField(className, name);
 
         if (!name.equals(obfuscatedFieldName)) {
-            System.out.println("Field Mapping: " + className + "." + name + " -> " + obfuscatedFieldName);
+            logger.debug("Field Mapping: {}.{} -> {}", className, name, obfuscatedFieldName);
         }
 
         return super.visitField(access, obfuscatedFieldName, descriptor, signature, value);
@@ -68,7 +72,7 @@ class ObfuscatingClassVisitor extends ClassVisitor {
         String obfuscatedMethodName = getMappedMethodName(access, name, descriptor);
 
         if (!name.equals(obfuscatedMethodName)) {
-            System.out.println("Method Mapping: " + className + "." + name + descriptor + " -> " + obfuscatedMethodName);
+            logger.debug("Method Mapping: {}.{}{} -> {}", className, name, descriptor, obfuscatedMethodName);
         }
 
         return new ObfuscatingMethodVisitor(

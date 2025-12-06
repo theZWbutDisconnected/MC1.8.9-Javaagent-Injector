@@ -2,57 +2,88 @@ package com.zerwhit;
 
 import org.tzd.agent.nativeapi.AgentNative;
 import com.zerwhit.core.ClassTransformer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.security.ProtectionDomain;
 
 public class AgentMain {
-    public static void tzdAgentMain(AgentNative.AgentHandle handle, String agentArgs) throws Exception {
-        System.out.println("[AgentMain] tzdAgentMain called with handle: " + handle);
+    private static final Logger logger = LogManager.getLogger(AgentMain.class);
+    public static ClassLoader mcLoader;
+    public static void tzdAgentMain(AgentNative.AgentHandle handle, String[] agentArgs) throws Exception {
+        logger.debug("tzdAgentMain called with handle: {}", handle);
         initAgent(handle, agentArgs);
     }
+
+    private static void injectHooksIntoMinecraftClassLoader() {
+        try {
+            ClassLoader mcLoader = findLaunchClassLoader();
+            if (mcLoader == null) {
+                logger.error("Could not find Minecraft class loader!");
+                return;
+            }
+            String agentJarPath = AgentMain.class.getProtectionDomain()
+                    .getCodeSource().getLocation().getPath();
+            Method addURLMethod = mcLoader.getClass().getDeclaredMethod("addURL", URL.class);
+            addURLMethod.setAccessible(true);
+            addURLMethod.invoke(mcLoader, new File(agentJarPath).toURI().toURL());
+//            instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(agentJarPath));
+//            instrumentation.appendToSystemClassLoaderSearch(new JarFile(agentJarPath));
+        } catch (Exception e) {
+            logger.error("Failed to inject Hooks class: {}", e.getMessage());
+        }
+    }
+
+    private static ClassLoader findLaunchClassLoader() {
+        try {
+            for (Class<?> clazz : AgentNative.getAllLoadedClasses()) {
+                ClassLoader loader = clazz.getClassLoader();
+                if (loader != null && loader.getClass().getName().contains("minecraft")) {
+                    return loader;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to find LaunchClassLoader: {}", e.getMessage());
+        }
+        return null;
+    }
     
-    private static void initAgent(AgentNative.AgentHandle handle, String agentArgs) {
-        System.out.println("[AgentMain] Initializing agent with handle: " + handle);
-        
+    private static void initAgent(AgentNative.AgentHandle handle, String[] agentArgs) {
+        logger.info("Initializing agent with handle: {}", handle);
         try {
             String dllPath = getDllPath();
             System.load(dllPath);
-            System.out.println("[AgentMain] Loaded TzdAgent.dll from: " + dllPath);
-            
+            logger.info("Loaded TzdAgent.dll from: {}", dllPath);
             if (handle != null) {
                 AgentNative.addTransformer(handle, new AgentNative.ClassFileTransformerEncapsulation(
                     new ClassTransformer(), true
                 ));
-                
-                System.out.println("[AgentMain] Transformer added successfully");
-                
-                try {
-                    Class<?> minecraftClass = Class.forName("net.minecraft.client.Minecraft");
-                    System.out.println("[AgentMain] Retransformed Minecraft class");
-                } catch (ClassNotFoundException e) {
-                    System.out.println("[AgentMain] Minecraft class not found, skipping retransform");
-                }
+                retransformLoadedClasses(handle);
+                injectHooksIntoMinecraftClassLoader();
+                logger.info("Transformer added successfully");
             } else {
-                System.out.println("[AgentMain] Using traditional instrumentation");
+                throw new IllegalArgumentException("Agent handle is null");
             }
-            
-            System.out.println("[AgentMain] Agent initialization completed successfully");
-            
+            logger.info("Agent initialization completed successfully");
         } catch (Exception e) {
-            System.err.println("[AgentMain] Error during agent initialization: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error during agent initialization: {}", e.getMessage());
+            logger.error("Agent initialization error details:", e);
         }
     }
 
     private static void retransformLoadedClasses(AgentNative.AgentHandle handle) {
-        for (Class<?> clazz : handle.getAllLoadedClasses()) {
+        for (Class<?> clazz : AgentNative.getAllLoadedClasses()) {
             String className = clazz.getName().replace('.', '/');
-            if (ClassTransformer.isMCClass(className) && handle.isModifiableClass(clazz)) {
+            if (ClassTransformer.isMCClass(className) && AgentNative.isModifiableClass(clazz)) {
                 try {
                     AgentNative.retransformClasses(handle, clazz);
                 } catch (Exception e) {
-                    System.err.println("Failed to retransform " + className);
+                    logger.warn("Failed to retransform {}", className);
                 }
             }
         }
@@ -78,7 +109,7 @@ public class AgentMain {
                     return tempFile.getAbsolutePath();
                 }
             } catch (Exception e) {
-                System.err.println("[AgentMain] Error extracting DLL: " + e.getMessage());
+                logger.error("Error extracting DLL: {}", e.getMessage());
             }
         }
 

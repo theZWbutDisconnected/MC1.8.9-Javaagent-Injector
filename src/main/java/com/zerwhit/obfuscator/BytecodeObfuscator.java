@@ -1,5 +1,7 @@
 package com.zerwhit.obfuscator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.zerwhit.obfuscator.parser.CsvParser;
 import com.zerwhit.obfuscator.parser.TsrgParser;
 import com.zerwhit.obfuscator.util.ClassHierarchyResolver;
@@ -17,6 +19,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class BytecodeObfuscator {
+    private static final Logger logger = LogManager.getLogger(BytecodeObfuscator.class);
+    
     private static CsvParser csvParser;
     private TsrgParser tsrgParser;
     private Set<String> excludedClasses = new HashSet<>();
@@ -52,8 +56,8 @@ public class BytecodeObfuscator {
         try {
             File jarFile = new File(minecraftJarPath);
             if (!jarFile.exists()) {
-                System.err.println("Minecraft JAR not found at: " + minecraftJarPath);
-                System.err.println("Trying to find minecraft.jar in current directory...");
+                logger.warn("Minecraft JAR not found at: {}", minecraftJarPath);
+                logger.warn("Trying to find minecraft.jar in current directory...");
 
                 File currentDir = new File(".");
                 File[] jars = currentDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".jar") &&
@@ -61,9 +65,9 @@ public class BytecodeObfuscator {
 
                 if (jars != null && jars.length > 0) {
                     jarFile = jars[0];
-                    System.out.println("Found Minecraft JAR: " + jarFile.getName());
+                    logger.info("Found Minecraft JAR: {}", jarFile.getName());
                 } else {
-                    System.err.println("No Minecraft JAR found. Class hierarchy resolution may not work properly.");
+                    logger.warn("No Minecraft JAR found. Class hierarchy resolution may not work properly.");
                     return;
                 }
             }
@@ -74,16 +78,16 @@ public class BytecodeObfuscator {
 
             ClassHierarchyResolver.setClassLoader(mcClassLoader);
 
-            System.out.println("Successfully loaded Minecraft JAR: " + jarFile.getAbsolutePath());
+            logger.info("Successfully loaded Minecraft JAR: {}", jarFile.getAbsolutePath());
         } catch (Exception e) {
-            System.err.println("Failed to setup Minecraft class loader: " + e.getMessage());
+            logger.error("Failed to setup Minecraft class loader:", e);
         }
     }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 4) {
-            System.out.println("Usage: BytecodeObfuscator <classes-directory> <tsrg-file> <fields-csv> <methods-csv> [minecraft-jar]");
-            System.out.println("Example: BytecodeObfuscator build/classes/java/main mappings/srg-mcp-1.12.2.tsrg fields.csv methods.csv");
+            logger.info("Usage: BytecodeObfuscator <classes-directory> <tsrg-file> <fields-csv> <methods-csv> [minecraft-jar]");
+            logger.info("Example: BytecodeObfuscator build/classes/java/main mappings/srg-mcp-1.12.2.tsrg fields.csv methods.csv");
             return;
         }
 
@@ -101,22 +105,21 @@ public class BytecodeObfuscator {
         try {
             obfuscator.obfuscate(classesDir, tsrgFile);
         } catch (IOException e) {
-            System.err.println("Obfuscation failed: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Obfuscation failed: {}", e.getMessage(), e);
         }
     }
 
     public void obfuscate(String classesDir, String tsrgFile) throws IOException {
-        System.out.println("Starting bytecode obfuscation...");
-        System.out.println("Classes directory: " + classesDir);
-        System.out.println("TSRG file: " + tsrgFile);
+        logger.info("Starting bytecode obfuscation...");
+        logger.info("Classes directory: {}", classesDir);
+        logger.info("TSRG file: {}", tsrgFile);
 
         ClassHierarchyResolver.clearCache();
 
         tsrgParser.parseTsrgFile(tsrgFile);
-        System.out.println("Loaded " + tsrgParser.getClassMappings().size() + " class mappings");
-        System.out.println("Loaded " + tsrgParser.getFieldMappings().values().stream().mapToInt(Map::size).sum() + " field mappings");
-        System.out.println("Loaded " + tsrgParser.getMethodMappings().values().stream().mapToInt(Map::size).sum() + " method mappings");
+        logger.info("Loaded {} class mappings", tsrgParser.getClassMappings().size());
+        logger.info("Loaded {} field mappings", tsrgParser.getFieldMappings().values().stream().mapToInt(Map::size).sum());
+        logger.info("Loaded {} method mappings", tsrgParser.getMethodMappings().values().stream().mapToInt(Map::size).sum());
 
         Path classesPath = Paths.get(classesDir);
         if (!Files.exists(classesPath)) {
@@ -128,7 +131,7 @@ public class BytecodeObfuscator {
                 .filter(path -> path.toString().endsWith(".class"))
                 .forEach(path -> processClassFile(path, basePath));
 
-        System.out.println("Bytecode obfuscation completed!");
+        logger.info("Bytecode obfuscation completed!");
     }
 
     private void processClassFile(Path classFile, Path basePath) {
@@ -137,7 +140,7 @@ public class BytecodeObfuscator {
             String className = getClassNameFromPath(classFile, basePath);
 
             if (!isValidClassFile(classBytes)) {
-                System.err.println("Invalid class file: " + className);
+                logger.error("Invalid class file: {}", className);
                 return;
             }
 
@@ -145,12 +148,10 @@ public class BytecodeObfuscator {
                 byte[] obfuscatedBytes = obfuscateClass(classBytes, className);
                 Files.write(classFile, obfuscatedBytes);
             } else {
-                System.out.println("Skipped: " + className);
+                logger.debug("Skipped: {}", className);
             }
         } catch (Exception e) {
-            System.err.println("Failed to process class file: " + classFile);
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to process class file: {}", classFile, e);
         }
     }
 
@@ -164,12 +165,12 @@ public class BytecodeObfuscator {
 
     private boolean shouldObfuscateClass(String className) {
         if (excludedClasses.contains(className)) {
-            System.out.println("Excluded class: " + className);
+            logger.debug("Excluded class: {}", className);
             return false;
         }
         for (String targetPkg : TARGET_PACKAGES) {
             if (className.startsWith(targetPkg)) {
-                System.out.println("Target class for obfuscation: " + className);
+                logger.debug("Target class for obfuscation: {}", className);
                 return true;
             }
         }
@@ -186,8 +187,7 @@ public class BytecodeObfuscator {
 
             return classWriter.toByteArray();
         } catch (Exception e) {
-            System.err.println("Failed to obfuscate class: " + className);
-            e.printStackTrace();
+            logger.error("Failed to obfuscate class: {}", className, e);
             return classBytes;
         }
     }

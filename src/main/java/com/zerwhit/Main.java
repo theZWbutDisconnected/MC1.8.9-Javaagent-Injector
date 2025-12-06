@@ -6,36 +6,39 @@ import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.ptr.IntByReference;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
 
 public class Main {
+    private static final Logger logger = LogManager.getLogger(Main.class);
     
     public static void main(String[] args) {
-        System.out.println("[Main] Starting agent injection process...");
+        logger.info("Starting agent injection process...");
         try {
             long pid = findMinecraftProcess();
             if (pid == -1) {
-                System.err.println("[Main] Could not find Minecraft process!");
+                logger.error("Could not find Minecraft process!");
                 return;
             }
-            System.out.println("[Main] Found Minecraft process with PID: " + pid);
+            logger.info("Found Minecraft process with PID: {}", pid);
             String jarPath = getCurrentJarPath();
-            System.out.println("[Main] Agent JAR path: " + jarPath);
+            logger.info("Agent JAR path: {}", jarPath);
             String dllPath = getDllPath();
             System.load(dllPath);
-            System.out.println("[Main] Loaded TzdAgent.dll from: " + dllPath);
+            logger.info("Loaded TzdAgent.dll from: {}", dllPath);
             String result = AgentNative.agent_init(pid, jarPath, "com.zerwhit.AgentMain", args);
             if (result == null || result.isEmpty()) {
-                System.out.println("[Main] Agent injection successful!");
+                logger.info("Agent injection successful!");
             } else {
-                System.err.println("[Main] Agent injection failed: " + result);
+                logger.error("Agent injection failed: {}", result);
             }
             
         } catch (Exception e) {
-            System.err.println("[Main] Error during injection: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error during injection: {}", e.getMessage());
+            logger.error("Injection error details:", e);
         }
     }
     
@@ -69,7 +72,7 @@ public class Main {
                 return pidRef.getValue();
             }
         } catch (Exception e) {
-            System.err.println("[Main] Error finding process by window title '" + windowTitle + "': " + e.getMessage());
+            logger.warn("Error finding process by window title '{}': {}", windowTitle, e.getMessage());
         }
         return -1;
     }
@@ -110,7 +113,7 @@ public class Main {
                 return tempJar.getAbsolutePath();
             }
         } catch (Exception e) {
-            System.err.println("[Main] Error getting JAR path: " + e.getMessage());
+            logger.error("Error getting JAR path: {}", e.getMessage());
             return "agent.jar";
         }
     }
@@ -135,7 +138,7 @@ public class Main {
                     return tempFile.getAbsolutePath();
                 }
             } catch (Exception e) {
-                System.err.println("[Main] Error extracting DLL: " + e.getMessage());
+                logger.error("Error extracting DLL: {}", e.getMessage());
             }
         }
         

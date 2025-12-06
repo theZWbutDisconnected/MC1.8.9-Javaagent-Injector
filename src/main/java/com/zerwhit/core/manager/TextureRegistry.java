@@ -1,10 +1,15 @@
 package com.zerwhit.core.manager;
 
 import com.zerwhit.core.resource.TextureResource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class TextureRegistry {
+    private static final Logger logger = LogManager.getLogger(TextureRegistry.class);
+    
     private static final Map<String, TextureResource> TEXTURE_REGISTRY = new HashMap<>();
     private static boolean initialized = false;
 
@@ -23,21 +28,21 @@ public class TextureRegistry {
                 new TextureResource("zerwhit", "textures/v4.png", "v4logo", 76, 53));
 
         initialized = true;
-        System.out.println("TextureRegistry initialized with " + TEXTURE_REGISTRY.size() + " textures");
+        logger.info("TextureRegistry initialized with {} textures", TEXTURE_REGISTRY.size());
     }
 
     public static void registerTexture(String key, TextureResource textureResource) {
         if (TEXTURE_REGISTRY.containsKey(key)) {
-            System.err.println("Texture already registered: " + key);
+            logger.warn("Texture already registered: {}", key);
             return;
         }
         TEXTURE_REGISTRY.put(key, textureResource);
-        System.out.println("Registered texture: " + key + " -> " + textureResource.getResourcePath());
+        logger.info("Registered texture: {} -> {}", key, textureResource.getResourcePath());
     }
 
     public static TextureResource getTextureResource(String key) {
         if (!TEXTURE_REGISTRY.containsKey(key)) {
-            System.err.println("Texture not found: " + key);
+            logger.warn("Texture not found: {}", key);
             return null;
         }
         return TEXTURE_REGISTRY.get(key);
@@ -61,6 +66,6 @@ public class TextureRegistry {
         }
         TEXTURE_REGISTRY.clear();
         initialized = false;
-        System.out.println("TextureRegistry cleaned up");
+        logger.info("TextureRegistry cleaned up");
     }
 }

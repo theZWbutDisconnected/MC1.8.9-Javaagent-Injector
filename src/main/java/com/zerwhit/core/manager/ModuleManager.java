@@ -6,11 +6,15 @@ import com.zerwhit.core.module.IRenderModule;
 import com.zerwhit.core.module.IVisualModule;
 import com.zerwhit.core.module.ModuleBase;
 import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ModuleManager {
+    private static final Logger logger = LogManager.getLogger(ModuleManager.class);
+    
     public enum ModuleCategory {
         COMBAT("Combat", 0),
         MOVEMENT("Movement", 1),
@@ -110,7 +114,7 @@ public class ModuleManager {
         }
         
         initialized = true;
-        System.out.println("ModuleManager initialized with " + getTotalModuleCount() + " modules");
+        logger.info("ModuleManager initialized with {} modules", getTotalModuleCount());
     }
     
     private void setModulePriority(ModuleBase module) {
@@ -153,7 +157,7 @@ public class ModuleManager {
                         break;
                 }
             } catch (Exception e) {
-                System.err.println("Error notifying lifecycle listener: " + e.getMessage());
+                logger.error("Error notifying lifecycle listener: {}", e.getMessage());
             }
         }
     }
@@ -235,9 +239,9 @@ public class ModuleManager {
                     setModuleState(module, ModuleState.ENABLED);
                     invokeModuleHook(module, hookType, funcName, args);
                 } catch (Exception e) {
-                    System.err.println("Error invoking hook for module " + module.name + ": " + e.getMessage());
+                    logger.error("Error invoking hook for module {}: {}", module.name, e.getMessage());
                     setModuleState(module, ModuleState.ERROR);
-                    e.printStackTrace();
+                    logger.error("Error details:", e);
                 }
             }
         }
@@ -253,9 +257,9 @@ public class ModuleManager {
                     setModuleState(module, ModuleState.ENABLED);
                     invokeModuleHook(module, hookType, args);
                 } catch (Exception e) {
-                    System.err.println("Error invoking category hook for module " + module.name + ": " + e.getMessage());
+                    logger.error("Error invoking category hook for module {}: {}", module.name, e.getMessage());
                     setModuleState(module, ModuleState.ERROR);
-                    e.printStackTrace();
+                    logger.error("Error details:", e);
                 }
             }
         }
@@ -271,7 +275,7 @@ public class ModuleManager {
                         invokeModuleHook(module, hookType, args);
                         return;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error invoking module hook:", e);
                     }
                 }
             }
@@ -346,6 +350,6 @@ public class ModuleManager {
         moduleStates.clear();
         lifecycleListeners.clear();
         initialized = false;
-        System.out.println("ModuleManager cleaned up");
+        logger.info("ModuleManager cleaned up");
     }
 }
