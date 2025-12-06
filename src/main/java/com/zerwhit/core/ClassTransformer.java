@@ -46,7 +46,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private byte[] transformMinecraftClass(String className, byte[] classfileBuffer) {
         try {
-            logger.debug("Transforming class: {}", className);
+            logger.info("Transforming class: {}", className);
             ClassReader reader = new ClassReader(classfileBuffer);
             ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
             reader.accept(new MinecraftClassVisitor(writer, className), ClassReader.EXPAND_FRAMES);

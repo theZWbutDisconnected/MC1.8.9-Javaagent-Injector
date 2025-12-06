@@ -1,5 +1,6 @@
 package com.zerwhit;
 
+import com.zerwhit.core.Hooks;
 import net.minecraft.client.Minecraft;
 import org.tzd.agent.nativeapi.AgentNative;
 import com.zerwhit.core.ClassTransformer;
@@ -25,31 +26,52 @@ public class AgentMain {
 
     private static void injectHooksIntoMinecraftClassLoader() {
         try {
-            findLaunchClassLoader();
-            if (mcLoader == null || mcLoader.isEmpty()) {
-                throw new RuntimeException("Could not find Minecraft class loader!");
+            ClassLoader mcLoader = findMinecraftClassLoader();
+            if (mcLoader == null) {
+                System.err.println("Could not find Minecraft class loader!");
+                return;
             }
-            for (ClassLoader loader : mcLoader) {
-                String agentJarPath = AgentMain.class.getProtectionDomain()
-                        .getCodeSource().getLocation().getPath();
-                Method addURLMethod = loader.getClass().getDeclaredMethod("addURL", URL.class);
+            String agentJarPath = AgentMain.class.getProtectionDomain()
+                    .getCodeSource().getLocation().getPath();
+            if (mcLoader.getClass().getName().equals("net.minecraft.launchwrapper.LaunchClassLoader") || mcLoader.getClass().getName().equals("jdk.internal.loader.ClassLoaders")) {
+                Method addURLMethod = mcLoader.getClass().getDeclaredMethod("addURL", URL.class);
                 addURLMethod.setAccessible(true);
-                addURLMethod.invoke(loader, new File(agentJarPath).toURI().toURL());
+                addURLMethod.invoke(mcLoader, new File(agentJarPath).toURI().toURL());
             }
 //            instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(agentJarPath));
 //            instrumentation.appendToSystemClassLoaderSearch(new JarFile(agentJarPath));
         } catch (Exception e) {
-            logger.error("Failed to inject Hooks class: {}", e.getMessage());
+            System.err.println("Failed to inject Hooks class: " + e.getMessage());
         }
     }
 
-    private static void findLaunchClassLoader() {
-        for (Object clazzLoader : AgentNative.getInstances(ClassLoader.class)) {
-            ClassLoader loader = (ClassLoader) clazzLoader;
-            if (loader != null) {
-                mcLoader.add(loader);
+    private static ClassLoader findMinecraftClassLoader() {
+        ClassLoader[] candidates = {
+                Thread.currentThread().getContextClassLoader(),
+                ClassLoader.getSystemClassLoader(),
+                findLaunchClassLoader()
+        };
+
+        for (ClassLoader loader : candidates) {
+            if (loader != null && loader.getClass().getName().contains("LaunchClassLoader") || loader.getClass().getName().equals("ClassLoaders")) {
+                return loader;
             }
         }
+        return null;
+    }
+
+    private static ClassLoader findLaunchClassLoader() {
+        try {
+            for (Class<?> clazz : AgentNative.getAllLoadedClasses()) {
+                ClassLoader loader = clazz.getClassLoader();
+                if (loader != null && loader.getClass().getName().contains("LaunchClassLoader")) {
+                    return loader;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error while finding LaunchClassLoader: {}", e.getMessage());
+        }
+        return null;
     }
     
     private static void initAgent(AgentNative.AgentHandle handle, String[] agentArgs) {
@@ -58,6 +80,8 @@ public class AgentMain {
             String dllPath = getDllPath();
             System.load(dllPath);
             logger.info("Loaded TzdAgent.dll from: {}", dllPath);
+            logger.info(Hooks.class.getName());
+            logger.info(AgentNative.getAllLoadedClasses());
             if (handle != null) {
                 injectHooksIntoMinecraftClassLoader();
                 AgentNative.addTransformer(handle, new AgentNative.ClassFileTransformerEncapsulation(

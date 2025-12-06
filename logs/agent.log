@@ -229,3 +229,88 @@
 2025-12-06 20:46:49.641 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL13
 2025-12-06 20:46:49.654 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/BufferUtils
 2025-12-06 20:46:49.716 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Bytecode obfuscation completed!
+2025-12-06 21:08:29.572 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Successfully loaded Minecraft JAR: D:\MinecraftModWorkspace\Agent\BadlionMain\minecraft.jar
+2025-12-06 21:08:29.575 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Starting bytecode obfuscation...
+2025-12-06 21:08:29.575 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Classes directory: D:\MinecraftModWorkspace\Agent\BadlionMain\build/classes/java/main
+2025-12-06 21:08:29.575 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - TSRG file: mappings/srg-mcp-1.12.2.tsrg
+2025-12-06 21:08:29.660 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 3344 class mappings
+2025-12-06 21:08:29.663 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 11915 field mappings
+2025-12-06 21:08:29.664 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 19578 method mappings
+2025-12-06 21:08:29.704 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Keyboard
+2025-12-06 21:08:29.704 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Mouse
+2025-12-06 21:08:29.744 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/Display
+2025-12-06 21:08:29.773 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL20
+2025-12-06 21:08:29.774 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL11
+2025-12-06 21:08:29.774 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/util/vector/Vector2f
+2025-12-06 21:08:29.775 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL30
+2025-12-06 21:08:29.775 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL13
+2025-12-06 21:08:29.786 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/BufferUtils
+2025-12-06 21:08:29.842 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Bytecode obfuscation completed!
+2025-12-06 21:10:16.565 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Successfully loaded Minecraft JAR: D:\MinecraftModWorkspace\Agent\BadlionMain\minecraft.jar
+2025-12-06 21:10:16.568 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Starting bytecode obfuscation...
+2025-12-06 21:10:16.570 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Classes directory: D:\MinecraftModWorkspace\Agent\BadlionMain\build/classes/java/main
+2025-12-06 21:10:16.570 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - TSRG file: mappings/srg-mcp-1.12.2.tsrg
+2025-12-06 21:10:16.687 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 3344 class mappings
+2025-12-06 21:10:16.692 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 11915 field mappings
+2025-12-06 21:10:16.694 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 19578 method mappings
+2025-12-06 21:10:16.746 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Keyboard
+2025-12-06 21:10:16.746 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Mouse
+2025-12-06 21:10:16.796 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/Display
+2025-12-06 21:10:16.824 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL20
+2025-12-06 21:10:16.826 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL11
+2025-12-06 21:10:16.826 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/util/vector/Vector2f
+2025-12-06 21:10:16.826 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL30
+2025-12-06 21:10:16.827 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL13
+2025-12-06 21:10:16.840 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/BufferUtils
+2025-12-06 21:10:16.907 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Bytecode obfuscation completed!
+2025-12-06 21:12:40.436 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Successfully loaded Minecraft JAR: D:\MinecraftModWorkspace\Agent\BadlionMain\minecraft.jar
+2025-12-06 21:12:40.438 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Starting bytecode obfuscation...
+2025-12-06 21:12:40.438 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Classes directory: D:\MinecraftModWorkspace\Agent\BadlionMain\build/classes/java/main
+2025-12-06 21:12:40.438 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - TSRG file: mappings/srg-mcp-1.12.2.tsrg
+2025-12-06 21:12:40.523 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 3344 class mappings
+2025-12-06 21:12:40.526 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 11915 field mappings
+2025-12-06 21:12:40.527 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 19578 method mappings
+2025-12-06 21:12:40.566 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Keyboard
+2025-12-06 21:12:40.566 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Mouse
+2025-12-06 21:12:40.605 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/Display
+2025-12-06 21:12:40.626 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL20
+2025-12-06 21:12:40.627 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL11
+2025-12-06 21:12:40.627 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/util/vector/Vector2f
+2025-12-06 21:12:40.628 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL30
+2025-12-06 21:12:40.628 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL13
+2025-12-06 21:12:40.633 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/BufferUtils
+2025-12-06 21:12:40.684 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Bytecode obfuscation completed!
+2025-12-06 21:12:56.654 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Successfully loaded Minecraft JAR: D:\MinecraftModWorkspace\Agent\BadlionMain\minecraft.jar
+2025-12-06 21:12:56.656 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Starting bytecode obfuscation...
+2025-12-06 21:12:56.656 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Classes directory: D:\MinecraftModWorkspace\Agent\BadlionMain\build/classes/java/main
+2025-12-06 21:12:56.656 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - TSRG file: mappings/srg-mcp-1.12.2.tsrg
+2025-12-06 21:12:56.731 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 3344 class mappings
+2025-12-06 21:12:56.734 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 11915 field mappings
+2025-12-06 21:12:56.735 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 19578 method mappings
+2025-12-06 21:12:56.796 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Keyboard
+2025-12-06 21:12:56.797 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Mouse
+2025-12-06 21:12:56.861 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/Display
+2025-12-06 21:12:56.917 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL20
+2025-12-06 21:12:56.921 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL11
+2025-12-06 21:12:56.922 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/util/vector/Vector2f
+2025-12-06 21:12:56.923 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL30
+2025-12-06 21:12:56.924 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL13
+2025-12-06 21:12:56.939 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/BufferUtils
+2025-12-06 21:12:57.004 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Bytecode obfuscation completed!
+2025-12-06 21:21:53.211 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Successfully loaded Minecraft JAR: D:\MinecraftModWorkspace\Agent\BadlionMain\minecraft.jar
+2025-12-06 21:21:53.214 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Starting bytecode obfuscation...
+2025-12-06 21:21:53.214 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Classes directory: D:\MinecraftModWorkspace\Agent\BadlionMain\build/classes/java/main
+2025-12-06 21:21:53.214 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - TSRG file: mappings/srg-mcp-1.12.2.tsrg
+2025-12-06 21:21:53.331 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 3344 class mappings
+2025-12-06 21:21:53.336 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 11915 field mappings
+2025-12-06 21:21:53.337 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Loaded 19578 method mappings
+2025-12-06 21:21:53.404 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Keyboard
+2025-12-06 21:21:53.404 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/input/Mouse
+2025-12-06 21:21:53.479 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/Display
+2025-12-06 21:21:53.529 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL20
+2025-12-06 21:21:53.532 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL11
+2025-12-06 21:21:53.533 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/util/vector/Vector2f
+2025-12-06 21:21:53.534 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL30
+2025-12-06 21:21:53.536 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/opengl/GL13
+2025-12-06 21:21:53.557 [main] WARN  com.zerwhit.obfuscator.util.ClassHierarchyResolver - Class not found in classpath: org/lwjgl/BufferUtils
+2025-12-06 21:21:53.653 [main] INFO  com.zerwhit.obfuscator.BytecodeObfuscator - Bytecode obfuscation completed!
