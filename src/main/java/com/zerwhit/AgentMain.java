@@ -1,5 +1,6 @@
 package com.zerwhit;
 
+import net.minecraft.client.Minecraft;
 import org.tzd.agent.nativeapi.AgentNative;
 import com.zerwhit.core.ClassTransformer;
 import org.apache.logging.log4j.LogManager;
@@ -11,10 +12,12 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AgentMain {
     private static final Logger logger = LogManager.getLogger(AgentMain.class);
-    public static ClassLoader mcLoader;
+    public static List<ClassLoader> mcLoader = new ArrayList<>();
     public static void tzdAgentMain(AgentNative.AgentHandle handle, String[] agentArgs) throws Exception {
         logger.debug("tzdAgentMain called with handle: {}", handle);
         initAgent(handle, agentArgs);
@@ -22,16 +25,17 @@ public class AgentMain {
 
     private static void injectHooksIntoMinecraftClassLoader() {
         try {
-            ClassLoader mcLoader = findLaunchClassLoader();
-            if (mcLoader == null) {
-                logger.error("Could not find Minecraft class loader!");
-                return;
+            findLaunchClassLoader();
+            if (mcLoader == null || mcLoader.isEmpty()) {
+                throw new RuntimeException("Could not find Minecraft class loader!");
             }
-            String agentJarPath = AgentMain.class.getProtectionDomain()
-                    .getCodeSource().getLocation().getPath();
-            Method addURLMethod = mcLoader.getClass().getDeclaredMethod("addURL", URL.class);
-            addURLMethod.setAccessible(true);
-            addURLMethod.invoke(mcLoader, new File(agentJarPath).toURI().toURL());
+            for (ClassLoader loader : mcLoader) {
+                String agentJarPath = AgentMain.class.getProtectionDomain()
+                        .getCodeSource().getLocation().getPath();
+                Method addURLMethod = loader.getClass().getDeclaredMethod("addURL", URL.class);
+                addURLMethod.setAccessible(true);
+                addURLMethod.invoke(loader, new File(agentJarPath).toURI().toURL());
+            }
 //            instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(agentJarPath));
 //            instrumentation.appendToSystemClassLoaderSearch(new JarFile(agentJarPath));
         } catch (Exception e) {
@@ -39,18 +43,13 @@ public class AgentMain {
         }
     }
 
-    private static ClassLoader findLaunchClassLoader() {
-        try {
-            for (Class<?> clazz : AgentNative.getAllLoadedClasses()) {
-                ClassLoader loader = clazz.getClassLoader();
-                if (loader != null && loader.getClass().getName().contains("minecraft")) {
-                    return loader;
-                }
+    private static void findLaunchClassLoader() {
+        for (Object clazzLoader : AgentNative.getInstances(ClassLoader.class)) {
+            ClassLoader loader = (ClassLoader) clazzLoader;
+            if (loader != null) {
+                mcLoader.add(loader);
             }
-        } catch (Exception e) {
-            logger.warn("Failed to find LaunchClassLoader: {}", e.getMessage());
         }
-        return null;
     }
     
     private static void initAgent(AgentNative.AgentHandle handle, String[] agentArgs) {
@@ -60,11 +59,11 @@ public class AgentMain {
             System.load(dllPath);
             logger.info("Loaded TzdAgent.dll from: {}", dllPath);
             if (handle != null) {
+                injectHooksIntoMinecraftClassLoader();
                 AgentNative.addTransformer(handle, new AgentNative.ClassFileTransformerEncapsulation(
                     new ClassTransformer(), true
                 ));
                 retransformLoadedClasses(handle);
-                injectHooksIntoMinecraftClassLoader();
                 logger.info("Transformer added successfully");
             } else {
                 throw new IllegalArgumentException("Agent handle is null");

@@ -17,6 +17,7 @@ public class ClassTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+        logger.debug("ClassLoader: {}, ClassName: {}", loader, className);
         if (className == null || isSystemClass(className) || !isMCClass(className)) {
             return classfileBuffer;
         }
@@ -45,6 +46,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private byte[] transformMinecraftClass(String className, byte[] classfileBuffer) {
         try {
+            logger.debug("Transforming class: {}", className);
             ClassReader reader = new ClassReader(classfileBuffer);
             ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
             reader.accept(new MinecraftClassVisitor(writer, className), ClassReader.EXPAND_FRAMES);
