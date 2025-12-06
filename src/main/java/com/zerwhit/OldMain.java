@@ -17,7 +17,7 @@ import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class OldMain {
     public static WinDef.HWND hwnd;
     public static void main(String[] args)
             throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {

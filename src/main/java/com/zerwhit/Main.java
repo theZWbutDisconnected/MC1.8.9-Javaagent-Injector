@@ -1,142 +1,144 @@
 package com.zerwhit;
 
-import com.sun.jna.Native;
+import org.tzd.agent.nativeapi.AgentNative;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.management.ManagementFactory;
 
 public class Main {
-    public static WinDef.HWND hwnd;
-    public static void main(String[] args)
-            throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
-
-        List<String> pids = findPidsByWindowName("1.8.9");
-        List<WinDef.HWND> hwnds = findHWNDByWindowName("1.8.9");
-        System.out.println("Found " + pids.size() + " Minecraft processes:");
-        for (String pid : pids) {
-            System.out.println("PID: " + pid);
-        }
-
-        if (pids.isEmpty()) {
-            System.err.println("No Minecraft processes found!");
-            return;
-        }
-
-        String pid = pids.get(0);
-        hwnd = hwnds.get(0);
-        System.out.println("Attaching to PID: " + pid);
-
-        String path = getCurrentJarPath();
-        System.out.println("Using agent path: " + path);
-
-        VirtualMachine vm = VirtualMachine.attach(pid);
+    
+    public static void main(String[] args) {
+        System.out.println("[Main] Starting agent injection process...");
         try {
-            System.out.println("Loading agent...");
-            vm.loadAgent(path, "useSystemClassLoader=true");
-        } finally {
-            vm.detach();
-            System.out.println("Detached from target VM");
-        }
-    }
-
-    private static String getCurrentJarPath() {
-        try {
-            CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
-            if (codeSource != null) {
-                File jarFile = new File(codeSource.getLocation().toURI());
-
-                if (jarFile.isDirectory()) {
-                    File projectDir = findProjectRoot(jarFile);
-                    if (projectDir != null) {
-                        File buildLibsDir = new File(projectDir, "build/libs");
-                        if (buildLibsDir.exists() && buildLibsDir.isDirectory()) {
-                            File[] jarFiles = buildLibsDir.listFiles((dir, name) ->
-                                    name.endsWith(".jar") && !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar")
-                            );
-
-                            if (jarFiles != null && jarFiles.length > 0) {
-                                return jarFiles[jarFiles.length - 1].getAbsolutePath();
-                            }
-                        }
-                    }
-                    throw new RuntimeException("Cannot find JAR file in build/libs directory. Please build the project first.");
-                } else {
-                    return jarFile.getAbsolutePath();
-                }
+            long pid = findMinecraftProcess();
+            if (pid == -1) {
+                System.err.println("[Main] Could not find Minecraft process!");
+                return;
             }
-        } catch (URISyntaxException e) {
+            System.out.println("[Main] Found Minecraft process with PID: " + pid);
+            String jarPath = getCurrentJarPath();
+            System.out.println("[Main] Agent JAR path: " + jarPath);
+            String dllPath = getDllPath();
+            System.load(dllPath);
+            System.out.println("[Main] Loaded TzdAgent.dll from: " + dllPath);
+            String result = AgentNative.agent_init(pid, jarPath, "com.zerwhit.AgentMain", args);
+            if (result == null || result.isEmpty()) {
+                System.out.println("[Main] Agent injection successful!");
+            } else {
+                System.err.println("[Main] Agent injection failed: " + result);
+            }
+            
+        } catch (Exception e) {
+            System.err.println("[Main] Error during injection: " + e.getMessage());
             e.printStackTrace();
         }
-
-        File currentDir = new File("");
-        File jarFile = new File(currentDir, "build/libs/BadlionMain-1.0-SNAPSHOT.jar");
-        if (jarFile.exists()) {
-            return jarFile.getAbsolutePath();
-        }
-
-        throw new RuntimeException("Cannot determine agent JAR path");
     }
-
-    private static File findProjectRoot(File classDir) {
-        File current = classDir;
-        while (current != null) {
-            File buildDir = new File(current, "build");
-            if (buildDir.exists() && buildDir.isDirectory()) {
-                return current;
-            }
-            current = current.getParentFile();
+    
+    private static long findMinecraftProcess() {
+        long pid = findPidByWindowTitle("1.8.9");
+        if (pid != -1) {
+            return pid;
         }
-        return null;
+        pid = findPidByWindowTitle("Minecraft");
+        if (pid != -1) {
+            return pid;
+        }
+        pid = findPidByWindowTitle("Lunar");
+        if (pid != -1) {
+            return pid;
+        }
+        pid = findPidByWindowTitle("Badlion");
+        if (pid != -1) {
+            return pid;
+        }
+        
+        return -1;
     }
-
-    private static List<String> findPidsByWindowName(String partialWindowName) {
-        List<String> pids = new ArrayList<>();
-
-        User32.INSTANCE.EnumWindows((hWnd, arg) -> {
-            char[] windowText = new char[1024];
-            User32.INSTANCE.GetWindowText(hWnd, windowText, 1024);
-            String title = Native.toString(windowText);
-
-            if (!title.isEmpty() && title.toLowerCase().contains(partialWindowName.toLowerCase())) {
+    
+    private static long findPidByWindowTitle(String windowTitle) {
+        try {
+            WinDef.HWND hwnd = findHWNDByWindowName(windowTitle);
+            if (hwnd != null) {
                 IntByReference pidRef = new IntByReference();
-                User32.INSTANCE.GetWindowThreadProcessId(hWnd, pidRef);
-                int pid = pidRef.getValue();
-                WinDef.HMODULE kernel32 = Kernel32.INSTANCE.GetModuleHandle("kernel32");
-                System.out.println("Found window: '" + title + "' with PID: " + pid);
-                pids.add(String.valueOf(pid));
+                User32.INSTANCE.GetWindowThreadProcessId(hwnd, pidRef);
+                return pidRef.getValue();
             }
-            return true;
-        }, null);
-
-        return pids;
+        } catch (Exception e) {
+            System.err.println("[Main] Error finding process by window title '" + windowTitle + "': " + e.getMessage());
+        }
+        return -1;
     }
-
-    private static List<WinDef.HWND> findHWNDByWindowName(String partialWindowName) {
-        List<WinDef.HWND> pids = new ArrayList<>();
-
-        User32.INSTANCE.EnumWindows((hWnd, arg) -> {
-            char[] windowText = new char[1024];
-            User32.INSTANCE.GetWindowText(hWnd, windowText, 1024);
-            String title = Native.toString(windowText);
-
-            if (!title.isEmpty() && title.toLowerCase().contains(partialWindowName.toLowerCase())) {
-                pids.add(hWnd);
+    
+    private static WinDef.HWND findHWNDByWindowName(String windowName) {
+        final WinDef.HWND[] foundHwnd = {null};
+        
+        User32.INSTANCE.EnumWindows(new User32.WNDENUMPROC() {
+            @Override
+            public boolean callback(WinDef.HWND hwnd, com.sun.jna.Pointer data) {
+                char[] windowText = new char[512];
+                User32.INSTANCE.GetWindowText(hwnd, windowText, 512);
+                String title = new String(windowText).trim();
+                
+                if (title.contains(windowName) && User32.INSTANCE.IsWindowVisible(hwnd)) {
+                    foundHwnd[0] = hwnd;
+                    return false;
+                }
+                return true;
             }
-            return true;
         }, null);
-
-        return pids;
+        
+        return foundHwnd[0];
+    }
+    
+    private static String getCurrentJarPath() {
+        try {
+            String jarPath = new File(Main.class.getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI())
+                    .getAbsolutePath();
+            if (jarPath.endsWith(".jar")) {
+                return jarPath;
+            } else {
+                File tempJar = File.createTempFile("agent", ".jar");
+                tempJar.deleteOnExit();
+                return tempJar.getAbsolutePath();
+            }
+        } catch (Exception e) {
+            System.err.println("[Main] Error getting JAR path: " + e.getMessage());
+            return "agent.jar";
+        }
+    }
+    
+    private static String getDllPath() {
+        java.net.URL dllUrl = Main.class.getClassLoader().getResource("TzdAgent.dll");
+        if (dllUrl != null) {
+            try {
+                java.io.InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("TzdAgent.dll");
+                if (inputStream != null) {
+                    java.io.File tempFile = java.io.File.createTempFile("TzdAgent", ".dll");
+                    tempFile.deleteOnExit();
+                    
+                    try (java.io.FileOutputStream outputStream = new java.io.FileOutputStream(tempFile)) {
+                        byte[] buffer = new byte[1024];
+                        int bytesRead;
+                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
+                        }
+                    }
+                    
+                    return tempFile.getAbsolutePath();
+                }
+            } catch (Exception e) {
+                System.err.println("[Main] Error extracting DLL: " + e.getMessage());
+            }
+        }
+        
+        return "TzdAgent.dll";
     }
 }
