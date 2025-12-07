@@ -1,14 +1,13 @@
 package org.zerwhit.core.manager;
 
 import org.zerwhit.core.resource.TextureResource;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class TextureRegistry {
-    private static final Logger logger = LogManager.getLogger(TextureRegistry.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(TextureRegistry.class);
     
     private static final Map<String, TextureResource> TEXTURE_REGISTRY = new HashMap<>();
     private static boolean initialized = false;

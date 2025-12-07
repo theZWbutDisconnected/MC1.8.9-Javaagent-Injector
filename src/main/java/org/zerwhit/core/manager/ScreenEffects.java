@@ -1,7 +1,6 @@
 package org.zerwhit.core.manager;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
@@ -26,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ScreenEffects {
-    private static final Logger logger = LogManager.getLogger(ScreenEffects.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(ScreenEffects.class);
     
     private boolean initialized = false;
 

@@ -3,8 +3,7 @@ package org.zerwhit.core.manager;
 import org.zerwhit.core.resource.TextureResource;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -12,7 +11,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 public class TextureLoader {
-    private static final Logger logger = LogManager.getLogger(TextureLoader.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(TextureLoader.class);
     
     public static int loadTextureFromResource(String resourcePath, String textureName) {
         try {

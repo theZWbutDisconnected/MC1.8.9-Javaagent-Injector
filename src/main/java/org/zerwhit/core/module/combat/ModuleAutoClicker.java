@@ -1,7 +1,6 @@
 package org.zerwhit.core.module.combat;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
 import org.zerwhit.core.util.KeyRobot;
@@ -10,7 +9,7 @@ import org.lwjgl.input.Mouse;
 import java.awt.event.InputEvent;
 
 public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
-    private static final Logger logger = LogManager.getLogger(ModuleAutoClicker.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(ModuleAutoClicker.class);
     
     private long lastClickTime = 0;
     

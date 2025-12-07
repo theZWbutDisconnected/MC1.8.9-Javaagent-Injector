@@ -4,13 +4,12 @@ import org.tzd.agent.nativeapi.AgentNative;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.ptr.IntByReference;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 
 import java.io.File;
 
 public class Main {
-    private static final Logger logger = LogManager.getLogger(Main.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(Main.class);
     
     public static void main(String[] args) {
         logger.info("Starting agent injection process...");

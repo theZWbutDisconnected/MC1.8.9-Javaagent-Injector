@@ -6,14 +6,13 @@ import org.zerwhit.core.module.IRenderModule;
 import org.zerwhit.core.module.IVisualModule;
 import org.zerwhit.core.module.ModuleBase;
 import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ModuleManager {
-    private static final Logger logger = LogManager.getLogger(ModuleManager.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(ModuleManager.class);
     
     public enum ModuleCategory {
         COMBAT("Combat", 0),

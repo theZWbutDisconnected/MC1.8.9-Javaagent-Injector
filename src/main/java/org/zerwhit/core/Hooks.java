@@ -9,8 +9,7 @@ import org.zerwhit.core.manager.RotationManager;
 import org.zerwhit.core.resource.TextureResource;
 
 import org.zerwhit.core.util.ObfuscationReflectionHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.state.IBlockState;
@@ -39,11 +38,12 @@ import java.util.concurrent.Callable;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import org.zerwhit.core.util.SafeLogger;
 
 import static org.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
 public class Hooks {
-    private static final Logger logger = LogManager.getLogger(Hooks.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(Hooks.class);
     
     private static boolean texturesInitialized = false;
     private static boolean modulesInitialized = false;

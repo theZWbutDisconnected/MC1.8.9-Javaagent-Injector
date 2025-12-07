@@ -3,8 +3,8 @@ package org.zerwhit;
 import org.zerwhit.core.Hooks;
 import org.tzd.agent.nativeapi.AgentNative;
 import org.zerwhit.core.ClassTransformer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
+import org.zerwhit.core.obfuscation.FMLDeobfuscatingRemapper;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AgentMain {
-    private static final Logger logger = LogManager.getLogger(AgentMain.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(AgentMain.class);
     public static List<ClassLoader> mcLoader = new ArrayList<>();
     public static void tzdAgentMain(AgentNative.AgentHandle handle, String[] agentArgs) throws Exception {
         logger.debug("tzdAgentMain called with handle: {}", handle);
@@ -24,7 +24,7 @@ public class AgentMain {
         try {
             ClassLoader mcLoader = findMinecraftClassLoader();
             if (mcLoader == null) {
-                System.err.println("Could not find Minecraft class loader!");
+                logger.error("Could not find Minecraft class loader!");
                 return;
             }
             String agentJarPath = AgentMain.class.getProtectionDomain()
@@ -77,9 +77,12 @@ public class AgentMain {
             System.load(dllPath);
             logger.info("Loaded TzdAgent.dll from: {}", dllPath);
             logger.info(Hooks.class.getName());
-            logger.info(AgentNative.getAllLoadedClasses());
+            logger.info(AgentNative.getAllLoadedClasses().toString());
             if (handle != null) {
                 injectHooksIntoMinecraftClassLoader();
+                FMLDeobfuscatingRemapper.INSTANCE.setupLoadOnly(
+                        "/mapping/deobfuscation_data-1.8.9.srg",true
+                    );
                 AgentNative.addTransformer(handle, new AgentNative.ClassFileTransformerEncapsulation(
                     new ClassTransformer(), true
                 ));

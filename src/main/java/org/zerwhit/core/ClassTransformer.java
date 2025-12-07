@@ -1,24 +1,26 @@
 package org.zerwhit.core;
 
+import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.zerwhit.core.data.HookConfig;
 import org.zerwhit.core.data.Meta;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 import org.objectweb.asm.*;
+import org.zerwhit.core.obfuscation.FMLRemappingAdapter;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 
 public class ClassTransformer implements ClassFileTransformer {
-    private static final Logger logger = LogManager.getLogger(ClassTransformer.class);
-    
+    private static final SafeLogger logger = SafeLogger.getLogger(ClassTransformer.class);
+    private static final int WRITER_FLAGS = ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES;
+    private static final int READER_FLAGS = ClassReader.EXPAND_FRAMES;
     private static final String[] SYSTEM_PACKAGES = {"java/", "sun/", "com/sun/", "jdk/", "javax/"};
     private static final String[] MINECRAFT_PACKAGES = {"net/minecraft", "com/mojang", "badlion"};
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        logger.debug("ClassLoader: {}, ClassName: {}", loader, className);
+        logger.info("ClassLoader: {}, ClassName: {}", loader, className);
         if (className == null || isSystemClass(className) || !isMCClass(className)) {
             return classfileBuffer;
         }
@@ -47,10 +49,11 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private byte[] transformMinecraftClass(String className, byte[] classfileBuffer) {
         try {
-            logger.info("Transforming class: {}", className);
             ClassReader reader = new ClassReader(classfileBuffer);
             ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
-            reader.accept(new MinecraftClassVisitor(writer, className), ClassReader.EXPAND_FRAMES);
+            FMLRemappingAdapter remapAdapter = new FMLRemappingAdapter(writer);
+            MinecraftClassVisitor minecraftVisitor = new MinecraftClassVisitor(remapAdapter, className);
+            reader.accept(minecraftVisitor, READER_FLAGS);
             return writer.toByteArray();
         } catch (Exception e) {
             logger.error("Failed to transform class: {}", className, e);

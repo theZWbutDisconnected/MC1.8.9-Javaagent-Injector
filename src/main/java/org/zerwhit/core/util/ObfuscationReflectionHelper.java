@@ -1,14 +1,13 @@
 package org.zerwhit.core.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class ObfuscationReflectionHelper {
-    private static final Logger logger = LogManager.getLogger(ObfuscationReflectionHelper.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(ObfuscationReflectionHelper.class);
     
     public static Method getObfuscatedMethod(Class<?> klass, String[] methodNames, Class<?>... parameterTypes) {
         for (Method method : klass.getDeclaredMethods()) {

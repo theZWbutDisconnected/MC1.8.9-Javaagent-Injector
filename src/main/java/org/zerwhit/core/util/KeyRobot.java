@@ -1,12 +1,11 @@
 package org.zerwhit.core.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.zerwhit.core.util.SafeLogger;
 
 import java.awt.*;
 
 public class KeyRobot {
-    private static final Logger logger = LogManager.getLogger(KeyRobot.class);
+    private static final SafeLogger logger = SafeLogger.getLogger(KeyRobot.class);
     
     private static Robot robot;
     
