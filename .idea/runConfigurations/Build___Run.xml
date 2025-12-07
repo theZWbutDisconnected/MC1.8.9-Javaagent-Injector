@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build &amp; Run" type="JarApplication">
-    <option name="JAR_PATH" value="$PROJECT_DIR$/build/libs/BadlionMain-1.0-SNAPSHOT.jar" />
-    <option name="WORKING_DIRECTORY" value="D:\MinecraftModWorkspace\Agent\BadlionMain" />
-    <option name="ALTERNATIVE_JRE_PATH" />
-    <method v="2" />
-  </configuration>
-</component>
