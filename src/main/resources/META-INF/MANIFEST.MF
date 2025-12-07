@@ -1,7 +1,2 @@
 Manifest-Version: 1.0
 Main-Class: org.zerwhit.Main
-Premain-Class: org.zerwhit.AgentMain
-Agent-Class: org.zerwhit.AgentMain
-Can-Redefine-Classes: true
-Can-Retransform-Classes: true
-Can-Set-Native-Method-Prefix: true
