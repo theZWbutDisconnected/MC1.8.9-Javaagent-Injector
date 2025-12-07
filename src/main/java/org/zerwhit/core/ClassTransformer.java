@@ -38,7 +38,7 @@ public class ClassTransformer implements ClassFileTransformer {
     public static boolean isMCClass(String className) {
         if (className == null) return false;
         for (String pkg : MINECRAFT_PACKAGES) {
-            if (className.startsWith(pkg)) {
+            if (className.startsWith(pkg) || !className.contains("/")) {
                 return true;
             }
         }

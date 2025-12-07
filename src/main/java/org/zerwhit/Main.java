@@ -26,7 +26,7 @@ public class Main {
             String dllPath = getDllPath();
             System.load(dllPath);
             logger.info("Loaded TzdAgent.dll from: {}", dllPath);
-            String result = AgentNative.agent_init(pid, jarPath, "com.zerwhit.AgentMain", args);
+            String result = AgentNative.agent_init(pid, jarPath, "org.zerwhit.AgentMain", args);
             if (result == null || result.isEmpty()) {
                 logger.info("Agent injection successful!");
             } else {
