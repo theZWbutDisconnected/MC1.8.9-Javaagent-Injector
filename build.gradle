@@ -63,9 +63,9 @@ jar {
     }
 }
 
-task fatJar(type: Jar, dependsOn: jar) {
+task cacheFatJar(type: Jar, dependsOn: reobfJar) {
     manifest.from jar.manifest
-    from sourceSets.main.output
+    from zipTree(jar.archivePath)
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
@@ -75,6 +75,19 @@ task fatJar(type: Jar, dependsOn: jar) {
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveName = "${project.name}-${version}-cached.jar"
+    destinationDir = file("$buildDir/tmp")
+}
+
+task fatJar(type: Copy, dependsOn: cacheFatJar) {
+    from cacheFatJar.outputs.files.singleFile
+    into jar.destinationDir
+    rename { String fileName ->
+        jar.archiveName
+    }
+    doLast {
+        println "FatJar replaced original jar: ${jar.archiveName}"
+    }
 }
 
 build.dependsOn fatJar

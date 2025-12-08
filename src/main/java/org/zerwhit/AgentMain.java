@@ -49,7 +49,7 @@ public class AgentMain {
         };
 
         for (ClassLoader loader : candidates) {
-            if (loader != null && loader.getClass().getName().contains("LaunchClassLoader") || loader.getClass().getName().equals("ClassLoaders")) {
+            if (loader != null && (loader.getClass().getName().contains("LaunchClassLoader") || loader.getClass().getName().equals("ClassLoaders"))) {
                 return loader;
             }
         }

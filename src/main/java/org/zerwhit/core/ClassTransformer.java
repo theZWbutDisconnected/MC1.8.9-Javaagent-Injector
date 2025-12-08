@@ -51,8 +51,8 @@ public class ClassTransformer implements ClassFileTransformer {
         try {
             ClassReader reader = new ClassReader(classfileBuffer);
             ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
-            FMLRemappingAdapter remapAdapter = new FMLRemappingAdapter(writer);
-            MinecraftClassVisitor minecraftVisitor = new MinecraftClassVisitor(remapAdapter, className);
+//            FMLRemappingAdapter remapAdapter = new FMLRemappingAdapter(writer);
+            MinecraftClassVisitor minecraftVisitor = new MinecraftClassVisitor(writer, className);
             reader.accept(minecraftVisitor, READER_FLAGS);
             return writer.toByteArray();
         } catch (Exception e) {
