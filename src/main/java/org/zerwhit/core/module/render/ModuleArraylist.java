@@ -19,11 +19,13 @@ public class ModuleArraylist extends ModuleBase implements IRenderModule {
 
     @Override
     public void onEnable() {
+        super.onEnable();
         Meta.arraylistEnabled = true;
     }
 
     @Override
     public void onDisable() {
+        super.onDisable();
         Meta.arraylistEnabled = false;
     }
 
@@ -143,7 +145,7 @@ public class ModuleArraylist extends ModuleBase implements IRenderModule {
         List<ModuleBase> enabledModules = new ArrayList<>();
         for (List<ModuleBase> category : ModuleBase.categories.values()) {
             for (ModuleBase module : category) {
-                if (module.enabled) {
+                if (module.isEnabled()) {
                     enabledModules.add(module);
                 }
             }

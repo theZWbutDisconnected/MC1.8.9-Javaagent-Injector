@@ -124,7 +124,7 @@ public class ClickGUI extends GuiScreen {
 
         Renderer.drawGradientRect(windowX, windowY, WINDOW_WIDTH, 25, colorScheme.primary, colorScheme.secondary);
         Renderer.drawRoundedRect(windowX, windowY, WINDOW_WIDTH, 25, BORDER_SIZE, colorScheme.primary);
-        Renderer.drawStringWithShadow("ZeroClient v1.0", windowX + 10, windowY + 8, colorScheme.text);
+        Renderer.drawStringWithShadow("· Nova Client·", windowX + 10, windowY + 8, colorScheme.text);
 
         boolean closeHovered = isMouseOverCloseButton();
         Renderer.drawRect(windowX + WINDOW_WIDTH - 20, windowY + 5, 15, 15,
@@ -486,7 +486,7 @@ public class ClickGUI extends GuiScreen {
         float relativeX = Math.max(0, Math.min(mouseX - sliderX, sliderWidth));
         float percentage = relativeX / sliderWidth;
 
-        int min = 0;
+        int min = (int) selectedModule.getMinValueForConfig(key);
         int max = (int) selectedModule.getMaxValueForConfig(key);
         int newValue = min + (int) (percentage * (max - min));
 
@@ -501,7 +501,7 @@ public class ClickGUI extends GuiScreen {
         float percentage = relativeX / sliderWidth;
 
         double maxValue = selectedModule.getMaxValueForConfig(key);
-        double min = 0.0;
+        double min = selectedModule.getMinValueForConfig(key);
         double max = maxValue;
         double newValue = min + percentage * (max - min);
         newValue = Math.round(newValue * 10.0) / 10.0;
@@ -693,7 +693,7 @@ public class ClickGUI extends GuiScreen {
         int sliderX = x + CONFIG_MENU_WIDTH - sliderWidth - 5;
         int sliderY = y + (CONFIG_ITEM_HEIGHT - sliderHeight) / 2;
 
-        int min = 0;
+        int min = (int) selectedModule.getMinValueForConfig(key);
         int max = (int) selectedModule.getMaxValueForConfig(key);
 
         float percentage = (float) (value - min) / (max - min);
@@ -722,7 +722,7 @@ public class ClickGUI extends GuiScreen {
         int sliderX = x + CONFIG_MENU_WIDTH - sliderWidth - 5;
         int sliderY = y + (CONFIG_ITEM_HEIGHT - sliderHeight) / 2;
 
-        double min = 0.0;
+        double min = selectedModule.getMinValueForConfig(key);
         double max = selectedModule.getMaxValueForConfig(key);
 
         float percentage = (float) ((value - min) / (max - min));

@@ -87,14 +87,12 @@ public class TextureLoader {
 
         ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixel = pixels[y * width + x];
-                buffer.put((byte) ((pixel >> 16) & 0xFF)); // Red
-                buffer.put((byte) ((pixel >> 8) & 0xFF));  // Green
-                buffer.put((byte) (pixel & 0xFF));         // Blue
-                buffer.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
-            }
+        for (int i = 0; i < pixels.length; i++) {
+            int pixel = pixels[i];
+            buffer.put((byte) ((pixel >> 16) & 0xFF));
+            buffer.put((byte) ((pixel >> 8) & 0xFF));
+            buffer.put((byte) (pixel & 0xFF));
+            buffer.put((byte) ((pixel >> 24) & 0xFF));
         }
         buffer.flip();
 

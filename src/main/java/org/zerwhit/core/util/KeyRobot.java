@@ -1,12 +1,9 @@
 package org.zerwhit.core.util;
 
-import org.zerwhit.core.util.SafeLogger;
-
 import java.awt.*;
 
 public class KeyRobot {
     private static final SafeLogger logger = SafeLogger.getLogger(KeyRobot.class);
-    
     private static Robot robot;
     
     static {
@@ -18,33 +15,25 @@ public class KeyRobot {
     }
     
     public static void clickMouse(int keyCode) {
-        if (robot != null) {
-            robot.mousePress(keyCode);
-        }
+        if (robot != null) robot.mousePress(keyCode);
     }
     
     public static void releaseMouse(int keyCode) {
-        if (robot != null) {
-            robot.mouseRelease(keyCode);
-        }
+        if (robot != null) robot.mouseRelease(keyCode);
     }
     
     public static void pressKey(int keyCode) {
-        if (robot != null) {
-            robot.keyPress(keyCode);
-        }
+        if (robot != null) robot.keyPress(keyCode);
     }
     
     public static void releaseKey(int keyCode) {
-        if (robot != null) {
-            robot.keyRelease(keyCode);
-        }
+        if (robot != null) robot.keyRelease(keyCode);
     }
     
     public static void delay(int ms) {
         try {
-            robot.delay(ms);
-        } catch (Exception e) {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
             logger.error("Error during delay:", e);
         }
     }

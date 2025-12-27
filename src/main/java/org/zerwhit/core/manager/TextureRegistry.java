@@ -15,16 +15,25 @@ public class TextureRegistry {
     public static final String VAPELOGO = "vapelogo";
     public static final String CLIENTLOGO = "clientlogo";
     public static final String V4LOGO = "v4logo";
+    public static final String CLIENTLOGONOTITLE = "clientlogonotitle";
+    public static final String ON = "on";
+    public static final String OFF = "off";
 
     public static void initialize() {
         if (initialized) return;
 
         registerTexture(VAPELOGO,
-                new TextureResource("zerwhit", "textures/vapelogo.png", "vapelogo", 178, 53));
+                new TextureResource("zerwhit", "textures/vapelogo.png", VAPELOGO, 178, 53));
         registerTexture(CLIENTLOGO,
-                new TextureResource("zerwhit", "textures/clientlogo.png", "clientlogo", 178, 53));
+                new TextureResource("zerwhit", "textures/clientlogo.png", CLIENTLOGO, 178, 53));
         registerTexture(V4LOGO,
-                new TextureResource("zerwhit", "textures/v4.png", "v4logo", 76, 53));
+                new TextureResource("zerwhit", "textures/v4.png", VAPELOGO, 76, 53));
+        registerTexture(CLIENTLOGONOTITLE,
+                new TextureResource("zerwhit", "textures/clientlogonotitle.png", CLIENTLOGONOTITLE, 300, 300));
+        registerTexture(ON,
+                new TextureResource("zerwhit", "textures/on.png", ON, 128, 56));
+        registerTexture(OFF,
+                new TextureResource("zerwhit", "textures/off.png", OFF, 128, 56));
 
         initialized = true;
         logger.info("TextureRegistry initialized with {} textures", TEXTURE_REGISTRY.size());

@@ -1,69 +1,72 @@
 package org.zerwhit.core.module.player;
 
-import org.zerwhit.core.manager.RotationManager;
+import net.minecraft.entity.player.EntityPlayer;
+import org.lwjgl.input.Keyboard;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
-import net.minecraft.block.BlockLiquid;
+import org.zerwhit.core.util.KeyRobot;
 import net.minecraft.util.*;
 
+
 public class ModuleScaffold extends ModuleBase implements ITickableModule {
-    private BlockPos targetPos;
-    
+    private BlockPos targetPos = null;
+    private boolean playerAtEdge = false;
+    private boolean playerWentToNextBlock = false;
     public ModuleScaffold() {
         super("Scaffold", false, "Movement");
-        addConfig("Range", 3.0);
         addConfig("Sprint", false);
         addConfig("Mode", "Legit");
+        addConfig("RequireSneak", false);
+        addConfig("Slient", false);
     }
 
     @Override
     public void onEnable() {
+        super.onEnable();
     }
 
     @Override
     public void onDisable() {
+        super.onDisable();
     }
 
     @Override
     public void onModuleTick() {
         if (mc.thePlayer == null || mc.theWorld == null) return;
-
-        setRotationMode(RotationManager.RotationMode.SMOOTH);
-        setRotationSpeed(560.0F);
-        setRotationThreshold(0.5F);
-        Vec3 lookVec = RotationManager.getInstance().rendererViewEntity.getLookVec();
-        Vec3 dir = new Vec3(-lookVec.xCoord, -lookVec.yCoord, -lookVec.zCoord).normalize();
-        double range = (Double) getConfig("Range");
-        double playerX = mc.thePlayer.posX;
-        double playerY = mc.thePlayer.posY;
-        double playerZ = mc.thePlayer.posZ;
-        BlockPos targetPos = null;
-        for (double offset = 0; offset <= range; offset += 0.5) {
-            double behindX = playerX + dir.xCoord * offset;
-            double behindZ = playerZ + dir.zCoord * offset;
-            for (int yOffset = 0; yOffset <= 3; yOffset++) {
-                BlockPos checkPos = new BlockPos(behindX, playerY - yOffset, behindZ);
-                BlockPos belowPos = new BlockPos(behindX, playerY - yOffset - 1, behindZ);
-                Block currentBlock = mc.theWorld.getBlockState(checkPos).getBlock();
-                Block belowBlock = mc.theWorld.getBlockState(belowPos).getBlock();
-                if ((currentBlock instanceof BlockAir || currentBlock instanceof BlockLiquid) && 
-                    !(belowBlock instanceof BlockAir) && !(belowBlock instanceof BlockLiquid)) {
-                    targetPos = checkPos;
-                    break;
+        String mode = (String) getConfig("Mode");
+        boolean requireSneak = (boolean) getConfig("RequireSneak");
+        EntityPlayer player = mc.thePlayer;
+        double mX = player.motionX < 0.0 ? -1.0 : (player.motionX > 0.0 ? 1.0 : 0.0);
+        double mZ = player.motionZ < 0.0 ? -1.0 : (player.motionZ > 0.0 ? 1.0 : 0.0);
+        BlockPos currentPos = player.playerLocation;
+        BlockPos posWillBe = currentPos.add(mX, 0, mZ);
+        boolean flag = false;
+        flag = mc.theWorld.getBlockState(posWillBe).getBlock().isAir(mc.theWorld, posWillBe);
+        if (flag)
+            targetPos = posWillBe;
+        if (mode.equals("Legit")) {
+            // Add null checks for currentPos and player
+            if (currentPos != null && player != null) {
+                playerAtEdge = Math.abs(player.posX - currentPos.getX()) >= 0.4 || Math.abs(player.posZ - currentPos.getZ()) >= 0.4;
+                playerWentToNextBlock = currentPos.equals(posWillBe);
+                
+                if (targetPos != null && (playerAtEdge && !player.isSneaking())) {
+                    KeyRobot.pressKey(Keyboard.KEY_LSHIFT);
+                    playerAtEdge = false;
+                }
+                if (targetPos != null && (Math.abs(player.posX - targetPos.getX()) <= 0.5 || Math.abs(player.posZ - targetPos.getZ()) <= 0.5)) {
+                    // Add null check for playerController and held item
+                    if (mc.playerController != null && player.getHeldItem() != null) {
+                        mc.playerController.sendUseItem(player, mc.theWorld, player.getHeldItem());
+                    }
+                }
+                if (targetPos != null && (playerWentToNextBlock && player.isSneaking())) {
+                    KeyRobot.releaseKey(Keyboard.KEY_LSHIFT);
+                    targetPos = null;
+                    playerAtEdge = false;
+                    playerWentToNextBlock = false;
                 }
             }
-            
-            if (targetPos != null) break;
-        }
-
-        if (targetPos == null) {
-            targetPos = new BlockPos(playerX, playerY - 1, playerZ);
-        }
-
-        if (targetPos != null) {
-            rotMng.setTargetRotationToPos(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
         }
     }
 
@@ -73,6 +76,9 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
             String currentMode = (String) getConfig("Mode");
             switch (currentMode) {
                 case "Legit":
+                    setConfig("Mode", "Clutch");
+                    break;
+                case "Clutch":
                     setConfig("Mode", "Telly");
                     break;
                 case "Telly":
@@ -86,11 +92,6 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
     
     @Override
     public double getMaxValueForConfig(String key) {
-        if ("Range".equals(key)) {
-            return 6.0;
-        } else if ("Delay".equals(key)) {
-            return 10.0;
-        }
         return super.getMaxValueForConfig(key);
     }
 }

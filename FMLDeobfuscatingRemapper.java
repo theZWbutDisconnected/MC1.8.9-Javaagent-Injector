@@ -8,10 +8,9 @@
  *
  * Contributors:
  *     cpw - implementation
- *     ZerWhit - modified
  */
 
-package org.zerwhit.core.obfuscation;
+package net.minecraftforge.fml.common.asm.transformers.deobf;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,14 +21,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraftforge.fml.common.patcher.ClassPatchManager;
+import net.minecraftforge.fml.relauncher.FMLRelaunchLog;
+
 import org.apache.logging.log4j.Level;
-import org.zerwhit.core.util.SafeLogger;
-import org.apache.logging.log4j.Marker;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.zerwhit.core.obfuscation.ClassHierarchyResolver;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
@@ -46,11 +46,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
-import org.zerwhit.core.ClassTransformer;
 
 public class FMLDeobfuscatingRemapper extends Remapper {
     public static final FMLDeobfuscatingRemapper INSTANCE = new FMLDeobfuscatingRemapper();
-    private static final SafeLogger logger = SafeLogger.getLogger(FMLDeobfuscatingRemapper.class);
 
     private BiMap<String, String> classNameBiMap;
 
@@ -60,7 +58,8 @@ public class FMLDeobfuscatingRemapper extends Remapper {
     private Map<String,Map<String,String>> fieldNameMaps;
     private Map<String,Map<String,String>> methodNameMaps;
 
-    private ClassLoader classLoader;
+    private LaunchClassLoader classLoader;
+
 
     private static final boolean DEBUG_REMAPPING = Boolean.parseBoolean(System.getProperty("fml.remappingDebug", "false"));
     private static final boolean DUMP_FIELD_MAPS = Boolean.parseBoolean(System.getProperty("fml.remappingDebug.dumpFieldMaps", "false")) && DEBUG_REMAPPING;
@@ -69,81 +68,99 @@ public class FMLDeobfuscatingRemapper extends Remapper {
     private FMLDeobfuscatingRemapper()
     {
         classNameBiMap=ImmutableBiMap.of();
-        this.classLoader = Thread.currentThread().getContextClassLoader();
-    }
-
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-        ClassHierarchyResolver.setClassLoader(classLoader);
     }
 
     public void setupLoadOnly(String deobfFileName, boolean loadAll)
     {
         try
         {
-            InputStream mapData = getClass().getResourceAsStream(deobfFileName);
-            if (mapData == null) {
-                logger.error("Could not find deobfuscation map data at {}", deobfFileName);
-                mapData = getClass().getClassLoader().getResourceAsStream(deobfFileName);
-            }
-            
-            if (mapData != null) {
-                logger.info("Loading deobfuscation map data from resource: {}", deobfFileName);
-                StringBuilder content = new StringBuilder();
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(mapData, Charsets.UTF_8))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        content.append(line).append('\n');
-                    }
-                }
-                CharSource srgSource = CharSource.wrap(content.toString());
-                List<String> srgList = srgSource.readLines();
-                rawMethodMaps = Maps.newHashMap();
-                rawFieldMaps = Maps.newHashMap();
-                Builder<String, String> builder = ImmutableBiMap.<String,String>builder();
-                Splitter splitter = Splitter.on(CharMatcher.anyOf(": ")).omitEmptyStrings().trimResults();
-                for (String line : srgList)
+            File mapData = new File(deobfFileName);
+            LZMAInputSupplier zis = new LZMAInputSupplier(new FileInputStream(mapData));
+            CharSource srgSource = zis.asCharSource(Charsets.UTF_8);
+            List<String> srgList = srgSource.readLines();
+            rawMethodMaps = Maps.newHashMap();
+            rawFieldMaps = Maps.newHashMap();
+            Builder<String, String> builder = ImmutableBiMap.<String,String>builder();
+            Splitter splitter = Splitter.on(CharMatcher.anyOf(": ")).omitEmptyStrings().trimResults();
+            for (String line : srgList)
+            {
+                String[] parts = Iterables.toArray(splitter.split(line),String.class);
+                String typ = parts[0];
+                if ("CL".equals(typ))
                 {
-                    String[] parts = Iterables.toArray(splitter.split(line),String.class);
-                    String typ = parts[0];
-                    if ("CL".equals(typ))
-                    {
-                        parseClass(builder, parts);
-                    }
-                    else if ("MD".equals(typ) && loadAll)
-                    {
-                        parseMethod(parts);
-                    }
-                    else if ("FD".equals(typ) && loadAll)
-                    {
-                        parseField(parts);
-                    }
+                    parseClass(builder, parts);
                 }
-                classNameBiMap = builder.build();
-            } else {
-                logger.error("Failed to load deobfuscation map data from {}", deobfFileName);
-                rawMethodMaps = Maps.newHashMap();
-                rawFieldMaps = Maps.newHashMap();
+                else if ("MD".equals(typ) && loadAll)
+                {
+                    parseMethod(parts);
+                }
+                else if ("FD".equals(typ) && loadAll)
+                {
+                    parseField(parts);
+                }
             }
+            classNameBiMap = builder.build();
         }
         catch (IOException ioe)
         {
-            logger.error("An error occurred loading the deobfuscation map data", ioe);
-            rawMethodMaps = Maps.newHashMap();
-            rawFieldMaps = Maps.newHashMap();
+            FMLRelaunchLog.log(Level.ERROR, "An error occurred loading the deobfuscation map data", ioe);
         }
-        
-        if (rawMethodMaps == null) {
-            rawMethodMaps = Maps.newHashMap();
-        }
-        if (rawFieldMaps == null) {
-            rawFieldMaps = Maps.newHashMap();
-        }
-        
         methodNameMaps = Maps.newHashMapWithExpectedSize(rawMethodMaps.size());
         fieldNameMaps = Maps.newHashMapWithExpectedSize(rawFieldMaps.size());
 
+    }
+    public void setup(File mcDir, LaunchClassLoader classLoader, String deobfFileName)
+    {
+        this.classLoader = classLoader;
+        try
+        {
+            List<String> srgList;
+            final String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp");
+
+            if (Strings.isNullOrEmpty(gradleStartProp))
+            {
+                // get as a resource
+                InputStream classData = getClass().getResourceAsStream(deobfFileName);
+                LZMAInputSupplier zis = new LZMAInputSupplier(classData);
+                CharSource srgSource = zis.asCharSource(Charsets.UTF_8);
+                srgList = srgSource.readLines();
+                FMLRelaunchLog.fine("Loading deobfuscation resource %s with %d records", deobfFileName, srgList.size());
+            }
+            else
+            {
+                srgList = Files.readLines(new File(gradleStartProp), Charsets.UTF_8);
+                FMLRelaunchLog.fine("Loading deobfuscation resource %s with %d records", gradleStartProp, srgList.size());
+            }
+
+            rawMethodMaps = Maps.newHashMap();
+            rawFieldMaps = Maps.newHashMap();
+            Builder<String, String> builder = ImmutableBiMap.<String,String>builder();
+            Splitter splitter = Splitter.on(CharMatcher.anyOf(": ")).omitEmptyStrings().trimResults();
+            for (String line : srgList)
+            {
+                String[] parts = Iterables.toArray(splitter.split(line),String.class);
+                String typ = parts[0];
+                if ("CL".equals(typ))
+                {
+                    parseClass(builder, parts);
+                }
+                else if ("MD".equals(typ))
+                {
+                    parseMethod(parts);
+                }
+                else if ("FD".equals(typ))
+                {
+                    parseField(parts);
+                }
+            }
+            classNameBiMap = builder.build();
+        }
+        catch (IOException ioe)
+        {
+            FMLRelaunchLog.log(Level.ERROR, ioe, "An error occurred loading the deobfuscation map data");
+        }
+        methodNameMaps = Maps.newHashMapWithExpectedSize(rawMethodMaps.size());
+        fieldNameMaps = Maps.newHashMapWithExpectedSize(rawFieldMaps.size());
     }
 
     public boolean isRemappedClass(String className)
@@ -190,25 +207,12 @@ public class FMLDeobfuscatingRemapper extends Remapper {
         {
             try
             {
-                String classResource = owner + ".class";
-                InputStream classStream = null;
-                
-                if (classLoader != null) {
-                    classStream = classLoader.getResourceAsStream(classResource);
-                }
-                if (classStream == null) {
-                    classStream = getClass().getClassLoader().getResourceAsStream(classResource);
-                }
-                if (classStream == null) {
-                    classStream = ClassLoader.getSystemResourceAsStream(classResource);
-                }
-                
-                if (classStream == null)
+                byte[] classBytes = ClassPatchManager.INSTANCE.getPatchedResource(owner, map(owner).replace('/', '.'), classLoader);
+                if (classBytes == null)
                 {
                     return null;
                 }
-                
-                ClassReader cr = new ClassReader(classStream);
+                ClassReader cr = new ClassReader(classBytes);
                 ClassNode classNode = new ClassNode();
                 cr.accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 Map<String,String> resMap = Maps.newHashMap();
@@ -220,7 +224,7 @@ public class FMLDeobfuscatingRemapper extends Remapper {
             }
             catch (IOException e)
             {
-                logger.error("A critical exception occured reading a class file {}", owner, e);
+                FMLRelaunchLog.log(Level.ERROR,e, "A critical exception occured reading a class file %s", owner);
             }
             return null;
         }
@@ -322,7 +326,7 @@ public class FMLDeobfuscatingRemapper extends Remapper {
 
             if (DUMP_FIELD_MAPS)
             {
-                logger.info("Field map for {} : {}", className, fieldNameMaps.get(className));
+                FMLRelaunchLog.finer("Field map for %s : %s", className, fieldNameMaps.get(className));
             }
         }
         return fieldNameMaps.get(className);
@@ -339,7 +343,7 @@ public class FMLDeobfuscatingRemapper extends Remapper {
             }
             if (DUMP_METHOD_MAPS)
             {
-                logger.info("Method map for {} : {}", className, methodNameMaps.get(className));
+                FMLRelaunchLog.finer("Method map for %s : %s", className, methodNameMaps.get(className));
             }
 
         }
@@ -350,32 +354,25 @@ public class FMLDeobfuscatingRemapper extends Remapper {
     {
         try
         {
-            logger.debug("Finding super maps for class: {}", name);
-            
-            // Try to get super class and interfaces, but handle cases where the class doesn't exist
             String superName = null;
-            String[] interfaces = null;
-            
-            try {
-                superName = ClassHierarchyResolver.getSuperClass(name);
-                interfaces = ClassHierarchyResolver.getInterfaces(name);
-            } catch (IllegalArgumentException e) {
-                // If the class format is invalid, it might be an obfuscated class that doesn't exist in classpath
-                logger.warn("Cannot resolve class hierarchy for potentially obfuscated class: {}", name);
-                superName = null;
-                interfaces = new String[0];
+            String[] interfaces = new String[0];
+            byte[] classBytes = ClassPatchManager.INSTANCE.getPatchedResource(name, map(name), classLoader);
+            if (classBytes != null)
+            {
+                ClassReader cr = new ClassReader(classBytes);
+                superName = cr.getSuperName();
+                interfaces = cr.getInterfaces();
             }
-            
             mergeSuperMaps(name, superName, interfaces);
         }
-        catch (Exception e)
+        catch (IOException e)
         {
-            logger.error("Error finding and merging super maps for class: {}", name, e);
+            e.printStackTrace();
         }
     }
     public void mergeSuperMaps(String name, String superName, String[] interfaces)
     {
-//        System.out.printf("Computing super maps for {}: {} {}\n", name, superName, Arrays.asList(interfaces));
+//        System.out.printf("Computing super maps for %s: %s %s\n", name, superName, Arrays.asList(interfaces));
         if (classNameBiMap == null || classNameBiMap.isEmpty())
         {
             return;
@@ -418,7 +415,7 @@ public class FMLDeobfuscatingRemapper extends Remapper {
         }
         methodNameMaps.put(name, ImmutableMap.copyOf(methodMap));
         fieldNameMaps.put(name, ImmutableMap.copyOf(fieldMap));
-//        System.out.printf("Maps: {} {}\n", name, methodMap);
+//        System.out.printf("Maps: %s %s\n", name, methodMap);
     }
 
     public Set<String> getObfedClasses()

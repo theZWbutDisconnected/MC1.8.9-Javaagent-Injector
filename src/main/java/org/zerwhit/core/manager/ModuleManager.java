@@ -11,80 +11,22 @@ import org.zerwhit.core.util.SafeLogger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ModuleManager {
+public final class ModuleManager {
     private static final SafeLogger logger = SafeLogger.getLogger(ModuleManager.class);
     
-    public enum ModuleCategory {
-        COMBAT("Combat", 0),
-        MOVEMENT("Movement", 1),
-        RENDER("Render", 2),
-        VISUAL("Visual", 3);
-        
-        private final String name;
-        private final int priority;
-        
-        ModuleCategory(String name, int priority) {
-            this.name = name;
-            this.priority = priority;
-        }
-        
-        public String getName() { return name; }
-        public int getPriority() { return priority; }
-        
-        public static ModuleCategory fromString(String name) {
-            for (ModuleCategory category : values()) {
-                if (category.name.equalsIgnoreCase(name)) {
-                    return category;
-                }
-            }
-            return null;
-        }
-    }
-    
-    public enum ModuleHookType {
-        TICK,
-        RENDER,
-        VISUAL,
-        EVENT
-    }
-    
-    public enum ModulePriority {
-        HIGHEST(5),
-        HIGH(4),
-        NORMAL(3),
-        LOW(2),
-        LOWEST(1);
-        
-        private final int value;
-        
-        ModulePriority(int value) {
-            this.value = value;
-        }
-        
-        public int getValue() { return value; }
-    }
-    
-    public enum ModuleState {
-        DISABLED,
-        ENABLED,
-        ERROR
-    }
-    
-    public interface ModuleLifecycleListener {
-        void onModuleEnabled(ModuleBase module);
-        void onModuleDisabled(ModuleBase module);
-        void onModuleError(ModuleBase module, Exception error);
-    }
-    
-    private static final ModuleManager INSTANCE = new ModuleManager();
     private final Map<ModuleCategory, List<ModuleBase>> modulesByCategory = new ConcurrentHashMap<>();
     private final Map<ModuleHookType, List<ModuleBase>> modulesByHookType = new ConcurrentHashMap<>();
     private final Map<ModuleBase, ModulePriority> modulePriorities = new ConcurrentHashMap<>();
     private final Map<ModuleBase, ModuleState> moduleStates = new HashMap<>();
     private final List<ModuleLifecycleListener> lifecycleListeners = new ArrayList<>();
+    
     private boolean initialized = false;
     
-    private ModuleManager() {
+    public ModuleManager() {
+        initializeMaps();
+    }
+    
+    private void initializeMaps() {
         for (ModuleCategory category : ModuleCategory.values()) {
             modulesByCategory.put(category, new ArrayList<>());
         }
@@ -93,49 +35,74 @@ public class ModuleManager {
         }
     }
     
-    public static ModuleManager getInstance() {
-        return INSTANCE;
+    public void initialize() {
+        if (initialized) {
+            return;
+        }
+        
+        registerAllModules();
+        initialized = true;
     }
     
-    public void initialize() {
-        if (initialized) return;
-        
+    private void registerAllModules() {
         for (Map.Entry<String, List<ModuleBase>> entry : ModuleBase.categories.entrySet()) {
             ModuleCategory category = ModuleCategory.fromString(entry.getKey());
             if (category != null) {
-                modulesByCategory.get(category).addAll(entry.getValue());
-                for (ModuleBase module : entry.getValue()) {
-                    registerModuleByHookType(module);
-                    setModulePriority(module);
-                    setModuleState(module, ModuleState.DISABLED);
-                }
+                registerModulesForCategory(category, entry.getValue());
             }
         }
-        
-        initialized = true;
-        logger.info("ModuleManager initialized with {} modules", getTotalModuleCount());
+    }
+    
+    private void registerModulesForCategory(ModuleCategory category, List<ModuleBase> modules) {
+        modulesByCategory.get(category).addAll(modules);
+        for (ModuleBase module : modules) {
+            registerModuleByHookType(module);
+            setModulePriority(module);
+            setModuleState(module, ModuleState.DISABLED);
+        }
     }
     
     private void setModulePriority(ModuleBase module) {
-        ModulePriority priority = ModulePriority.NORMAL;
-        if (module.name.equals("KillAura") || module.name.equals("Speed")) {
-            priority = ModulePriority.HIGHEST;
-        } else if (module.category.equals("Combat")) {
-            priority = ModulePriority.HIGH;
-        } else if (module.category.equals("Movement")) {
-            priority = ModulePriority.NORMAL;
-        } else if (module.category.equals("Render")) {
-            priority = ModulePriority.LOW;
-        } else if (module.category.equals("Visual")) {
-            priority = ModulePriority.LOWEST;
+        ModulePriority priority = determineModulePriority(module);
+        modulePriorities.put(module, priority);
+    }
+    
+    private ModulePriority determineModulePriority(ModuleBase module) {
+        if (isHighPriorityModule(module)) {
+            return ModulePriority.HIGHEST;
         }
         
-        modulePriorities.put(module, priority);
+        ModuleCategory category = ModuleCategory.fromString(module.category);
+        if (category != null) {
+            return getPriorityForCategory(category);
+        }
+        
+        return ModulePriority.NORMAL;
+    }
+    
+    private boolean isHighPriorityModule(ModuleBase module) {
+        return module.name.equals("KillAura") || module.name.equals("Speed");
+    }
+    
+    private ModulePriority getPriorityForCategory(ModuleCategory category) {
+        switch (category) {
+            case COMBAT:
+                return ModulePriority.HIGH;
+            case MOVEMENT:
+                return ModulePriority.NORMAL;
+            case RENDER:
+                return ModulePriority.LOW;
+            case VISUAL:
+                return ModulePriority.LOWEST;
+            default:
+                return ModulePriority.NORMAL;
+        }
     }
     
     private void setModuleState(ModuleBase module, ModuleState state) {
         ModuleState oldState = moduleStates.get(module);
         moduleStates.put(module, state);
+        
         if (oldState != state) {
             notifyModuleStateChange(module, oldState, state);
         }
@@ -143,21 +110,25 @@ public class ModuleManager {
     
     private void notifyModuleStateChange(ModuleBase module, ModuleState oldState, ModuleState newState) {
         for (ModuleLifecycleListener listener : lifecycleListeners) {
-            try {
-                switch (newState) {
-                    case ENABLED:
-                        listener.onModuleEnabled(module);
-                        break;
-                    case DISABLED:
-                        listener.onModuleDisabled(module);
-                        break;
-                    case ERROR:
-                        listener.onModuleError(module, new Exception("Module error occurred"));
-                        break;
-                }
-            } catch (Exception e) {
-                logger.error("Error notifying lifecycle listener: {}", e.getMessage());
+            notifyListener(listener, module, newState);
+        }
+    }
+    
+    private void notifyListener(ModuleLifecycleListener listener, ModuleBase module, ModuleState newState) {
+        try {
+            switch (newState) {
+                case ENABLED:
+                    listener.onModuleEnabled(module);
+                    break;
+                case DISABLED:
+                    listener.onModuleDisabled(module);
+                    break;
+                case ERROR:
+                    listener.onModuleError(module, new Exception("Module error occurred"));
+                    break;
             }
+        } catch (Exception e) {
+            logger.error("Error notifying lifecycle listener: {}", e.getMessage());
         }
     }
     
@@ -194,12 +165,14 @@ public class ModuleManager {
     
     public List<ModuleBase> getModulesByCategorySorted(ModuleCategory category) {
         List<ModuleBase> modules = new ArrayList<>(modulesByCategory.get(category));
-        modules.sort((m1, m2) -> {
-            ModulePriority p1 = modulePriorities.get(m1);
-            ModulePriority p2 = modulePriorities.get(m2);
-            return Integer.compare(p1.getValue(), p2.getValue());
-        });
+        modules.sort(this::compareModulesByPriority);
         return modules;
+    }
+    
+    private int compareModulesByPriority(ModuleBase m1, ModuleBase m2) {
+        ModulePriority p1 = modulePriorities.get(m1);
+        ModulePriority p2 = modulePriorities.get(m2);
+        return Integer.compare(p1.getValue(), p2.getValue());
     }
     
     public List<ModuleBase> getModulesByHookType(ModuleHookType hookType) {
@@ -208,11 +181,7 @@ public class ModuleManager {
     
     public List<ModuleBase> getModulesByHookTypeSorted(ModuleHookType hookType) {
         List<ModuleBase> modules = new ArrayList<>(modulesByHookType.get(hookType));
-        modules.sort((m1, m2) -> {
-            ModulePriority p1 = modulePriorities.get(m1);
-            ModulePriority p2 = modulePriorities.get(m2);
-            return Integer.compare(p1.getValue(), p2.getValue());
-        });
+        modules.sort(this::compareModulesByPriority);
         return modules;
     }
     
@@ -229,43 +198,114 @@ public class ModuleManager {
     }
     
     public void invokeHook(ModuleHookType hookType, String funcName, Object... args) {
-        if (!initialized) return;
+        if (!initialized) {
+            return;
+        }
         
         List<ModuleBase> modules = getModulesByHookTypeSorted(hookType);
         for (ModuleBase module : modules) {
             if (shouldInvokeModule(module)) {
-                try {
-                    setModuleState(module, ModuleState.ENABLED);
-                    invokeModuleHook(module, hookType, funcName, args);
-                } catch (Exception e) {
-                    logger.error("Error invoking hook for module {}: {}", module.name, e.getMessage());
-                    setModuleState(module, ModuleState.ERROR);
-                    logger.error("Error details:", e);
-                }
+                invokeModuleHook(module, hookType, funcName, args);
             }
         }
     }
     
+    private boolean shouldInvokeModule(ModuleBase module) {
+        if (!module.enabled) {
+            return false;
+        }
+        
+        Minecraft mc = Minecraft.getMinecraft();
+        return mc.theWorld != null && mc.thePlayer != null;
+    }
+
+    private void invokeModuleHook(ModuleBase module, ModuleHookType hookType, Object[] args) {
+        invokeModuleHook(module, hookType, "", args);
+    }
+
+    private void invokeModuleHook(ModuleBase module, ModuleHookType hookType, String funcName, Object[] args) {
+        try {
+            setModuleState(module, ModuleState.ENABLED);
+            executeModuleHook(module, hookType, funcName, args);
+        } catch (Exception e) {
+            handleModuleError(module, hookType, e);
+        }
+    }
+    
+    private void executeModuleHook(ModuleBase module, ModuleHookType hookType, String funcName, Object[] args) {
+        switch (hookType) {
+            case TICK:
+                executeTickHook(module);
+                break;
+            case RENDER:
+                executeRenderHook(module, args);
+                break;
+            case VISUAL:
+                executeVisualHook(module, funcName, args);
+                break;
+            case EVENT:
+                executeEventHook(module, args);
+                break;
+        }
+    }
+    
+    private void executeTickHook(ModuleBase module) {
+        ((ITickableModule) module).onModuleTick();
+    }
+    
+    private void executeRenderHook(ModuleBase module, Object[] args) {
+        if (args.length >= 3 && args[0] instanceof Float && args[1] instanceof Integer && args[2] instanceof Integer) {
+            ((IRenderModule) module).onRender((Float) args[0], (Integer) args[1], (Integer) args[2]);
+        }
+    }
+    
+    private void executeVisualHook(ModuleBase module, String funcName, Object[] args) {
+        if (args.length >= 1 && args[0] instanceof Float) {
+            ((IVisualModule) module).onHook(funcName, (Float) args[0]);
+        }
+    }
+    
+    private void executeEventHook(ModuleBase module, Object[] args) {
+        if (args.length >= 1 && args[0] instanceof String) {
+            String eventType = (String) args[0];
+            Object[] eventArgs = extractEventArgs(args);
+            ((IEventModule) module).onEvent(eventType, eventArgs);
+        }
+    }
+    
+    private Object[] extractEventArgs(Object[] args) {
+        if (args.length <= 1) {
+            return new Object[0];
+        }
+        
+        Object[] eventArgs = new Object[args.length - 1];
+        System.arraycopy(args, 1, eventArgs, 0, eventArgs.length);
+        return eventArgs;
+    }
+    
+    private void handleModuleError(ModuleBase module, ModuleHookType hookType, Exception e) {
+        logger.error("Error invoking {} hook for module {}: {}", hookType, module.name, e.getMessage());
+        setModuleState(module, ModuleState.ERROR);
+        logger.error("Error details:", e);
+    }
+    
     public void invokeCategory(ModuleCategory category, ModuleHookType hookType, Object... args) {
-        if (!initialized) return;
+        if (!initialized) {
+            return;
+        }
         
         List<ModuleBase> modules = getModulesByCategorySorted(category);
         for (ModuleBase module : modules) {
             if (shouldInvokeModule(module) && hasHookType(module, hookType)) {
-                try {
-                    setModuleState(module, ModuleState.ENABLED);
-                    invokeModuleHook(module, hookType, args);
-                } catch (Exception e) {
-                    logger.error("Error invoking category hook for module {}: {}", module.name, e.getMessage());
-                    setModuleState(module, ModuleState.ERROR);
-                    logger.error("Error details:", e);
-                }
+                invokeModuleHook(module, hookType, args);
             }
         }
     }
     
     public void invokeModule(ModuleHookType hookType, Object... args) {
-        if (!initialized) return;
+        if (!initialized) {
+            return;
+        }
         
         for (List<ModuleBase> modules : modulesByCategory.values()) {
             for (ModuleBase module : modules) {
@@ -281,48 +321,18 @@ public class ModuleManager {
         }
     }
     
-    private boolean shouldInvokeModule(ModuleBase module) {
-        Minecraft mc = Minecraft.getMinecraft();
-        return module.enabled && mc.theWorld != null && mc.thePlayer != null;
-    }
-    
     private boolean hasHookType(ModuleBase module, ModuleHookType hookType) {
         switch (hookType) {
-            case TICK: return module instanceof ITickableModule;
-            case RENDER: return module instanceof IRenderModule;
-            case VISUAL: return module instanceof IVisualModule;
-            case EVENT: return module instanceof IEventModule;
-            default: return false;
-        }
-    }
-    
-    private void invokeModuleHook(ModuleBase module, ModuleHookType hookType, Object[] args) {
-        invokeModuleHook(module, hookType, "", args);
-    }
-    
-    private void invokeModuleHook(ModuleBase module, ModuleHookType hookType, String funcName, Object[] args) {
-        switch (hookType) {
             case TICK:
-                ((ITickableModule) module).onModuleTick();
-                break;
+                return module instanceof ITickableModule;
             case RENDER:
-                if (args.length >= 2 && args[1] instanceof Integer && args[2] instanceof Integer) {
-                    ((IRenderModule) module).onRender((Float) args[0], (Integer) args[1], (Integer) args[2]);
-                }
-                break;
+                return module instanceof IRenderModule;
             case VISUAL:
-                if (args.length >= 1 && args[0] instanceof Float) {
-                    ((IVisualModule) module).onHook(funcName, (Float) args[0]);
-                }
-                break;
+                return module instanceof IVisualModule;
             case EVENT:
-                if (args.length >= 1 && args[0] instanceof String) {
-                    String eventType = (String) args[0];
-                    Object[] eventArgs = new Object[args.length - 1];
-                    System.arraycopy(args, 1, eventArgs, 0, eventArgs.length);
-                    ((IEventModule) module).onEvent(eventType, eventArgs);
-                }
-                break;
+                return module instanceof IEventModule;
+            default:
+                return false;
         }
     }
     
@@ -350,5 +360,78 @@ public class ModuleManager {
         lifecycleListeners.clear();
         initialized = false;
         logger.info("ModuleManager cleaned up");
+    }
+    
+    public enum ModuleCategory {
+        COMBAT("Combat", 0),
+        MOVEMENT("Movement", 1),
+        RENDER("Render", 2),
+        VISUAL("Visual", 3);
+        
+        private final String name;
+        private final int priority;
+        
+        ModuleCategory(String name, int priority) {
+            this.name = name;
+            this.priority = priority;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public int getPriority() {
+            return priority;
+        }
+        
+        public static ModuleCategory fromString(String name) {
+            if (name == null) {
+                return null;
+            }
+            
+            for (ModuleCategory category : values()) {
+                if (category.name.equalsIgnoreCase(name)) {
+                    return category;
+                }
+            }
+            return null;
+        }
+    }
+    
+    public enum ModuleHookType {
+        TICK,
+        RENDER,
+        VISUAL,
+        EVENT
+    }
+    
+    public enum ModulePriority {
+        HIGHEST(5),
+        HIGH(4),
+        NORMAL(3),
+        LOW(2),
+        LOWEST(1);
+        
+        private final int value;
+        
+        ModulePriority(int value) {
+            this.value = value;
+        }
+        
+        public int getValue() {
+            return value;
+        }
+    }
+    
+    public enum ModuleState {
+        DISABLED,
+        ENABLED,
+        ERROR
+    }
+    
+    public interface ModuleLifecycleListener {
+        void onModuleEnabled(ModuleBase module);
+        void onModuleDisabled(ModuleBase module);
+        void onModuleError(ModuleBase module, Exception error);
     }
 }

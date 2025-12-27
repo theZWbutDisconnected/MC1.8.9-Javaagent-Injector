@@ -1,11 +1,13 @@
 package org.zerwhit.core.module.movement;
 
+import net.minecraft.client.settings.KeyBinding;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
+import org.zerwhit.core.module.ToggleMode;
+import javafx.scene.input.KeyCode;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
 
 public class ModuleSprint extends ModuleBase implements ITickableModule {
-    private boolean sendedPacket;
     public ModuleSprint() {
         super("Sprint", true, "Movement");
         addConfig("OmniDirectional", false);
@@ -21,37 +23,24 @@ public class ModuleSprint extends ModuleBase implements ITickableModule {
             case "Legit":
                 if (omniDirectional) {
                     if (mc.thePlayer.moveForward != 0 || mc.thePlayer.moveStrafing != 0) {
-                        if (!sendedPacket) {
-                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
-                            sendedPacket = true;
-                        }
-                        mc.thePlayer.setSprinting(true);
+                        KeyBinding.setKeyBindState(mc.gameSettings.keyBindSprint.getKeyCode(), true);
                     }
                 } else {
                     if (mc.thePlayer.moveForward > 0 && !mc.thePlayer.isCollidedHorizontally) {
-                        if (!sendedPacket) {
-                            mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
-                            sendedPacket = true;
-                        }
-                        mc.thePlayer.setSprinting(true);
+                        KeyBinding.setKeyBindState(mc.gameSettings.keyBindSprint.getKeyCode(), true);
                     }
                 }
                 break;
             case "Rage":
-                if (!sendedPacket) {
-                    mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.START_SPRINTING));
-                    sendedPacket = true;
-                }
-                mc.thePlayer.setSprinting(true);
+                KeyBinding.setKeyBindState(mc.gameSettings.keyBindSprint.getKeyCode(), true);
                 break;
         }
     }
 
     @Override
     public void onDisable() {
-        mc.thePlayer.sendQueue.addToSendQueue(new C0BPacketEntityAction(mc.thePlayer, C0BPacketEntityAction.Action.STOP_SPRINTING));
-        mc.thePlayer.setSprinting(false);
-        sendedPacket = false;
+        super.onDisable();
+        KeyBinding.setKeyBindState(mc.gameSettings.keyBindSprint.getKeyCode(), false);
     }
     
     @Override

@@ -1,11 +1,12 @@
 package org.zerwhit.core;
 
+import org.zerwhit.core.config.ConfigInitialization;
 import org.zerwhit.core.data.Meta;
 import org.zerwhit.core.manager.TextureLoader;
 import org.zerwhit.core.manager.TextureRegistry;
 import org.zerwhit.core.manager.ModuleManager;
-import org.zerwhit.core.manager.ScreenEffects;
 import org.zerwhit.core.manager.RotationManager;
+import org.zerwhit.core.module.ModuleBase;
 import org.zerwhit.core.resource.TextureResource;
 
 import org.zerwhit.core.util.ObfuscationReflectionHelper;
@@ -33,31 +34,27 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
 import net.minecraft.util.Vec3;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import org.zerwhit.core.util.SafeLogger;
 
 import static org.zerwhit.core.util.ObfuscationReflectionHelper.*;
 
 public class Hooks {
     private static final SafeLogger logger = SafeLogger.getLogger(Hooks.class);
+
+    public static final ModuleManager moduleMng = new ModuleManager();
+    public static final RotationManager rotMng = new RotationManager();
     
     private static boolean texturesInitialized = false;
     private static boolean modulesInitialized = false;
     private static final int MARGIN = 10;
-    private static final ModuleManager moduleManager = ModuleManager.getInstance();
 
     public static void onUpdateDisplay() {
         Minecraft mc = Minecraft.getMinecraft();
-        if (!modulesInitialized) {
-            moduleManager.initialize();
-            modulesInitialized = true;
-        }
-        if (RotationManager.getInstance().rendererViewEntity == null) {
-            RotationManager.getInstance().rendererViewEntity = new Entity(Minecraft.getMinecraft().theWorld){
+        if (rotMng.rendererViewEntity == null) {
+            rotMng.rendererViewEntity = new Entity(Minecraft.getMinecraft().theWorld){
                 @Override
                 protected void entityInit() {
 
@@ -74,19 +71,16 @@ public class Hooks {
                 }
             };
         }
-        moduleManager.invokeHook(ModuleManager.ModuleHookType.TICK, "onUpdateDisplay");
-        
+        if (!modulesInitialized) {
+            ConfigInitialization.initialize();
+            moduleMng.initialize();
+            modulesInitialized = true;
+        }
+        moduleMng.invokeHook(ModuleManager.ModuleHookType.TICK, "onUpdateDisplay");
         try {
-            if (!texturesInitialized) {
+            if (!texturesInitialized)
                 initializeTextures();
-            }
-
-            if (TextureRegistry.isTextureLoaded(TextureRegistry.VAPELOGO) &&
-                    TextureRegistry.isTextureLoaded(TextureRegistry.V4LOGO)) {
-                render(mc.displayWidth, mc.displayHeight);
-            } else {
-                TextureLoader.loadAllTextureResources();
-            }
+            render(mc.displayWidth, mc.displayHeight);
         } catch (Exception e) {
             logger.error("Failed to render display: {}", e.getMessage());
             logger.error("Error details:", e);
@@ -95,6 +89,7 @@ public class Hooks {
 
     public static void onGameLoop() {
         Control.checkRShiftKey();
+        ModuleBase.updateKeyBindings();
     }
 
     public static void onPreTick() {
@@ -102,16 +97,15 @@ public class Hooks {
     public static void onPostTick() {}
     public static void onPlayerPreUpdate() {
         Meta.slientAimEnabled = false;
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
+        moduleMng.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
+        moduleMng.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
     }
     public static void onPlayerPostUpdate() {
-        moduleManager.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);
-        RotationManager.getInstance().updateRotation();
+        moduleMng.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);
     }
 
     public static void onPlayerHurt() {
-        moduleManager.invokeModule(ModuleManager.ModuleHookType.EVENT, "playerHurt");
+        moduleMng.invokeModule(ModuleManager.ModuleHookType.EVENT, "playerHurt");
     }
     
     /**
@@ -120,18 +114,12 @@ public class Hooks {
      * Args: strafe - the strafe movement input, forward - the forward movement input
      */
     public static void onMoveEntityWithHeading(float strafe, float forward) {
-        moduleManager.invokeHook(ModuleManager.ModuleHookType.EVENT, "moveEntityWithHeading", strafe, forward);
+        moduleMng.invokeHook(ModuleManager.ModuleHookType.EVENT, "moveEntityWithHeading", strafe, forward);
     }
 
     private static void initializeTextures() {
         TextureRegistry.initialize();
         TextureLoader.loadAllTextureResources();
-        try {
-            ScreenEffects.INSTANCE.init();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
         texturesInitialized = true;
         logger.info("Texture system and ScreenEffects initialized");
     }
@@ -141,26 +129,15 @@ public class Hooks {
         int scaledWidth = new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth();
         int scaledHeight = new ScaledResolution(Minecraft.getMinecraft()).getScaledHeight();
         Timer timer = (Timer) ObfuscationReflectionHelper.getObfuscatedFieldValue(Minecraft.class, new String[]{"timer", "field_71428_T"}, Minecraft.getMinecraft());
-        float partialTicks = 0;
-        if (timer != null) {
-            partialTicks = timer.renderPartialTicks;
-        }
-        moduleManager.invokeHook(ModuleManager.ModuleHookType.RENDER, "onRenderDisplay", partialTicks, scaledWidth, scaledHeight);
+        float partialTicks = timer != null ? timer.renderPartialTicks : 0;
+        moduleMng.invokeHook(ModuleManager.ModuleHookType.RENDER, "onRenderDisplay", partialTicks, scaledWidth, scaledHeight);
     }
 
     private static void drawVapeIcons(int screenWidth) {
-        TextureResource vapelogoResource = TextureRegistry.getTextureResource(TextureRegistry.CLIENTLOGO);
-        TextureResource v4logoResource = TextureRegistry.getTextureResource(TextureRegistry.V4LOGO);
-        int x = screenWidth - v4logoResource.getWidth() - MARGIN;
-        Renderer.drawTexture(
-                TextureRegistry.V4LOGO,
-                x,
-                MARGIN
-        );
-        Renderer.drawTexture(
-                TextureRegistry.CLIENTLOGO,
-                x - vapelogoResource.getWidth(), MARGIN
-        );
+        TextureResource v4logoResource = TextureRegistry.getTextureResource("v4logo");
+        TextureResource vapelogoResource = TextureRegistry.getTextureResource("clientlogo");
+
+        Renderer.drawTexture("clientlogo", 20, MARGIN);
     }
 
 
@@ -173,8 +150,11 @@ public class Hooks {
     }
 
     public static void cleanup() {
+        
+        ConfigInitialization.shutdown();
+        
         TextureRegistry.cleanup();
-        moduleManager.cleanup();
+        moduleMng.cleanup();
         texturesInitialized = false;
         modulesInitialized = false;
         logger.info("Hooks system cleaned up");
@@ -186,7 +166,7 @@ public class Hooks {
      * Args: partialTickTime - the partial tick time for interpolation
      */
     public static void renderItemInFirstPersonHook(float partialTicks) {
-        moduleManager.invokeHook(ModuleManager.ModuleHookType.VISUAL, "renderItemInFirstPerson", partialTicks);
+        moduleMng.invokeHook(ModuleManager.ModuleHookType.VISUAL, "renderItemInFirstPerson", partialTicks);
     }
 
     /**
@@ -196,7 +176,25 @@ public class Hooks {
      */
     public static void orientCameraHook(float partialTicks) {
         Minecraft mc = Minecraft.getMinecraft();
-        Entity entity = RotationManager.getInstance().rendererViewEntity;
+        if (rotMng.rendererViewEntity == null) {
+            rotMng.rendererViewEntity = new Entity(Minecraft.getMinecraft().theWorld){
+                @Override
+                protected void entityInit() {
+
+                }
+
+                @Override
+                protected void readEntityFromNBT(NBTTagCompound nbtTagCompound) {
+
+                }
+
+                @Override
+                protected void writeEntityToNBT(NBTTagCompound nbtTagCompound) {
+
+                }
+            };
+        }
+        Entity entity = Meta.slientAimEnabled ? rotMng.rendererViewEntity : mc.getRenderViewEntity();
         entity.posX = mc.thePlayer.posX;
         entity.posY = mc.thePlayer.posY;
         entity.posZ = mc.thePlayer.posZ;
@@ -354,7 +352,7 @@ public class Hooks {
 
             if (Minecraft.getMinecraft().gameSettings.thirdPersonView > 0)
             {
-                i = -1;
+                i = 1;
             }
 
             if (Minecraft.getMinecraft().gameSettings.smoothCamera)
@@ -370,13 +368,25 @@ public class Hooks {
                 f3 = smoothCamFilterY * f4;
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamYaw", "field_78496_H"}, entityRenderer, smoothCamYaw);
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamPitch", "field_78497_I"}, entityRenderer, smoothCamPitch);
-                RotationManager.getInstance().rendererViewEntity.setAngles(f2, f3 * (float)i);
+                if (Meta.slientAimEnabled)
+                    rotMng.rendererViewEntity.setAngles(f2, f3 * (float)i);
+                else {
+                    Minecraft.getMinecraft().getRenderViewEntity().setAngles(f2, f3 * (float) i);
+                    rotMng.rendererViewEntity.prevRotationYaw = rotMng.rendererViewEntity.rotationYaw = Minecraft.getMinecraft().getRenderViewEntity().rotationYaw;
+                    rotMng.rendererViewEntity.prevRotationPitch = Minecraft.getMinecraft().getRenderViewEntity().rotationPitch;
+                }
             }
             else
             {
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamYaw", "field_78496_H"}, entityRenderer, 0.0F);
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamPitch", "field_78497_I"}, entityRenderer, 0.0F);
-                RotationManager.getInstance().rendererViewEntity.setAngles(f2, f3 * (float)i);
+                if (Meta.slientAimEnabled)
+                    rotMng.rendererViewEntity.setAngles(f2, f3 * (float)i);
+                else {
+                    Minecraft.getMinecraft().getRenderViewEntity().setAngles(f2, f3 * (float) i);
+                    rotMng.rendererViewEntity.prevRotationYaw = rotMng.rendererViewEntity.rotationYaw = Minecraft.getMinecraft().getRenderViewEntity().rotationYaw;
+                    rotMng.rendererViewEntity.prevRotationPitch = rotMng.rendererViewEntity.rotationPitch = Minecraft.getMinecraft().getRenderViewEntity().rotationPitch;
+                }
             }
         }
 

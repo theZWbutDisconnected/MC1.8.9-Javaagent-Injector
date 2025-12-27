@@ -13,10 +13,8 @@ public class SafeLogger {
     private static boolean log4jAvailable = true;
     
     static {
-        // Test if log4j2 is properly initialized
         try {
             Logger testLogger = LogManager.getLogger(SafeLogger.class);
-            testLogger.info("Testing log4j2 initialization");
         } catch (Exception e) {
             System.err.println("Log4j2 initialization failed, falling back to System.out/err: " + e.getMessage());
             log4jAvailable = false;
@@ -61,7 +59,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.info(message);
-                System.out.println("[INFO] [" + name + "] " + message);
             } else {
                 System.out.println("[INFO] [" + name + "] " + message);
             }
@@ -74,7 +71,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.info(message, params);
-                System.out.println("[INFO] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             } else {
                 System.out.println("[INFO] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             }
@@ -87,7 +83,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.debug(message);
-                System.out.println("[DEBUG] [" + name + "] " + message);
             } else {
                 System.out.println("[DEBUG] [" + name + "] " + message);
             }
@@ -100,7 +95,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.debug(message, params);
-                System.out.println("[DEBUG] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             } else {
                 System.out.println("[DEBUG] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             }
@@ -113,7 +107,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.warn(message);
-                System.out.println("[WARN] [" + name + "] " + message);
             } else {
                 System.out.println("[WARN] [" + name + "] " + message);
             }
@@ -126,7 +119,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.warn(message, params);
-                System.out.println("[WARN] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             } else {
                 System.out.println("[WARN] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             }
@@ -139,7 +131,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.error(message);
-                System.err.println("[ERROR] [" + name + "] " + message);
             } else {
                 System.err.println("[ERROR] [" + name + "] " + message);
             }
@@ -152,7 +143,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.error(message, params);
-                System.err.println("[ERROR] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             } else {
                 System.err.println("[ERROR] [" + name + "] " + String.format(message.replace("{}", "%s"), params));
             }
@@ -165,7 +155,6 @@ public class SafeLogger {
         try {
             if (logger != null && log4jAvailable) {
                 logger.error(message, throwable);
-                System.err.println("[ERROR] [" + name + "] " + message);
             } else {
                 System.err.println("[ERROR] [" + name + "] " + message);
                 if (throwable != null) {

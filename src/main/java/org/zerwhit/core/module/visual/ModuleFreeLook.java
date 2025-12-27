@@ -1,49 +1,34 @@
 package org.zerwhit.core.module.visual;
 
+import javafx.scene.input.KeyCode;
 import org.zerwhit.core.data.Meta;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
 import org.lwjgl.input.Mouse;
+import org.zerwhit.core.module.ToggleMode;
 
 public class ModuleFreeLook extends ModuleBase implements ITickableModule {
-    public boolean pressed;
-    public boolean slient;
-    public int presonView;
-    public ModuleFreeLook() {
-        super("FreeLook", true, "Visual");
+    public ModuleFreeLook(KeyCode bdkey) {
+        super("FreeLook", false, "Visual", bdkey, ToggleMode.HOLD);
     }
 
     @Override
     public void onEnable() {
+        super.onEnable();
         Meta.slientAimEnabled = true;
+        mc.gameSettings.thirdPersonView = 1;
     }
 
     @Override
     public void onDisable() {
+        super.onDisable();
         Meta.slientAimEnabled = false;
-        pressed = false;
+        mc.gameSettings.thirdPersonView = 0;
     }
 
     @Override
     public void onModuleTick() {
         if (mc.thePlayer == null || mc.theWorld == null) return;
-        if (Mouse.isButtonDown(2)) {
-            if (pressed) return;
-            slient = Meta.slientAimEnabled;
-            presonView = mc.gameSettings.thirdPersonView;
-            pressed = true;
-            Meta.slientAimEnabled = true;
-            mc.gameSettings.thirdPersonView = 2;
-        } else if (pressed) {
-            Meta.slientAimEnabled = slient;
-            mc.gameSettings.thirdPersonView = presonView;
-            if (!slient) {
-                rotMng.rendererViewEntity.rotationPitch = mc.thePlayer.rotationPitch;
-                rotMng.rendererViewEntity.rotationYaw = mc.thePlayer.rotationYaw;
-                rotMng.rendererViewEntity.prevRotationPitch = mc.thePlayer.rotationPitch;
-                rotMng.rendererViewEntity.prevRotationYaw = mc.thePlayer.rotationYaw;
-            }
-            pressed = false;
-        }
+        Meta.slientAimEnabled = true;
     }
 }
