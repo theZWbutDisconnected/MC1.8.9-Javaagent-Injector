@@ -107,6 +107,11 @@ public class HookConfig {
                      new String[]{"func_70612_e", "moveEntityWithHeading"}, 
                      "(FF)V", 
                      HookType.BEFORE, "onMoveEntityWithHeading", new String[]{"F", "F"});
+        
+        addHookConfig("net/minecraft/util/MovementInputFromOptions", 
+                     new String[]{"func_78898_a", "updatePlayerMoveState"},
+                     "()V", 
+                     HookType.REPLACE, "updatePlayerMoveState", null);
     }
     
     private static void addHookConfig(String className, String[] methodNames, String methodDesc,

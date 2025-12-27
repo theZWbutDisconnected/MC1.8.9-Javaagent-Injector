@@ -124,9 +124,13 @@ public final class ClassTransformer implements ClassFileTransformer {
             if ("orientCameraHook".equals(hookMethod)) {
                 return new EntityRendererOrientCameraHookMethodVisitor(mv);
             }
-            
+
             if ("updateCameraAndRenderHook".equals(hookMethod)) {
                 return new EntityRendererCameraHookMethodVisitor(mv);
+            }
+
+            if ("updatePlayerMoveState".equals(hookMethod)) {
+                return new MovementInputHookMethodVisitor(mv);
             }
             
             return mv;
@@ -249,12 +253,12 @@ public final class ClassTransformer implements ClassFileTransformer {
             }
         }
     }
-    
+
     private static class ItemRendererHookMethodVisitor extends MethodVisitor {
         public ItemRendererHookMethodVisitor(MethodVisitor mv) {
             super(Opcodes.ASM4, mv);
         }
-        
+
         @Override
         public void visitCode() {
             mv.visitVarInsn(Opcodes.FLOAD, 1);
@@ -263,16 +267,36 @@ public final class ClassTransformer implements ClassFileTransformer {
                     "renderItemInFirstPersonHook",
                     "(F)V");
             mv.visitFieldInsn(Opcodes.GETSTATIC, getClassPackage(Meta.class), "legacyAnimEnabled", "Z");
-            
+
             Label skipReturn = new Label();
             mv.visitJumpInsn(Opcodes.IFEQ, skipReturn);
-            
+
             Label label = new Label();
             mv.visitLabel(label);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitLabel(skipReturn);
         }
-        
+
+        @Override
+        public void visitMaxs(int maxStack, int maxLocals) {
+            mv.visitMaxs(2, 2);
+        }
+    }
+
+    private static class MovementInputHookMethodVisitor extends MethodVisitor {
+        public MovementInputHookMethodVisitor(MethodVisitor mv) {
+            super(Opcodes.ASM4, mv);
+        }
+
+        @Override
+        public void visitCode() {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                    getClassPackage(Hooks.class),
+                    "updatePlayerMoveState",
+                    "()V");
+            mv.visitInsn(Opcodes.RETURN);
+        }
+
         @Override
         public void visitMaxs(int maxStack, int maxLocals) {
             mv.visitMaxs(2, 2);

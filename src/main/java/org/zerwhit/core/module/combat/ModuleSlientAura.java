@@ -20,11 +20,6 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
     private Random rand = new Random();
     private boolean slient;
     private long clickDelay = 0L;
-    private long lastPitchUpdateTime = 0L;
-    private float pitchNoiseOffset = 0f;
-    private float pitchNoiseVelocity = 0f;
-    private float pitchTargetOffset = 0f;
-    private float pitchSmoothFactor = 0.15f;
 
     float newYaw, newPitch;
 
@@ -56,14 +51,23 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         Boolean pitchEnabled = (Boolean) getConfig("PitchEnabled");
         Boolean autoBlock = (Boolean) getConfig("AutoBlock");
         Meta.blockRenderEnabled = autoBlock;
+
         List<Entity> entityList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.getEntityBoundingBox().expand(distance, distance, distance));
         if (!entityList.isEmpty()) Meta.slientAimEnabled = slient;
         for (int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
-            if (!(entity.isEntityAlive() && !entity.isDead)) return;
+            if (!(entity.isEntityAlive() && !entity.isDead)) {
+                if (target == entity)
+                    target = null;
+                continue;
+            }
             if (target == null || target.getDistanceSqToEntity(mc.thePlayer) > entity.getDistanceSqToEntity(mc.thePlayer)) target = entity;
         }
-        
+
+        if (target != null && target.getDistanceSqToEntity(mc.thePlayer) > distance) {
+            target = null;
+        }
+
         if (target == null) return;
         
         double deltaX = target.posX - mc.thePlayer.posX;
@@ -71,7 +75,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         double deltaZ = target.posZ - mc.thePlayer.posZ;
         double dis = MathHelper.sqrt_double(deltaX * deltaX + deltaZ * deltaZ);
 
-        double targetPitch = (float) (-(Math.atan2(deltaY, dis) * 180.0 / Math.PI));
+        double targetPitch = (float) (-(Math.atan2(deltaY, dis) * 180.0 / Math.PI) + Math.sin(System.nanoTime() / 70_000_000.0) * 15);
         double targetYaw = (float) (Math.atan2(deltaZ, deltaX) * 180.0 / Math.PI) - 90.0f;
 
         float currentYaw = mc.thePlayer.rotationYaw;
@@ -80,7 +84,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         float yawDiff = (float) (targetYaw - currentYaw);
         yawDiff = rotMng.normalizeAngle(yawDiff);
 
-        boolean shouldReverseYaw = isViewExceedingBoundingBox(currentYaw, target);
+        boolean shouldReverseYaw = rotMng.isViewExceedingBoundingBox(currentYaw, target, mc.thePlayer);
         
         if (MathHelper.abs(yawDiff) > 10 + rand.nextFloat() * 5) {
             if (shouldReverseYaw) {
@@ -101,7 +105,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
             newPitch = currentPitch + pitchDiff;
             newPitch = Math.max(-90, Math.min(90, newPitch));
 
-            float smoothPitchChange = calculateSmoothPitchChange(currentPitch, newPitch);
+            float smoothPitchChange = rotMng.calculateSmoothPitchChange(currentPitch, newPitch);
             mc.thePlayer.rotationPitch += smoothPitchChange;
         }
         
@@ -114,65 +118,5 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
         KeyBinding.onTick(mc.gameSettings.keyBindAttack.getKeyCode());
         lastAttackTick = (int) (rand.nextDouble() * 20 + 10);
-    }
-    
-    private boolean isViewExceedingBoundingBox(float currentYaw, Entity target) {
-        if (target == null) return false;
-        
-        double playerX = mc.thePlayer.posX;
-        double playerY = mc.thePlayer.posY + mc.thePlayer.getEyeHeight();
-        double playerZ = mc.thePlayer.posZ;
-        
-        double targetX = target.posX;
-        double targetY = target.posY + target.getEyeHeight();
-        double targetZ = target.posZ;
-        
-        double deltaX = targetX - playerX;
-        double deltaZ = targetZ - playerZ;
-        
-        double distance = MathHelper.sqrt_double(deltaX * deltaX + deltaZ * deltaZ);
-        if (distance < 0.1) return false;
-        
-        double targetYaw = Math.atan2(deltaZ, deltaX) * 180.0 / Math.PI - 90.0;
-        double yawDiff = rotMng.normalizeAngle((float)(targetYaw - currentYaw));
-        
-        double boundingBoxWidth = target.width / 2.0;
-        double boundingBoxDepth = target.width / 2.0;
-        
-        double angleThreshold = Math.toDegrees(Math.atan2(boundingBoxWidth, distance)) * 0.7;
-        
-        return Math.abs(yawDiff) < angleThreshold;
-    }
-    
-    private float calculateSmoothPitchChange(float currentPitch, float targetPitch) {
-        long currentTime = System.nanoTime();
-        float deltaTime = (currentTime - lastPitchUpdateTime) / 1_000_000_000.0f;
-        lastPitchUpdateTime = currentTime;
-        if (deltaTime > 0.1f) {
-            deltaTime = 0.1f;
-        }
-        float pitchDiff = targetPitch - currentPitch;
-        float baseMovement = pitchDiff * pitchSmoothFactor;
-        if (Math.abs(pitchDiff) < 0.5f) {
-            pitchTargetOffset = (rand.nextFloat() - 0.5f) * 0.8f;
-            pitchNoiseVelocity = (rand.nextFloat() - 0.5f) * 0.3f;
-        }
-        float noiseAcceleration = (pitchTargetOffset - pitchNoiseOffset) * 2.0f - pitchNoiseVelocity * 0.8f;
-        pitchNoiseVelocity += noiseAcceleration * deltaTime * 8.0f;
-        pitchNoiseOffset += pitchNoiseVelocity * deltaTime * 6.0f;
-        pitchNoiseOffset = Math.max(-1.2f, Math.min(1.2f, pitchNoiseOffset));
-        pitchNoiseVelocity = Math.max(-2.0f, Math.min(2.0f, pitchNoiseVelocity));
-        float movementSpeed = Math.abs(baseMovement);
-        float noiseIntensity = 0.3f + movementSpeed * 0.5f;
-        float totalMovement = baseMovement + pitchNoiseOffset * noiseIntensity;
-        float easedMovement = easeOutCubic(totalMovement);
-        easedMovement = Math.max(-3.0f, Math.min(3.0f, easedMovement));
-        return easedMovement;
-    }
-    
-    private float easeOutCubic(float x) {
-        float t = Math.max(0, Math.min(1, Math.abs(x) / 2.0f));
-        float eased = 1 - (float)Math.pow(1 - t, 3);
-        return x < 0 ? -eased : eased;
     }
 }

@@ -30,5 +30,6 @@ public class ModuleFreeLook extends ModuleBase implements ITickableModule {
     public void onModuleTick() {
         if (mc.thePlayer == null || mc.theWorld == null) return;
         Meta.slientAimEnabled = true;
+        mc.gameSettings.thirdPersonView = 1;
     }
 }

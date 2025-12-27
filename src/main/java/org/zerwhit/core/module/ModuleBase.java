@@ -5,6 +5,7 @@ import net.minecraft.network.Packet;
 import org.zerwhit.core.Hooks;
 import org.zerwhit.core.config.NovaConfig;
 import org.zerwhit.core.config.ConfigInitialization;
+import org.zerwhit.core.module.combat.ModuleAutoClicker;
 import org.zerwhit.core.module.combat.ModuleSlientAura;
 import org.zerwhit.core.util.island.IslandNotification;
 import org.zerwhit.core.module.visual.ModuleDynamicIsland;
@@ -43,6 +44,7 @@ public abstract class ModuleBase {
     
     public final Map<String, Object> config = new HashMap<>();
     public final Map<String, Class<?>> configTypes = new HashMap<>();
+    public final Map<String, Number[]> rangedVals = new HashMap<>();
     
     static {
         initializeModules();
@@ -52,6 +54,7 @@ public abstract class ModuleBase {
         addModule(new ModuleSprint());
         addModule(new ModuleScaffold());
         addModule(new ModuleArraylist());
+        addModule(new ModuleAutoClicker());
         addModule(new ModuleSlientAura());
         addModule(new ModuleLegacyAnim());
         addModule(new ModuleFreeLook(KeyCode.G));
@@ -159,10 +162,15 @@ public abstract class ModuleBase {
                 return 4;
         }
     }
-    
+
     public void addConfig(String key, Object defaultValue) {
         config.put(key, defaultValue);
         configTypes.put(key, defaultValue.getClass());
+    }
+
+    public void addRangedConfig(String key, Number defaultValue, Number minValue, Number maxValue) {
+        addConfig(key, defaultValue);
+        rangedVals.put(key, new Number[]{minValue, maxValue});
     }
     
     public Object getConfig(String key) {
@@ -395,11 +403,11 @@ public abstract class ModuleBase {
     }
     
     public double getMaxValueForConfig(String key) {
-        return 10.0;
+        return rangedVals.getOrDefault(key, new Number[]{0.0, 10.0})[1].doubleValue();
     }
     
     public double getMinValueForConfig(String key) {
-        return 0;
+        return rangedVals.getOrDefault(key, new Number[]{0.0, 10.0})[0].doubleValue();
     }
     
     public static Map<Integer, Set<ModuleBase>> getKeyBindings() {
@@ -408,22 +416,6 @@ public abstract class ModuleBase {
     
     public static Set<ModuleBase> getModulesForKey(int keyCode) {
         return keyBindings.getOrDefault(keyCode, new HashSet<>());
-    }
-    
-    public static String getKeyName(int keyCode) {
-        try {
-            return Keyboard.getKeyName(keyCode);
-        } catch (Exception e) {
-            return "Unknown";
-        }
-    }
-    
-    public static int getKeyCode(String keyName) {
-        try {
-            return Keyboard.getKeyIndex(keyName.toUpperCase());
-        } catch (Exception e) {
-            return -1;
-        }
     }
 
     public boolean isEnabled() {

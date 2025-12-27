@@ -29,6 +29,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovementInput;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.Timer;
@@ -93,6 +94,25 @@ public class Hooks {
     }
 
     public static void onPreTick() {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.thePlayer == null) return;
+        if (mc.thePlayer.isUsingItem())
+        {
+            while (mc.gameSettings.keyBindAttack.isPressed())
+            {
+                ObfuscationReflectionHelper.invokeObfuscatedMethod(Minecraft.class, new String[]{"clickMouse", "func_147116_af"}, mc);
+            }
+
+            while (mc.gameSettings.keyBindUseItem.isPressed())
+            {
+                ObfuscationReflectionHelper.invokeObfuscatedMethod(Minecraft.class, new String[]{"rightClickMouse", "func_147121_ag"}, mc);
+            }
+
+            while (mc.gameSettings.keyBindPickBlock.isPressed())
+            {
+                ObfuscationReflectionHelper.invokeObfuscatedMethod(Minecraft.class, new String[]{"middleClickMouse", "func_147112_ai"}, mc);
+            }
+        }
     }
     public static void onPostTick() {}
     public static void onPlayerPreUpdate() {
@@ -490,6 +510,60 @@ public class Hooks {
         }
     }
 
+    public static void updatePlayerMoveState() {
+        Minecraft mc = Minecraft.getMinecraft();
+        float yawDiff = rotMng.normalizeAngle(rotMng.rendererViewEntity.rotationYaw - mc.thePlayer.rotationYaw);
+        float pitchDiff = rotMng.normalizeAngle(rotMng.rendererViewEntity.rotationPitch - mc.thePlayer.rotationPitch);
+        MovementInput mvInput = mc.thePlayer.movementInput;
+        mvInput.moveStrafe = 0.0F;
+        mvInput.moveForward = 0.0F;
+
+        if (mc.gameSettings.keyBindForward.isKeyDown())
+        {
+            ++mvInput.moveForward;
+        }
+
+        if (mc.gameSettings.keyBindBack.isKeyDown())
+        {
+            --mvInput.moveForward;
+        }
+
+        if (mc.gameSettings.keyBindLeft.isKeyDown())
+        {
+            ++mvInput.moveStrafe;
+        }
+
+        if (mc.gameSettings.keyBindRight.isKeyDown())
+        {
+            --mvInput.moveStrafe;
+        }
+
+        mvInput.jump = mc.gameSettings.keyBindJump.isKeyDown();
+        mvInput.sneak = mc.gameSettings.keyBindSneak.isKeyDown();
+
+        if (mvInput.sneak)
+        {
+            mvInput.moveStrafe = (float)((double)mvInput.moveStrafe * 0.3D);
+            mvInput.moveForward = (float)((double)mvInput.moveForward * 0.3D);
+        }
+        if (mc.thePlayer == null || rotMng.rendererViewEntity == null) {
+            return;
+        }
+        transformMovementInput(mvInput, yawDiff);
+    }
+    
+    private static void transformMovementInput(MovementInput mvInput, float yawDiff) {
+        float moveForward = mvInput.moveForward;
+        float moveStrafe = mvInput.moveStrafe;
+        float yawRad = (float) Math.toRadians(yawDiff);
+        float cos = (float) Math.cos(yawRad);
+        float sin = (float) Math.sin(-yawRad);
+        float newMoveForward = moveForward * cos - moveStrafe * sin;
+        float newMoveStrafe = moveForward * sin + moveStrafe * cos;
+        mvInput.moveForward = newMoveForward > 0 ? 1.0f : newMoveForward < 0 ? -1.0f : 0.0f;
+        mvInput.moveStrafe = newMoveStrafe > 0 ? 1.0f : newMoveStrafe < 0 ? -1.0f : 0.0f;
+    }
+    
     static {
         logger.info("Hooks class initialized by classloader: {}", Hooks.class.getClassLoader());
     }
