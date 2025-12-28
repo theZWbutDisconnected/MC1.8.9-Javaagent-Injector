@@ -45,6 +45,8 @@ public abstract class ModuleBase {
     public final Map<String, Object> config = new HashMap<>();
     public final Map<String, Class<?>> configTypes = new HashMap<>();
     public final Map<String, Number[]> rangedVals = new HashMap<>();
+
+    public static ModuleFreeLook frelook;
     
     static {
         initializeModules();
@@ -57,7 +59,7 @@ public abstract class ModuleBase {
         addModule(new ModuleAutoClicker());
         addModule(new ModuleSlientAura());
         addModule(new ModuleLegacyAnim());
-        addModule(new ModuleFreeLook(KeyCode.G));
+        addModule(frelook = new ModuleFreeLook(KeyCode.G));
         addModule(ModuleDynamicIsland.getInstance());
     }
     

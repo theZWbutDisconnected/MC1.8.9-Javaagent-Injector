@@ -10,9 +10,9 @@ import org.zerwhit.core.util.RandomUtil;
 
 public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
     private boolean clickPending = false;
-    private long clickDelay = 0L;
+    private long nextClickTime = 0L;
     private boolean blockHitPending = false;
-    private long blockHitDelay = 0L;
+    private long nextBlockHitTime = 0L;
 
     public ModuleAutoClicker() {
         super("AutoClicker", true, "Combat");
@@ -26,7 +26,10 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
     }
 
     private long getNextClickDelay() {
-        return 1000L / RandomUtil.nextLong(((Number) getConfig("CPSMin")).intValue(), ((Number) getConfig("CPSMax")).intValue());
+        int cps = RandomUtil.nextInt(((Number) getConfig("CPSMin")).intValue(),
+                ((Number) getConfig("CPSMax")).intValue());
+        if (cps <= 0) return Long.MAX_VALUE;
+        return 1000L / cps + RandomUtil.nextLong(-50, 50);
     }
 
     private long getBlockHitDelay() {
@@ -38,8 +41,8 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
                 || ItemUtil.hasRawUnbreakingEnchant()
                 || (Boolean) getConfig("AllowTools") && ItemUtil.isHoldingTool()) {
             if ((Boolean) getConfig("BreakBlocks") && this.isBreakingBlock()) {
-                WorldSettings.GameType gameType12 = mc.playerController.getCurrentGameType();
-                return gameType12 != WorldSettings.GameType.SURVIVAL && gameType12 != WorldSettings.GameType.CREATIVE;
+                WorldSettings.GameType gameType = mc.playerController.getCurrentGameType();
+                return gameType != WorldSettings.GameType.SURVIVAL && gameType != WorldSettings.GameType.CREATIVE;
             } else {
                 return true;
             }
@@ -54,40 +57,45 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
 
     @Override
     public void onModuleTick() {
-        if (this.clickDelay > 0L) {
-            this.clickDelay -= 50L;
-        }
+        long currentTime = System.currentTimeMillis();
+
         if (mc.currentScreen != null) {
             this.clickPending = false;
+            this.blockHitPending = false;
         } else {
             if (this.clickPending) {
                 this.clickPending = false;
                 KeyBindUtil.updateKeyState(mc.gameSettings.keyBindAttack.getKeyCode());
             }
+
             if (this.blockHitPending) {
                 this.blockHitPending = false;
                 KeyBindUtil.updateKeyState(mc.gameSettings.keyBindUseItem.getKeyCode());
             }
+
             if (this.isEnabled() && this.canClick() && mc.gameSettings.keyBindAttack.isKeyDown()) {
-                if (!mc.thePlayer.isUsingItem()) {
-                    while (this.clickDelay <= 0L) {
-                        this.clickPending = true;
-                        this.clickDelay = this.clickDelay + this.getNextClickDelay();
-                        KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
-                        KeyBindUtil.pressKeyOnce(mc.gameSettings.keyBindAttack.getKeyCode());
-                    }
+                if (!mc.thePlayer.isUsingItem() && currentTime >= this.nextClickTime) {
+                    this.clickPending = true;
+                    KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
+                    KeyBindUtil.pressKeyOnce(mc.gameSettings.keyBindAttack.getKeyCode());
+
+                    this.nextClickTime = currentTime + this.getNextClickDelay();
                 }
+
                 if ((Boolean) getConfig("BlockHit")
-                        && this.blockHitDelay <= 0L
+                        && currentTime >= this.nextBlockHitTime
                         && mc.gameSettings.keyBindUseItem.isKeyDown()
                         && ItemUtil.isHoldingSword()) {
-                    this.blockHitPending = true;
-                    KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
                     if (!mc.thePlayer.isUsingItem()) {
-                        this.blockHitDelay = this.blockHitDelay + this.getBlockHitDelay();
+                        this.blockHitPending = true;
+                        KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
                         KeyBindUtil.pressKeyOnce(mc.gameSettings.keyBindUseItem.getKeyCode());
+
+                        this.nextBlockHitTime = currentTime + this.getBlockHitDelay();
                     }
                 }
+            } else if (!mc.gameSettings.keyBindAttack.isKeyDown()) {
+                this.nextClickTime = 0L;
             }
         }
     }
@@ -95,19 +103,19 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
     @Override
     public void onEnable() {
         super.onEnable();
-        this.clickDelay = 0L;
-        this.blockHitDelay = 0L;
+        this.nextClickTime = 0L;
+        this.nextBlockHitTime = 0L;
     }
 
     @Override
     public double getMaxValueForConfig(String key) {
-        if (key == "CPSMin") return (Integer) getConfig("CPSMax");
+        if (key.equals("CPSMin")) return (Integer) getConfig("CPSMax");
         return super.getMaxValueForConfig(key);
     }
 
     @Override
     public double getMinValueForConfig(String key) {
-        if (key == "CPSMax") return (Integer) getConfig("CPSMin");
+        if (key.equals("CPSMax")) return (Integer) getConfig("CPSMin");
         return super.getMinValueForConfig(key);
     }
 }

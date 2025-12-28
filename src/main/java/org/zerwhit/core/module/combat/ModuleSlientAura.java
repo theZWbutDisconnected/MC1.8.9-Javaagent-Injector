@@ -10,6 +10,7 @@ import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
 import org.zerwhit.core.util.KeyRobot;
 import org.zerwhit.core.util.ObfuscationReflectionHelper;
+import org.zerwhit.core.util.RandomUtil;
 
 import java.util.List;
 import java.util.Random;
@@ -50,8 +51,8 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         Boolean slient = (Boolean) getConfig("SlientAim");
         Boolean pitchEnabled = (Boolean) getConfig("PitchEnabled");
         Boolean autoBlock = (Boolean) getConfig("AutoBlock");
-        Meta.blockRenderEnabled = autoBlock;
 
+        Meta.blockRenderEnabled = false;
         List<Entity> entityList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.getEntityBoundingBox().expand(distance, distance, distance));
         if (!entityList.isEmpty()) Meta.slientAimEnabled = slient;
         for (int i = 0; i < entityList.size(); i++) {
@@ -61,14 +62,15 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
                     target = null;
                 continue;
             }
-            if (target == null || target.getDistanceSqToEntity(mc.thePlayer) > entity.getDistanceSqToEntity(mc.thePlayer)) target = entity;
+            if (target == null || target.getDistanceToEntity(mc.thePlayer) > entity.getDistanceToEntity(mc.thePlayer)) target = entity;
         }
 
-        if (target != null && target.getDistanceSqToEntity(mc.thePlayer) > distance) {
+        if (target != null && target.getDistanceToEntity(mc.thePlayer) > distance) {
             target = null;
         }
 
         if (target == null) return;
+        Meta.blockRenderEnabled = autoBlock;
         
         double deltaX = target.posX - mc.thePlayer.posX;
         double deltaY = (target.posY + 1) - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
@@ -88,14 +90,14 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         
         if (MathHelper.abs(yawDiff) > 10 + rand.nextFloat() * 5) {
             if (shouldReverseYaw) {
-                newYaw = currentYaw - yawDiff * 0.8f;
+                newYaw = currentYaw - yawDiff * 1.2f + RandomUtil.nextFloat(-5, 5);
             } else {
                 newYaw = currentYaw + yawDiff;
             }
         }
         
         if (!shouldReverseYaw) {
-            mc.thePlayer.rotationYaw = rotMng.normalizeAngleTo360(currentYaw + (newYaw - currentYaw) * 0.08f);
+            mc.thePlayer.rotationYaw = rotMng.normalizeAngleTo360(currentYaw + (newYaw - currentYaw) * 0.07f);
         }
         
         if (pitchEnabled) {

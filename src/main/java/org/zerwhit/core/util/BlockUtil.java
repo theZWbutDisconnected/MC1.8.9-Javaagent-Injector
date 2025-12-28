@@ -3,6 +3,8 @@ package org.zerwhit.core.util;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
@@ -11,6 +13,25 @@ import org.zerwhit.core.manager.RotationManager;
 
 public class BlockUtil {
     private static Minecraft mc = Minecraft.getMinecraft();
+
+    public static boolean isHoldingBlock() {
+        ItemStack heldItem = mc.thePlayer.getHeldItem();
+        return heldItem != null && heldItem.getItem() instanceof ItemBlock;
+    }
+
+    public static boolean isBlock(ItemStack stack) {
+        return stack != null && stack.getItem() instanceof ItemBlock;
+    }
+
+    public static boolean isReplaceable(BlockPos pos) {
+        Block block = mc.theWorld.getBlockState(pos).getBlock();
+        return block.isAir(mc.theWorld, pos) || block.isReplaceable(mc.theWorld, pos);
+    }
+
+    public static boolean isContainer(BlockPos pos) {
+        Block block = mc.theWorld.getBlockState(pos).getBlock();
+        return block.hasTileEntity(mc.theWorld.getBlockState(pos));
+    }
 
     public static boolean isInteractable(Block block) {
         if (block instanceof BlockContainer) return true;
