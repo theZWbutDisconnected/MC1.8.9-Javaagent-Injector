@@ -19,7 +19,6 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
     private Entity target = null;
     private int lastAttackTick;
     private Random rand = new Random();
-    private boolean slient;
     private long clickDelay = 0L;
 
     float newYaw, newPitch;
@@ -41,7 +40,6 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
     public void onDisable() {
         super.onDisable();
         Meta.slientAimEnabled = false;
-        this.slient = false;
         Meta.blockRenderEnabled = false;
     }
 
@@ -53,8 +51,9 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         Boolean autoBlock = (Boolean) getConfig("AutoBlock");
 
         Meta.blockRenderEnabled = false;
+        if (ModuleBase.scaffold.enabled) return;
         List<Entity> entityList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.getEntityBoundingBox().expand(distance, distance, distance));
-        if (!entityList.isEmpty()) Meta.slientAimEnabled = slient;
+        if (!entityList.isEmpty()) Meta.toggleAim(slient);
         for (int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
             if (!(entity.isEntityAlive() && !entity.isDead)) {
@@ -69,7 +68,10 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
             target = null;
         }
 
-        if (target == null) return;
+        if (target == null) {
+            Meta.toggleAim(slient);
+            return;
+        }
         Meta.blockRenderEnabled = autoBlock;
         
         double deltaX = target.posX - mc.thePlayer.posX;
@@ -90,7 +92,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         
         if (MathHelper.abs(yawDiff) > 10 + rand.nextFloat() * 5) {
             if (shouldReverseYaw) {
-                newYaw = currentYaw - yawDiff * 1.2f + RandomUtil.nextFloat(-5, 5);
+                newYaw = currentYaw - yawDiff * 1.2f + RandomUtil.nextFloat(-10, 10);
             } else {
                 newYaw = currentYaw + yawDiff;
             }
@@ -110,8 +112,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
             float smoothPitchChange = rotMng.calculateSmoothPitchChange(currentPitch, newPitch);
             mc.thePlayer.rotationPitch += smoothPitchChange;
         }
-        
-        this.slient = true;
+
         handleClick();
     }
 

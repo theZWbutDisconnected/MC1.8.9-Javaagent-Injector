@@ -51,6 +51,7 @@ public class Hooks {
     private static boolean texturesInitialized = false;
     private static boolean modulesInitialized = false;
     private static final int MARGIN = 10;
+    private static boolean slient;
 
     public static void onUpdateDisplay() {
         Minecraft mc = Minecraft.getMinecraft();
@@ -388,21 +389,39 @@ public class Hooks {
                 f3 = smoothCamFilterY * f4;
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamYaw", "field_78496_H"}, entityRenderer, smoothCamYaw);
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamPitch", "field_78497_I"}, entityRenderer, smoothCamPitch);
-                if (Meta.slientAimEnabled)
-                    rotMng.rendererViewEntity.setAngles(f2, f3 * (float)i);
+                if (Meta.slientAimEnabled) {
+                    rotMng.rendererViewEntity.setAngles(f2, f3 * (float) i);
+                    slient = true;
+                }
                 else {
+                    if (slient) {
+                        Minecraft.getMinecraft().thePlayer.rotationPitch = Hooks.rotMng.rendererViewEntity.rotationPitch;
+                        Minecraft.getMinecraft().thePlayer.rotationYaw = Hooks.rotMng.rendererViewEntity.rotationYaw;
+                        Minecraft.getMinecraft().thePlayer.prevRotationPitch = Hooks.rotMng.rendererViewEntity.prevRotationPitch;
+                        Minecraft.getMinecraft().thePlayer.prevRotationYaw = Hooks.rotMng.rendererViewEntity.prevRotationYaw;
+                        slient = false;
+                    }
                     Minecraft.getMinecraft().getRenderViewEntity().setAngles(f2, f3 * (float) i);
                     rotMng.rendererViewEntity.prevRotationYaw = rotMng.rendererViewEntity.rotationYaw = Minecraft.getMinecraft().getRenderViewEntity().rotationYaw;
-                    rotMng.rendererViewEntity.prevRotationPitch = Minecraft.getMinecraft().getRenderViewEntity().rotationPitch;
+                    rotMng.rendererViewEntity.prevRotationPitch = rotMng.rendererViewEntity.rotationPitch = Minecraft.getMinecraft().getRenderViewEntity().rotationPitch;
                 }
             }
             else
             {
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamYaw", "field_78496_H"}, entityRenderer, 0.0F);
                 setObfuscatedFieldValue(EntityRenderer.class, new String[]{"smoothCamPitch", "field_78497_I"}, entityRenderer, 0.0F);
-                if (Meta.slientAimEnabled)
-                    rotMng.rendererViewEntity.setAngles(f2, f3 * (float)i);
+                if (Meta.slientAimEnabled) {
+                    rotMng.rendererViewEntity.setAngles(f2, f3 * (float) i);
+                    slient = true;
+                }
                 else {
+                    if (slient) {
+                        Minecraft.getMinecraft().thePlayer.rotationPitch = Hooks.rotMng.rendererViewEntity.rotationPitch;
+                        Minecraft.getMinecraft().thePlayer.rotationYaw = Hooks.rotMng.rendererViewEntity.rotationYaw;
+                        Minecraft.getMinecraft().thePlayer.prevRotationPitch = Hooks.rotMng.rendererViewEntity.prevRotationPitch;
+                        Minecraft.getMinecraft().thePlayer.prevRotationYaw = Hooks.rotMng.rendererViewEntity.prevRotationYaw;
+                        slient = false;
+                    }
                     Minecraft.getMinecraft().getRenderViewEntity().setAngles(f2, f3 * (float) i);
                     rotMng.rendererViewEntity.prevRotationYaw = rotMng.rendererViewEntity.rotationYaw = Minecraft.getMinecraft().getRenderViewEntity().rotationYaw;
                     rotMng.rendererViewEntity.prevRotationPitch = rotMng.rendererViewEntity.rotationPitch = Minecraft.getMinecraft().getRenderViewEntity().rotationPitch;

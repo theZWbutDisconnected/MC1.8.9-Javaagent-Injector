@@ -30,12 +30,6 @@ public class ModuleDynamicIsland extends ModuleBase implements IRenderModule, IT
     @Override
     public void onModuleTick() {
         renderer.update();
-        
-        if ((Boolean) getConfig("Enabled")) {
-            Meta.dynamicIslandEnabled = true;
-        } else {
-            Meta.dynamicIslandEnabled = false;
-        }
     }
     
     @Override

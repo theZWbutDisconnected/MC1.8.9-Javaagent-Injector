@@ -46,6 +46,7 @@ public abstract class ModuleBase {
     public final Map<String, Class<?>> configTypes = new HashMap<>();
     public final Map<String, Number[]> rangedVals = new HashMap<>();
 
+    public static ModuleScaffold scaffold;
     public static ModuleFreeLook frelook;
     
     static {
@@ -54,7 +55,7 @@ public abstract class ModuleBase {
     
     private static void initializeModules() {
         addModule(new ModuleSprint());
-        addModule(new ModuleScaffold());
+        addModule(scaffold = new ModuleScaffold());
         addModule(new ModuleArraylist());
         addModule(new ModuleAutoClicker());
         addModule(new ModuleSlientAura());
