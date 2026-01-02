@@ -6,6 +6,7 @@ import org.zerwhit.core.Hooks;
 import org.zerwhit.core.config.NovaConfig;
 import org.zerwhit.core.config.ConfigInitialization;
 import org.zerwhit.core.module.combat.ModuleAutoClicker;
+import org.zerwhit.core.module.combat.ModuleRightClicker;
 import org.zerwhit.core.module.combat.ModuleSlientAura;
 import org.zerwhit.core.util.island.IslandNotification;
 import org.zerwhit.core.module.visual.ModuleDynamicIsland;
@@ -56,8 +57,11 @@ public abstract class ModuleBase {
     private static void initializeModules() {
         addModule(new ModuleSprint());
         addModule(scaffold = new ModuleScaffold());
+        addModule(new ModuleEagle());
         addModule(new ModuleArraylist());
         addModule(new ModuleAutoClicker());
+        addModule(new ModuleRightClicker());
+        addModule(new ModuleFastPlace());
         addModule(new ModuleSlientAura());
         addModule(new ModuleLegacyAnim());
         addModule(frelook = new ModuleFreeLook(KeyCode.G));

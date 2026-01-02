@@ -560,7 +560,7 @@ public class Hooks {
         mvInput.jump = mc.gameSettings.keyBindJump.isKeyDown();
         mvInput.sneak = mc.gameSettings.keyBindSneak.isKeyDown();
 
-        if (mc.thePlayer != null && rotMng.rendererViewEntity != null) {
+        if (mc.thePlayer != null && rotMng.rendererViewEntity != null && Meta.strafeEnabled) {
             transformMovementInput(mvInput, yawDiff);
         }
 

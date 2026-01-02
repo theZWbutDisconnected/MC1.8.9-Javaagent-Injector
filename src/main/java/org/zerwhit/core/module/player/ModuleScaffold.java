@@ -29,7 +29,6 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
     public ModuleScaffold() {
         super("Scaffold", false, "Movement");
         addConfig("Sprint", false);
-        setBindingKey(KeyCode.C);
     }
 
 
@@ -49,6 +48,7 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
             }
             if (stage == 1) {
                 Meta.slientAimEnabled = true;
+                Meta.strafeEnabled = true;
                 BlockData bd = getBlockData();
                 if (bd != null) {
                     double deltaX = bd.blockPos().getX() - mc.thePlayer.posX;
@@ -65,6 +65,7 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
             }
         } else {
             Meta.slientAimEnabled = false;
+            Meta.strafeEnabled = false;
             stage = 0;
         }
         placeTick--;

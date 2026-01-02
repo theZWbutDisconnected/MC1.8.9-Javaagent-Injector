@@ -45,6 +45,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
         super.onDisable();
         Meta.slientAimEnabled = false;
         Meta.blockRenderEnabled = false;
+        Meta.strafeEnabled = false;
     }
 
     @Override
@@ -55,6 +56,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
         Boolean autoBlock = (Boolean) getConfig("AutoBlock");
 
         Meta.blockRenderEnabled = false;
+        Meta.strafeEnabled = false;
         if (ModuleBase.scaffold.enabled) return;
         if (!frelook.enabled)
             Meta.slientAimEnabled = false;
@@ -83,6 +85,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
             return;
         }
         Meta.blockRenderEnabled = autoBlock;
+        Meta.strafeEnabled = true;
         
         double deltaX = target.posX - mc.thePlayer.posX;
         double deltaY = (target.posY + 1) - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
