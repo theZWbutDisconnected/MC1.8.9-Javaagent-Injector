@@ -11,16 +11,4 @@ public class Meta {
     public static boolean slientAimEnabled = false;
     public static boolean blockRenderEnabled = false;
     public static boolean dynamicIslandEnabled = true;
-
-    public static void toggleAim(boolean open) {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (!open) {
-            mc.thePlayer.rotationPitch = Hooks.rotMng.rendererViewEntity.rotationPitch;
-            mc.thePlayer.rotationYaw = Hooks.rotMng.rendererViewEntity.rotationYaw;
-            slientAimEnabled = false;
-        }
-        if (open) {
-            slientAimEnabled = true;
-        }
-    }
 }
