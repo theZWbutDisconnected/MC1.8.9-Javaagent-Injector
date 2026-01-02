@@ -78,7 +78,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
             target = null;
         }
 
-        if (target == null) {
+        if (target == null && !frelook.enabled) {
             Meta.slientAimEnabled = false;
             return;
         }
