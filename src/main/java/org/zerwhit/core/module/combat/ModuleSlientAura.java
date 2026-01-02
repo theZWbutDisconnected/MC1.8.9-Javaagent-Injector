@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import org.zerwhit.core.Hooks;
 import org.zerwhit.core.data.Meta;
+import org.zerwhit.core.module.IRenderModule;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
 import org.zerwhit.core.util.KeyRobot;
@@ -18,7 +19,7 @@ import org.zerwhit.core.util.RandomUtil;
 import java.util.List;
 import java.util.Random;
 
-public class ModuleSlientAura extends ModuleBase implements ITickableModule {
+public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRenderModule {
     private Entity target = null;
     private int lastAttackTick;
     private Random rand = new Random();
@@ -56,9 +57,9 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         Meta.blockRenderEnabled = false;
         if (ModuleBase.scaffold.enabled) return;
         if (!frelook.enabled)
-            Meta.toggleAim(false);
+            Meta.slientAimEnabled = false;
         List<Entity> entityList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.getEntityBoundingBox().expand(distance, distance, distance));
-        if (!entityList.isEmpty()) Meta.toggleAim(slient);
+        if (!entityList.isEmpty()) Meta.slientAimEnabled = slient;
         for (int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
             if (!(entity instanceof EntityPlayer)) {
@@ -78,7 +79,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         }
 
         if (target == null) {
-            Meta.toggleAim(false);
+            Meta.slientAimEnabled = false;
             return;
         }
         Meta.blockRenderEnabled = autoBlock;
@@ -130,5 +131,12 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
         KeyBinding.onTick(mc.gameSettings.keyBindAttack.getKeyCode());
         lastAttackTick = (int) (rand.nextDouble() * 20 + 10);
+    }
+
+    @Override
+    public void onRender(float partialTicks, int screenWidth, int screenHeight) {
+        if (target != null) {
+            
+        }
     }
 }

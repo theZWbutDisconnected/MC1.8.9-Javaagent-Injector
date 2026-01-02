@@ -138,3 +138,23 @@
 2026-01-02 18:37:06.907 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
 2026-01-02 18:37:06.923 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent6348465887592434935.dll
 2026-01-02 18:37:30.520 [main] INFO  org.zerwhit.Main - Agent injection successful!
+2026-01-02 19:22:50.458 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-02 19:22:51.239 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 24592
+2026-01-02 19:22:51.239 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-02 19:22:51.256 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent8397479746693061221.dll
+2026-01-02 19:23:10.145 [main] INFO  org.zerwhit.Main - Agent injection successful!
+2026-01-02 19:23:48.301 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-02 19:23:48.930 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 3200
+2026-01-02 19:23:48.930 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-02 19:23:48.943 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent5188294671214758428.dll
+2026-01-02 19:24:11.823 [main] INFO  org.zerwhit.Main - Agent injection successful!
+2026-01-02 19:26:54.817 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-02 19:26:55.512 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 18472
+2026-01-02 19:26:55.513 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-02 19:26:55.527 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent8240857683017634275.dll
+2026-01-02 19:27:18.664 [main] INFO  org.zerwhit.Main - Agent injection successful!
+2026-01-02 19:28:59.879 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-02 19:29:00.650 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 6676
+2026-01-02 19:29:00.652 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-02 19:29:00.669 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent2265308862386315499.dll
+2026-01-02 19:29:23.540 [main] INFO  org.zerwhit.Main - Agent injection successful!
