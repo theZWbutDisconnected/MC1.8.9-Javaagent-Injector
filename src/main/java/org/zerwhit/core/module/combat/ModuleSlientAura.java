@@ -61,7 +61,11 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
         if (!frelook.enabled)
             Meta.slientAimEnabled = false;
         List<Entity> entityList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.getEntityBoundingBox().expand(distance, distance, distance));
-        if (!entityList.isEmpty()) Meta.slientAimEnabled = slient;
+        if (!entityList.isEmpty()) {
+            Meta.slientAimEnabled = slient;
+            if (slient)
+                Meta.strafeEnabled = true;
+        }
         for (int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
             if (!(entity instanceof EntityPlayer)) {
@@ -85,7 +89,6 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
             return;
         }
         Meta.blockRenderEnabled = autoBlock;
-        Meta.strafeEnabled = true;
         
         double deltaX = target.posX - mc.thePlayer.posX;
         double deltaY = (target.posY + 1) - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
