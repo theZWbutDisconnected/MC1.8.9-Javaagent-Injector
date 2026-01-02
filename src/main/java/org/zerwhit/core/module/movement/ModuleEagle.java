@@ -96,8 +96,6 @@ public class ModuleEagle extends ModuleBase implements ITickableModule {
         addConfig("DirectionCheck", true);
         addConfig("PitchCheck", false);
         addConfig("BlocksOnly", true);
-        addConfig("EdgeCheck", true);
-        addRangedConfig("EdgeThreshold", 0.3, 0.1, 1.0);
     }
 
     public void onModuleTick() {
