@@ -560,27 +560,44 @@ public class Hooks {
         mvInput.jump = mc.gameSettings.keyBindJump.isKeyDown();
         mvInput.sneak = mc.gameSettings.keyBindSneak.isKeyDown();
 
+        if (mc.thePlayer != null && rotMng.rendererViewEntity != null) {
+            transformMovementInput(mvInput, yawDiff);
+        }
+
         if (mvInput.sneak)
         {
             mvInput.moveStrafe = (float)((double)mvInput.moveStrafe * 0.3D);
             mvInput.moveForward = (float)((double)mvInput.moveForward * 0.3D);
         }
-        if (mc.thePlayer == null || rotMng.rendererViewEntity == null) {
-            return;
-        }
-        transformMovementInput(mvInput, yawDiff);
     }
     
-    private static void transformMovementInput(MovementInput mvInput, float yawDiff) {
+    public static void transformMovementInput(MovementInput mvInput, float yawDiff) {
         float moveForward = mvInput.moveForward;
         float moveStrafe = mvInput.moveStrafe;
+        
         float yawRad = (float) Math.toRadians(yawDiff);
-        float cos = (float) Math.cos(yawRad);
-        float sin = (float) Math.sin(-yawRad);
+        float cos = MathHelper.cos(yawRad);
+        float sin = MathHelper.sin(-yawRad);
         float newMoveForward = moveForward * cos - moveStrafe * sin;
         float newMoveStrafe = moveForward * sin + moveStrafe * cos;
-        mvInput.moveForward = newMoveForward > 0 ? 1.0f : newMoveForward < 0 ? -1.0f : 0.0f;
-        mvInput.moveStrafe = newMoveStrafe > 0 ? 1.0f : newMoveStrafe < 0 ? -1.0f : 0.0f;
+        final float THRESHOLD = 0.1f;
+        
+        if (Math.abs(newMoveForward) > 1.0f + THRESHOLD || Math.abs(newMoveStrafe) > 1.0f + THRESHOLD) {
+            float length = MathHelper.sqrt_float(newMoveForward * newMoveForward + newMoveStrafe * newMoveStrafe);
+            if (length > THRESHOLD) {
+                newMoveForward /= length;
+                newMoveStrafe /= length;
+            }
+        }
+        
+        mvInput.moveForward = applySmoothSign(newMoveForward, THRESHOLD);
+        mvInput.moveStrafe = applySmoothSign(newMoveStrafe, THRESHOLD);
+    }
+    
+    private static float applySmoothSign(float value, float threshold) {
+        if (value > threshold) return 1.0f;
+        if (value < -threshold) return -1.0f;
+        return 0.0f;
     }
     
     static {

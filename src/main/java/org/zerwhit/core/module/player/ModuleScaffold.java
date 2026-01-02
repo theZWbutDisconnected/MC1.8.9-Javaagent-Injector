@@ -1,201 +1,73 @@
 package org.zerwhit.core.module.player;
 
 import javafx.scene.input.KeyCode;
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C0APacketAnimation;
-import net.minecraft.util.*;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldSettings;
 import org.zerwhit.core.data.Meta;
 import org.zerwhit.core.manager.RotationManager;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
-import org.zerwhit.core.util.*;
+import org.zerwhit.core.util.BlockUtil;
+import org.zerwhit.core.util.KeyBindUtil;
+import org.zerwhit.core.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 
 public class ModuleScaffold extends ModuleBase implements ITickableModule {
-    private static final Minecraft mc = Minecraft.getMinecraft();
-    private RotationManager rotMng = new RotationManager();
-    private static final double[] placeOffsets = new double[]{
-            0.03125,
-            0.09375,
-            0.15625,
-            0.21875,
-            0.28125,
-            0.34375,
-            0.40625,
-            0.46875,
-            0.53125,
-            0.59375,
-            0.65625,
-            0.71875,
-            0.78125,
-            0.84375,
-            0.90625,
-            0.96875
-    };
-
-    private int lastSlot = -1;
-    private int blockCount = -1;
-    private int stage = 0;
-    private int startY = 256;
-    private boolean shouldKeepY = false;
-    private long startTick = 0;
-    private float yaw = 0;
-    private float pitch = 0;
+    private int stage;
+    private double startY;
     private int placeTick;
+    private int blockCount;
+    float pitch, yaw;
 
     public ModuleScaffold() {
         super("Scaffold", false, "Movement");
-        addConfig("Mode", "Telly");
-        addConfig("Rotation", "Vanilla");
-        addConfig("KeepY", "None");
-        addConfig("Swing", true);
+        addConfig("Sprint", false);
         setBindingKey(KeyCode.C);
     }
 
-    @Override
-    public void onEnable() {
-        super.onEnable();
-
-        if (mc.thePlayer != null) {
-            this.lastSlot = mc.thePlayer.inventory.currentItem;
-            this.startY = MathHelper.floor_double(mc.thePlayer.posY);
-            this.shouldKeepY = !((String) getConfig("KeepY")).equals("None");
-        }
-        stage = 0;
-        startTick = System.currentTimeMillis();
-    }
-
-    @Override
-    public void onDisable() {
-        super.onDisable();
-        Meta.slientAimEnabled = false;
-
-        if (mc.thePlayer != null && this.lastSlot != -1) {
-            mc.thePlayer.inventory.currentItem = this.lastSlot;
-        }
-    }
 
     @Override
     public void onModuleTick() {
-        if (mc.thePlayer == null || mc.theWorld == null) return;
-
-        String mode = (String) getConfig("Mode");
         updateBlockCount();
-        if (mode.equals("Telly")) {
-            handleTelly();
-        } else {
-            handleDefault();
-        }
-    }
-
-    private void handleDefault() {
-        BlockData target = getBlockData();
-        if (target != null) {
-            String rotation = (String) getConfig("Rotation");
-            
-            if (!rotation.equals("None")) {
-                double deltaX = target.blockPos().getX() - mc.thePlayer.posX;
-                double deltaY = (target.blockPos().getY() + 1) - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
-                double deltaZ = target.blockPos().getZ() - mc.thePlayer.posZ;
-                double dis = MathHelper.sqrt_double(deltaX * deltaX + deltaZ * deltaZ);
-
-                float pitch = (float) (-(Math.atan2(deltaY, dis) * 180.0 / Math.PI));
-                float yaw = (float) (Math.atan2(deltaZ, deltaX) * 180.0 / Math.PI) - 90.0f;
-                
-                if (rotation.equals("Vanilla")) {
-                    mc.thePlayer.rotationPitch = pitch;
-                    mc.thePlayer.rotationYaw = yaw;
-                } else if (rotation.equals("Backwards")) {
-                    mc.thePlayer.rotationPitch = -pitch;
-                    mc.thePlayer.rotationYaw = yaw + 180.0f;
-                }
+        if (isRequireMove()) {
+            if (Meta.slientAimEnabled) {
+                mc.thePlayer.rotationPitch = pitch;
+                mc.thePlayer.rotationYaw = 180 + rotMng.rendererViewEntity.rotationYaw;
             }
-            
-            if (placeTick <= 0) {
-                Vec3 hitVec = BlockUtil.getClickVec(target.blockPos(), target.facing());
-                place(target.blockPos, target.facing, hitVec, (Boolean) getConfig("Swing"));
+            mc.thePlayer.rotationPitch += RotationManager.wrapAngleDiff(pitch, mc.thePlayer.rotationPitch) * 0.2f;
+            mc.thePlayer.rotationYaw += RotationManager.wrapAngleDiff(yaw, mc.thePlayer.rotationYaw) * 0.2f;
+            if (stage == 0) {
+                startY = mc.thePlayer.posY;
+                stage = 1;
             }
-        }
-        placeTick--;
-    }
-
-    private void handleTelly() {
-        String rotation = (String) getConfig("Rotation");
-        BlockData target = getBlockData();
-        long deltaTime = System.currentTimeMillis() - startTick;
-        if (target != null) {
-            switch (stage) {
-                case 0:
-                    if (isForwardPressed()) {
-                        if (mc.thePlayer.onGround) {
-                            startTick = System.currentTimeMillis();
-                            Meta.slientAimEnabled = false;
-                            mc.thePlayer.jump();
-                            mc.thePlayer.setJumping(true);
-                            stage++;
-                        } else {
-                            startTick = System.currentTimeMillis();
-                            stage++;
-                        }
-                    }
-                    break;
-                case 1:
-                    Meta.slientAimEnabled = true;
-
-                    double deltaX = target.blockPos().getX() - mc.thePlayer.posX;
-                    double deltaY = (target.blockPos().getY() + 1) - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
-                    double deltaZ = target.blockPos().getZ() - mc.thePlayer.posZ;
+            if (stage == 1) {
+                Meta.slientAimEnabled = true;
+                BlockData bd = getBlockData();
+                if (bd != null) {
+                    double deltaX = bd.blockPos().getX() - mc.thePlayer.posX;
+                    double deltaY = (bd.blockPos().getY() + 1) - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
+                    double deltaZ = bd.blockPos().getZ() - mc.thePlayer.posZ;
                     double dis = MathHelper.sqrt_double(deltaX * deltaX + deltaZ * deltaZ);
 
                     pitch = (float) (-(Math.atan2(deltaY, dis) * 180.0 / Math.PI));
-                    yaw = (float) (Math.atan2(deltaZ, deltaX) * 180.0 / Math.PI) - 90.0f;
-                    mc.thePlayer.rotationPitch += RotationManager.wrapAngleDiff(pitch, getCurrentPitch()) * 0.1f;
-                    mc.thePlayer.rotationYaw += RotationManager.wrapAngleDiff(yaw, getCurrentYaw()) * 0.1f;
-                    if ((deltaTime > 200L && !mc.thePlayer.onGround) && placeTick <= 0) {
-                        Vec3 hitVec = BlockUtil.getClickVec(target.blockPos(), target.facing());
-                        double dx = hitVec.xCoord - mc.thePlayer.posX;
-                        double dy = hitVec.yCoord - mc.thePlayer.posY - (double) mc.thePlayer.getEyeHeight();
-                        double dz = hitVec.zCoord - mc.thePlayer.posZ;
-                        float[] rotations = RotationManager.getRotationsTo(dx, dy, dz, getCurrentYaw(), getCurrentPitch());
-                        if (!(Math.abs(rotations[0] - this.yaw) < 120.0F) || !(Math.abs(rotations[1] - this.pitch) < 60.0F)) {
-                            break;
-                        }
-                        MovingObjectPosition mop = RotationManager.rayTrace(rotations[0], rotations[1], mc.playerController.getBlockReachDistance(), 1.0F, mc.thePlayer);
-                        boolean flag = true;
-                        if (mop == null
-                                || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK
-                                || !mop.getBlockPos().equals(target.blockPos())
-                                || mop.sideHit != target.facing()) {
-                            flag = false;
-                        }
-                        if (flag)
-                            place(target.blockPos, target.facing, mop.hitVec, (Boolean) getConfig("Swing"));
+                    yaw = (float) (Math.atan2(deltaZ, deltaX) * 180.0 / Math.PI);
+                    if (placeTick <= 0) {
+                        place(bd.blockPos, bd.facing, BlockUtil.getHitVec(bd.blockPos, bd.facing, mc.thePlayer.rotationYaw, mc.thePlayer.rotationPitch), true);
                     }
-                    if (deltaTime > 100L && mc.thePlayer.onGround) stage ++;
-                    break;
-                case 2:
-                    Meta.slientAimEnabled = false;
-                    startTick = System.currentTimeMillis();
-                    if (isForwardPressed()) {
-                        if (mc.thePlayer.onGround) {
-                            stage = 0;
-                            mc.thePlayer.setJumping(false);
-                        }
-                    }
-                    break;
+                }
             }
         } else {
             Meta.slientAimEnabled = false;
+            stage = 0;
         }
         placeTick--;
-    }
-
-    private boolean canPlace() {
-        return mc.thePlayer != null && mc.theWorld != null && !mc.thePlayer.isDead;
     }
 
     private void updateBlockCount() {
@@ -215,14 +87,34 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
         }
     }
 
+    private void place(BlockPos blockPos, EnumFacing enumFacing, Vec3 vec3, boolean swing) {
+        if (BlockUtil.isHoldingBlock() && this.blockCount > 0) {
+            if (mc.playerController.onPlayerRightClick(mc.thePlayer, mc.theWorld, mc.thePlayer.getHeldItem(), blockPos, enumFacing, vec3)) {
+                if (mc.playerController.getCurrentGameType() != WorldSettings.GameType.CREATIVE) {
+                    this.blockCount--;
+                }
+                placeTick = 7 + RandomUtil.nextInt(0, 4);
+                if (swing) {
+                    mc.thePlayer.swingItem();
+                } else {
+                    mc.thePlayer.sendQueue.addToSendQueue(new C0APacketAnimation());
+                }
+            }
+        }
+    }
+
+    private boolean isRequireMove() {
+        return KeyBindUtil.isKeyDown(mc.gameSettings.keyBindForward.getKeyCode()) || KeyBindUtil.isKeyDown(mc.gameSettings.keyBindBack.getKeyCode()) || KeyBindUtil.isKeyDown(mc.gameSettings.keyBindLeft.getKeyCode()) || KeyBindUtil.isKeyDown(mc.gameSettings.keyBindRight.getKeyCode());
+    }
+
     private BlockData getBlockData() {
         int currentY = MathHelper.floor_double(mc.thePlayer.posY);
         int targetY = currentY - 1;
-        
-        if (this.shouldKeepY && this.stage != 0) {
-            targetY = this.startY - 1;
+
+        if (this.stage != 0) {
+            targetY = (int) (this.startY - 1);
         }
-        
+
         BlockPos targetPos = new BlockPos(
                 MathHelper.floor_double(mc.thePlayer.posX),
                 targetY,
@@ -241,7 +133,7 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
                     if (!BlockUtil.isReplaceable(pos) && !BlockUtil.isContainer(pos) &&
                             mc.thePlayer.getDistance((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5) <=
                                     (double) mc.playerController.getBlockReachDistance() &&
-                            (this.stage == 0 || !this.shouldKeepY || pos.getY() <= this.startY)) {
+                            (this.stage == 0 || pos.getY() <= this.startY)) {
 
                         for (EnumFacing facing : EnumFacing.VALUES) {
                             if (facing != EnumFacing.DOWN) {
@@ -285,124 +177,6 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
             }
         }
         return enumFacing;
-    }
-
-    private void place(BlockPos blockPos, EnumFacing enumFacing, Vec3 vec3, boolean swing) {
-        if (BlockUtil.isHoldingBlock() && this.blockCount > 0) {
-            if (mc.playerController.onPlayerRightClick(mc.thePlayer, mc.theWorld, mc.thePlayer.getHeldItem(), blockPos, enumFacing, vec3)) {
-                if (mc.playerController.getCurrentGameType() != WorldSettings.GameType.CREATIVE) {
-                    this.blockCount--;
-                }
-                placeTick = 7 + RandomUtil.nextInt(0, 4);
-                if (swing) {
-                    mc.thePlayer.swingItem();
-                } else {
-                    mc.thePlayer.sendQueue.addToSendQueue(new C0APacketAnimation());
-                }
-            }
-        }
-    }
-
-    private float getCurrentYaw() {
-        return mc.thePlayer.rotationYaw;
-    }
-
-    private float getCurrentPitch() {
-        return mc.thePlayer.rotationPitch;
-    }
-
-    private boolean isForwardPressed() {
-        return mc.gameSettings.keyBindForward.isKeyDown();
-    }
-
-    private boolean isAirBelow() {
-        BlockPos pos = new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY - 1, mc.thePlayer.posZ);
-        return BlockUtil.isReplaceable(pos);
-    }
-
-    private boolean isAirAbove() {
-        BlockPos pos = new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY + 2, mc.thePlayer.posZ);
-        return BlockUtil.isReplaceable(pos);
-    }
-
-    @Override
-    public void cycleStringConfig(String key) {
-        if (key.equals("Mode")) {
-            String currentMode = (String) getConfig("Mode");
-            switch (currentMode) {
-                case "Legit":
-                    setConfig("Mode", "Clutch");
-                    break;
-                case "Clutch":
-                    setConfig("Mode", "Telly");
-                    break;
-                case "Telly":
-                    setConfig("Mode", "Legit");
-                    break;
-                default:
-                    setConfig("Mode", "Legit");
-            }
-        } else if (key.equals("Rotation")) {
-            String currentRotation = (String) getConfig("Rotation");
-            switch (currentRotation) {
-                case "None":
-                    setConfig("Rotation", "Vanilla");
-                    break;
-                case "Vanilla":
-                    setConfig("Rotation", "Backwards");
-                    break;
-                case "Backwards":
-                    setConfig("Rotation", "Hypixel");
-                    break;
-                case "Hypixel":
-                    setConfig("Rotation", "None");
-                    break;
-                default:
-                    setConfig("Rotation", "None");
-            }
-        } else if (key.equals("KeepY")) {
-            String currentRotation = (String) getConfig("KeepY");
-            switch (currentRotation) {
-                case "None":
-                    setConfig("KeepY", "Vanilla");
-                    break;
-                case "Vanilla":
-                    setConfig("KeepY", "Extra");
-                    break;
-                case "Extra":
-                    setConfig("KeepY", "Telly");
-                    break;
-                case "Telly":
-                    setConfig("KeepY", "None");
-                    break;
-                default:
-                    setConfig("KeepY", "None");
-            }
-        } else if (key.equals("MoveFix")) {
-            String currentMoveFix = (String) getConfig("MoveFix");
-            switch (currentMoveFix) {
-                case "None":
-                    setConfig("MoveFix", "Silent");
-                    break;
-                case "Silent":
-                    setConfig("MoveFix", "None");
-                    break;
-                default:
-                    setConfig("MoveFix", "None");
-            }
-        } else if (key.equals("Sprint")) {
-            String currentSprint = (String) getConfig("Sprint");
-            switch (currentSprint) {
-                case "None":
-                    setConfig("Sprint", "Vanilla");
-                    break;
-                case "Vanilla":
-                    setConfig("Sprint", "None");
-                    break;
-                default:
-                    setConfig("Sprint", "None");
-            }
-        }
     }
 
     private static class BlockData {

@@ -18,7 +18,7 @@ public class ModuleSprint extends ModuleBase implements ITickableModule {
     public void onModuleTick() {
         boolean omniDirectional = (Boolean) getConfig("OmniDirectional");
         String mode = (String) getConfig("Mode");
-        
+        if (ModuleBase.scaffold.isEnabled() && !(Boolean) ModuleBase.scaffold.getConfig("Sprint")) return;
         switch (mode) {
             case "Legit":
                 if (omniDirectional) {

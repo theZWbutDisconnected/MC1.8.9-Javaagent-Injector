@@ -4,7 +4,10 @@ import javafx.scene.input.KeyCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
+import org.zerwhit.core.Hooks;
 import org.zerwhit.core.data.Meta;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
@@ -24,9 +27,9 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
     float newYaw, newPitch;
 
     public ModuleSlientAura() {
-        super("SlientAura", true, "Combat", KeyCode.R);
-        addConfig("Distance", 3.0f);
-        addConfig("SlientAim", false);
+        super("SlientAura", true, "Combat", KeyCode.TAB);
+        addConfig("Distance", 4.0f);
+        addConfig("SlientAim", true);
         addConfig("PitchEnabled", true);
         addConfig("AutoBlock", true);
     }
@@ -52,10 +55,16 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
 
         Meta.blockRenderEnabled = false;
         if (ModuleBase.scaffold.enabled) return;
+        if (!frelook.enabled)
+            Meta.toggleAim(false);
         List<Entity> entityList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.getEntityBoundingBox().expand(distance, distance, distance));
         if (!entityList.isEmpty()) Meta.toggleAim(slient);
         for (int i = 0; i < entityList.size(); i++) {
             Entity entity = entityList.get(i);
+            if (!(entity instanceof EntityPlayer)) {
+                target = null;
+                continue;
+            }
             if (!(entity.isEntityAlive() && !entity.isDead)) {
                 if (target == entity)
                     target = null;
@@ -69,7 +78,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule {
         }
 
         if (target == null) {
-            Meta.toggleAim(slient);
+            Meta.toggleAim(false);
             return;
         }
         Meta.blockRenderEnabled = autoBlock;
