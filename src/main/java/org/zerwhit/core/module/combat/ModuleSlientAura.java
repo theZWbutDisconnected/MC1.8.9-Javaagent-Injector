@@ -12,6 +12,7 @@ import org.zerwhit.core.data.Meta;
 import org.zerwhit.core.module.IRenderModule;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
+import org.zerwhit.core.util.KeyBindUtil;
 import org.zerwhit.core.util.KeyRobot;
 import org.zerwhit.core.util.ObfuscationReflectionHelper;
 import org.zerwhit.core.util.RandomUtil;
@@ -23,9 +24,9 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
     private Entity target = null;
     private int lastAttackTick;
     private Random rand = new Random();
-    private long clickDelay = 0L;
 
     float newYaw, newPitch;
+    private int blockTime;
 
     public ModuleSlientAura() {
         super("SlientAura", true, "Combat", KeyCode.TAB);
@@ -136,7 +137,17 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
         if (lastAttackTick > 0) { lastAttackTick -= 1; return;}
         KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
         KeyBinding.onTick(mc.gameSettings.keyBindAttack.getKeyCode());
+        if ((boolean) getConfig("AutoBlock")) {
+            KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), true);
+            KeyBindUtil.updateKeyState(mc.gameSettings.keyBindUseItem.getKeyCode());
+            blockTime = 5;
+        }
         lastAttackTick = (int) (rand.nextDouble() * 20 + 10);
+        blockTime--;
+        if (blockTime <= 0) {
+            KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
+            KeyBindUtil.updateKeyState(mc.gameSettings.keyBindUseItem.getKeyCode());
+        }
     }
 
     @Override
