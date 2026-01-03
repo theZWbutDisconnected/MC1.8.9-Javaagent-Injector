@@ -1,4 +1,4 @@
-package org.zerwhit.core.module.movement;
+package org.zerwhit.core.module.player;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemBlock;
@@ -9,7 +9,7 @@ import org.zerwhit.core.util.ObfuscationReflectionHelper;
 
 public class ModuleFastPlace extends ModuleBase implements ITickableModule {
     public ModuleFastPlace() {
-        super("FastPlace", true, "Movement");
+        super("FastPlace", true, "Player");
     }
 
     @Override

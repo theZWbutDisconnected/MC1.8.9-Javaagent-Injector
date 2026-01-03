@@ -27,7 +27,7 @@ public class ModuleScaffold extends ModuleBase implements ITickableModule {
     float pitch, yaw;
 
     public ModuleScaffold() {
-        super("Scaffold", false, "Movement");
+        super("Scaffold", false, "Player");
         addConfig("Sprint", false);
     }
 

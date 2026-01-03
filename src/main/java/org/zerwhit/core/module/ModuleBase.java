@@ -8,6 +8,8 @@ import org.zerwhit.core.config.ConfigInitialization;
 import org.zerwhit.core.module.combat.ModuleAutoClicker;
 import org.zerwhit.core.module.combat.ModuleRightClicker;
 import org.zerwhit.core.module.combat.ModuleSlientAura;
+import org.zerwhit.core.module.player.ModuleEagle;
+import org.zerwhit.core.module.player.ModuleFastPlace;
 import org.zerwhit.core.util.island.IslandNotification;
 import org.zerwhit.core.module.visual.ModuleDynamicIsland;
 import org.zerwhit.core.util.SafeLogger;
@@ -161,12 +163,14 @@ public abstract class ModuleBase {
                 return 0;
             case "Movement":
                 return 1;
-            case "Render":
+            case "Player":
                 return 2;
-            case "Visual":
+            case "Render":
                 return 3;
-            default:
+            case "Visual":
                 return 4;
+            default:
+                return 5;
         }
     }
 

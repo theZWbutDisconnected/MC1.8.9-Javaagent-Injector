@@ -90,6 +90,8 @@ public final class ModuleManager {
                 return ModulePriority.HIGH;
             case MOVEMENT:
                 return ModulePriority.NORMAL;
+            case PLAYER:
+                return ModulePriority.NORMAL;
             case RENDER:
                 return ModulePriority.LOW;
             case VISUAL:
@@ -365,8 +367,9 @@ public final class ModuleManager {
     public enum ModuleCategory {
         COMBAT("Combat", 0),
         MOVEMENT("Movement", 1),
-        RENDER("Render", 2),
-        VISUAL("Visual", 3);
+        PLAYER("Player", 2),
+        RENDER("Render", 3),
+        VISUAL("Visual", 4);
         
         private final String name;
         private final int priority;

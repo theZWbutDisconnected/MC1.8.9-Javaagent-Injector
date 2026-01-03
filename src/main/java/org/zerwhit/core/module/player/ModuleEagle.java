@@ -1,6 +1,5 @@
-package org.zerwhit.core.module.movement;
+package org.zerwhit.core.module.player;
 
-import javafx.scene.input.KeyCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
@@ -10,9 +9,6 @@ import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
 import org.zerwhit.core.util.BlockUtil;
 import org.zerwhit.core.util.KeyBindUtil;
-import org.zerwhit.core.util.ObfuscationReflectionHelper;
-
-import java.util.Objects;
 
 public class ModuleEagle extends ModuleBase implements ITickableModule {
     private static final Minecraft mc = Minecraft.getMinecraft();
@@ -90,7 +86,7 @@ public class ModuleEagle extends ModuleBase implements ITickableModule {
     }
 
     public ModuleEagle() {
-        super("Eagle", true, "Movement");
+        super("Eagle", true, "Player");
         addRangedConfig("MinDelay", 2, 0, 10);
         addRangedConfig("MaxDelay", 3, 0, 10);
         addConfig("DirectionCheck", true);

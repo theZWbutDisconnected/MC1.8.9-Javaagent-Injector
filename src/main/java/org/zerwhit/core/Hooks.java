@@ -120,6 +120,7 @@ public class Hooks {
         Meta.slientAimEnabled = false;
         moduleMng.invokeCategory(ModuleManager.ModuleCategory.COMBAT, ModuleManager.ModuleHookType.TICK);
         moduleMng.invokeCategory(ModuleManager.ModuleCategory.MOVEMENT, ModuleManager.ModuleHookType.TICK);
+        moduleMng.invokeCategory(ModuleManager.ModuleCategory.PLAYER, ModuleManager.ModuleHookType.TICK);
     }
     public static void onPlayerPostUpdate() {
         moduleMng.invokeCategory(ModuleManager.ModuleCategory.VISUAL, ModuleManager.ModuleHookType.TICK);

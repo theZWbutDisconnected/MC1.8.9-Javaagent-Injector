@@ -73,3 +73,18 @@
 2026-01-03 12:48:08.613 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
 2026-01-03 12:48:08.628 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent1603185613834738359.dll
 2026-01-03 12:48:32.296 [main] INFO  org.zerwhit.Main - Agent injection successful!
+2026-01-03 16:25:22.021 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-03 16:25:22.690 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 4720
+2026-01-03 16:25:22.691 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-03 16:25:22.704 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent2876151154747215000.dll
+2026-01-03 16:25:22.705 [main] ERROR org.zerwhit.Main - Agent injection failed: Failed to enable debug privilege.
+2026-01-03 16:26:23.789 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-03 16:26:24.327 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 4720
+2026-01-03 16:26:24.328 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-03 16:26:24.336 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent8020067674646718501.dll
+2026-01-03 16:26:47.383 [main] INFO  org.zerwhit.Main - Agent injection successful!
+2026-01-03 16:49:44.338 [main] INFO  org.zerwhit.Main - Starting agent injection process...
+2026-01-03 16:49:44.876 [main] INFO  org.zerwhit.Main - Found Minecraft process with PID: 17716
+2026-01-03 16:49:44.876 [main] INFO  org.zerwhit.Main - Agent JAR path: D:\MinecraftModWorkspace\Agent\BadlionMain\build\libs\BadlionMain-1.0-SNAPSHOT.jar
+2026-01-03 16:49:44.886 [main] INFO  org.zerwhit.Main - Loaded TzdAgent.dll from: C:\Users\86158\AppData\Local\Temp\TzdAgent7908340156935920078.dll
+2026-01-03 16:50:06.763 [main] INFO  org.zerwhit.Main - Agent injection successful!
