@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import org.zerwhit.core.Hooks;
 import org.zerwhit.core.data.Meta;
+import org.zerwhit.core.manager.RotationManager;
 import org.zerwhit.core.module.IRenderModule;
 import org.zerwhit.core.module.ITickableModule;
 import org.zerwhit.core.module.ModuleBase;
@@ -27,13 +28,23 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
 
     float newYaw, newPitch;
     private int blockTime;
+    private long nextClickTime;
 
     public ModuleSlientAura() {
         super("SlientAura", true, "Combat", KeyCode.TAB);
+        addRangedConfig("CPSMax", 15, 0, 20);
+        addRangedConfig("CPSMin", 10, 0, 20);
         addConfig("Distance", 4.0f);
         addConfig("SlientAim", true);
         addConfig("PitchEnabled", true);
         addConfig("AutoBlock", true);
+    }
+
+    private long getNextClickDelay() {
+        int cps = RandomUtil.nextInt(((Number) getConfig("CPSMin")).intValue(),
+                ((Number) getConfig("CPSMax")).intValue());
+        if (cps <= 0) return Long.MAX_VALUE;
+        return 1000L / cps + RandomUtil.nextLong(-50, 50);
     }
 
     @Override
@@ -87,6 +98,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
 
         if (target == null && !frelook.enabled) {
             Meta.slientAimEnabled = false;
+            Meta.strafeEnabled = false;
             return;
         }
         Meta.blockRenderEnabled = autoBlock;
@@ -116,7 +128,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
         }
         
         if (!shouldReverseYaw) {
-            mc.thePlayer.rotationYaw = rotMng.normalizeAngleTo360(currentYaw + (newYaw - currentYaw) * 0.07f);
+            mc.thePlayer.rotationYaw = currentYaw + RotationManager.wrapAngleDiff(newYaw, currentYaw) * 0.07f;
         }
         
         if (pitchEnabled) {
@@ -127,14 +139,15 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
             newPitch = Math.max(-90, Math.min(90, newPitch));
 
             float smoothPitchChange = rotMng.calculateSmoothPitchChange(currentPitch, newPitch);
-            mc.thePlayer.rotationPitch += smoothPitchChange;
+            mc.thePlayer.rotationPitch = Math.max(-90, Math.min(90, newPitch + smoothPitchChange));
         }
 
         handleClick();
     }
 
     private void handleClick() {
-        if (lastAttackTick > 0) { lastAttackTick -= 1; return;}
+        long currentTime = System.currentTimeMillis();
+        if (currentTime < nextClickTime) { return;}
         KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
         KeyBinding.onTick(mc.gameSettings.keyBindAttack.getKeyCode());
         if ((boolean) getConfig("AutoBlock")) {
@@ -142,7 +155,7 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
             KeyBindUtil.updateKeyState(mc.gameSettings.keyBindUseItem.getKeyCode());
             blockTime = 5;
         }
-        lastAttackTick = (int) (rand.nextDouble() * 20 + 10);
+        nextClickTime = currentTime + getNextClickDelay();
         blockTime--;
         if (blockTime <= 0) {
             KeyBindUtil.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
