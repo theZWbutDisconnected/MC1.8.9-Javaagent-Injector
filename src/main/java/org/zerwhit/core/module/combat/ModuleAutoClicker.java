@@ -19,7 +19,7 @@ public class ModuleAutoClicker extends ModuleBase implements ITickableModule {
         addRangedConfig("CPSMax", 15, 0, 20);
         addRangedConfig("CPSMin", 10, 0, 20);
         addRangedConfig("BlockHitTicks", 1.5F, 1.0F, 20.0F);
-        addConfig("WeaponsOnly", true);
+        addConfig("WeaponsOnly", false);
         addConfig("AllowTools", false);
         addConfig("BreakBlocks", true);
         addConfig("BlockHit", true);

@@ -78,8 +78,8 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
             if (slient)
                 Meta.strafeEnabled = true;
         }
-        for (int i = 0; i < entityList.size(); i++) {
-            Entity entity = entityList.get(i);
+
+        for (Entity entity : entityList) {
             if (!(entity instanceof EntityPlayer)) {
                 target = null;
                 continue;
@@ -89,10 +89,11 @@ public class ModuleSlientAura extends ModuleBase implements ITickableModule, IRe
                     target = null;
                 continue;
             }
-            if (target == null || target.getDistanceToEntity(mc.thePlayer) > entity.getDistanceToEntity(mc.thePlayer)) target = entity;
+            if (target == null || target.getDistanceToEntity(mc.thePlayer) > entity.getDistanceToEntity(mc.thePlayer))
+                target = entity;
         }
 
-        if (target != null && target.getDistanceToEntity(mc.thePlayer) > distance) {
+        if (target != null && (target.getDistanceToEntity(mc.thePlayer) > distance/* || RotationManager.rayTrace(target).entityHit == null*/)) {
             target = null;
         }
 

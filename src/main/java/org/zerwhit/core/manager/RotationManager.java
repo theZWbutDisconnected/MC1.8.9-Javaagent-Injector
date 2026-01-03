@@ -132,6 +132,29 @@ public final class RotationManager {
         return player.worldObj.rayTraceBlocks(vec3, vec32, false, false, true);
     }
 
+    public static MovingObjectPosition rayTrace(Entity entity) {
+        Minecraft mc = Minecraft.getMinecraft();
+        Vec3 eyePos = mc.thePlayer.getPositionEyes(1.0f);
+        float borderSize = entity.getCollisionBorderSize();
+        Vec3 targetPos = clampVecToBox(eyePos, entity.getEntityBoundingBox().expand(borderSize, borderSize, borderSize));
+        return mc.theWorld.rayTraceBlocks(eyePos, targetPos);
+    }
+
+    public static Vec3 clampVecToBox(Vec3 vector, AxisAlignedBB boundingBox) {
+        double[] coords = new double[]{vector.xCoord, vector.yCoord, vector.zCoord};
+        double[] minCoords = new double[]{boundingBox.minX, boundingBox.minY, boundingBox.minZ};
+        double[] maxCoords = new double[]{boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ};
+        for (int i = 0; i < 3; ++i) {
+            if (coords[i] > maxCoords[i]) {
+                coords[i] = maxCoords[i];
+                continue;
+            }
+            if (!(coords[i] < minCoords[i])) continue;
+            coords[i] = minCoords[i];
+        }
+        return new Vec3(coords[0], coords[1], coords[2]);
+    }
+
     private static Vec3 getVectorForRotation(float pitch, float yaw) {
         float f = MathHelper.cos(-yaw * 0.017453292F - (float)Math.PI);
         float f1 = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
